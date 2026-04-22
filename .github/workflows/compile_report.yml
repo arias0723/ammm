@@ -4,15 +4,15 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - "**.tex"
-      - "**.bib"
-      - "**.cls"
+      - "docs/**"
+    tags:
+      - 'v*'
+
   pull_request:
     branches: [ "main" ]
     paths:
-      - "**.tex"
-      - "**.bib"
-      - "**.cls"
+      - "docs/**"
+
   workflow_dispatch:
 
 jobs:
@@ -25,11 +25,19 @@ jobs:
       - name: Compile LaTeX document
         uses: xu-cheng/latex-action@v3
         with:
-          # Change "main.tex" to your actual root filename
           root_file: ./docs/main.tex
 
       - name: Upload PDF Result
         uses: actions/upload-artifact@v4
         with:
-          name: report-pdf
+          name: report-doc
           path: main.pdf
+
+      - name: Create Release
+          if: startsWith(github.ref, 'refs/tags/')
+          uses: softprops/action-gh-release@v2
+          with:
+            name: report-doc
+            files: main.pdf
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
