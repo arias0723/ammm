@@ -20,12 +20,12 @@ tuple Edge {
   int i;
   int j;
 }
-// There exist an edge from i to j
-// Defined to avoid extra constraints
+// There exist an edge from base i to j
+// Leverage tuple definition to avoid extra constraints in the model
 {Edge} E = {<i,j> | i in B, j in B : i < j && t[i][j] > 0};
 
 dvar boolean x[S][E];   		// specialist s assigned to edge e
-dvar boolean y[E];      		// edge e is destroyed
+dvar boolean d[E];      		// edge e is destroyed or not
 dvar boolean g[B];      		// base b belongs to group g {0,1}
 
 //<<<<<<<<<<<<<<<<
@@ -59,16 +59,16 @@ subject to {
 
   	// Destroyed pipe enough total hours
   	forall(e in E)
-    	sum(s in S) w[s] * x[s][e] >= t[e.i][e.j] * y[e];
+    	sum(s in S) w[s] * x[s][e] >= t[e.i][e.j] * d[e];
 
   	// Specialists only assigned to targeted pipes
   	forall(s in S, e in E)
-    	x[s][e] <= y[e];
+    	x[s][e] <= d[e];
 
-  	// Pipe destroyed -> Bases in different groups
+  	// Pipe e destroyed -> Bases (i,j) belong to different groups
   	forall(e in E) {
-    	y[e] >= g[e.i] - g[e.j];
-    	y[e] >= g[e.j] - g[e.i];
+    	d[e] >= g[e.i] - g[e.j];
+    	d[e] >= g[e.j] - g[e.i];
   	}
 
   	// Graph is disconected (1 <= # of groups <= n-1)
