@@ -377,287 +377,287 @@ The same as \ref{ls_declaration}.
 \end{algorithmic}    
 \end{algorithm}
 
-% \section{Experiment Result Analysis}
-%
-% \subsubsection{Experiment Dataset And Environment}
-%
-% 16 data files are generated in the folder \textit{src/project/testdata} with prefix \textit{project.\{39-44\}-1} and \textit{project.45-\{1-10\}}, containing 39 to 45 members for each dataset.\\
-% These experiments were conducted on an Apple MacBook Pro laptop with an Apple M2 chip and 8GB of memory. Solving times may vary slightly on other computers, particularly for the ILP model.
-%
-%
-% \subsection{Parameter Tuning For GRASP}
-%
-% We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 45 members without conducting the local search procedure, and the maximum iterations for the constructive phase is set to 100.
-%
-% \begin{figure}[H]
-% \begin{tikzpicture}
-% \begin{axis}[
-%     title={\textbf{Quality of Solutions (100 iter. w/o local search phase)}},
-%     xlabel=\bm{$\alpha$},
-%     ylabel=\textbf{\textit{Total Income}},
-%     xmin=0, xmax=1,
-%     ymin=4000, ymax=5300,
-%     xtick=data,
-%     ytick={4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300},
-%     ymajorgrids=true,
-%     grid style=dashed,
-%     width=0.7\textwidth,
-%     legend pos=outer north east,
-%     legend style={nodes={scale=1, transform shape}}
-% ]
-%
-% \addplot table {data/grasp/45-1.dat};
-% \addplot table {data/grasp/45-2.dat};
-% \addplot table {data/grasp/45-3.dat};
-% \addplot table {data/grasp/45-4.dat};
-% \addplot table {data/grasp/45-5.dat};
-% \addplot table {data/grasp/45-6.dat};
-% \addplot table {data/grasp/45-7.dat};
-% \addplot table {data/grasp/45-8.dat};
-% \addplot table {data/grasp/45-9.dat};
-% \addplot table {data/grasp/45-10.dat};
-%
-% \legend{dataset=project.45-1.dat,dataset=project.45-2.dat,dataset=project.45-3.dat,dataset=project.45-4.dat,dataset=project.45-5.dat,dataset=project.45-6.dat,dataset=project.45-7.dat,dataset=project.45-8.dat,dataset=project.45-9.dat,dataset=project.45-10.dat}
-%
-% \end{axis}
-% \end{tikzpicture}
-% \captionsetup{labelformat=empty}
-% \caption{Figure 4.1}
-% \label{fig:fig41}
-% \end{figure}
-%
-% \begin{table}[H]
-% \centering
-% \begin{tabular}{||c c||}
-%  \hline
-%  Dataset & \bm{$\alpha$} for $Solution^{best}$ \\ [0.5ex]
-%  \hline\hline
-% project.45-1.dat & 0  \\
-% project.45-2.dat & 0  \\
-% project.45-3.dat & 0.3  \\
-% project.45-4.dat & 0  \\
-% project.45-5.dat & 0.1  \\
-% project.45-6.dat & 0  \\
-% project.45-7.dat & 0.1  \\
-% project.45-8.dat & 0  \\
-% project.45-9.dat & 0.4  \\
-% project.45-10.dat & 0.2  \\ [1ex]
-%  \hline
-% \end{tabular}
-% \captionsetup{labelformat=empty}
-% \caption{Table 4.1}
-% \label{table41}
-% \end{table}
-%
-% \noindent As shown in figure \nameref{fig:fig41} and table \nameref{table41}, a better solution is most likely achieved when \bm{$\alpha$} is set from 0 to 0.1. \textbf{In the following experiments, we will set \bm{$\alpha$} equal to 0.1 when conducting the GRASP method to give a good balance between quality and randomness}.
-%
-%
-% \subsection{Solving Time}
-%
-% As shown in \nameref{fig:fig42} the ILP model takes approximately 11 to 75 minutes to reach the optimal solution, while the Greedy method requires less than 200 milliseconds. This means the Greedy method is roughly 10000 times faster than the ILP model. \\
-% The Local Search method takes about 20 seconds to solve the problem.
-% Additionally, when GRASP is executed with 10 iterations and followed by the Local Search procedure, it takes about ten times longer than the Local Search method alone. \\
-% Furthermore, when GRASP is executed with 100 iterations and not followed by the Local Search procedure, it takes around 25 seconds to solve the problem.\\
-% As demonstrated in \nameref{fig:fig43}, the time required to solve the ILP model varies significantly. At times, we may be fortunate enough to obtain the optimal solution quickly. Specifically, if the number of members is small (fewer than 42), we can effectively use the ILP model to achieve the optimal solution.
-%
-% \begin{figure}[H]
-%
-% \begin{tikzpicture}[]
-% \begin{axis}[
-%     title={\textbf{Solving Time (10 datasets with 45 members)}},
-%     x tick label style={
-%         /pgf/number format/1000 sep=},
-%     ylabel=\textbf{Solving Time} ($\mathbf{s})$,
-%     xlabel=\textbf{Dataset Number},
-%     ybar interval=0.8,
-%     xtick=data,
-%     bar width = 10pt,
-%     ymode=log,
-%     ymax=10000,
-%     bar shift=0pt,
-%     log origin=infty,
-%     legend pos=outer north east,
-%     width=0.7\textwidth,
-%     legend style={nodes={scale=0.8, transform shape}}
-% ]
-%
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/45members/solving_time_greedy.dat};
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/45members/solving_time_grasp.dat};
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/45members/solving_time_ls.dat};
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/45members/solving_time_grasp_with_ls.dat};
-%
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/45members/solving_time_cplex.dat};
-%
-% \legend{Greedy,GRASP(100 Iter. w/o local search \bm{$\alpha$} = 0.1),Local Search,GRASP(10 Iter. w/ local search \bm{$\alpha$} = 0.1),ILP}
-% \end{axis}
-% \end{tikzpicture}
-% \captionsetup{labelformat=empty}
-% \caption{Figure 4.2}
-% \label{fig:fig42}
-% \end{figure}
-%
-%
-% \begin{figure}[H]
-%
-% \begin{tikzpicture}[]
-% \begin{axis}[
-%     title={\textbf{Solving Time (39 to 45 members)}},
-%     x tick label style={
-%         /pgf/number format/1000 sep=},
-%     ylabel=\textbf{Solving Time } ($\mathbf{s})$,
-%     xlabel=\textbf{Members},
-%     ybar interval=0.8,
-%     xtick=data,
-%     bar width = 10pt,
-%     ymode=log,
-%     ymax=10000,
-%     bar shift=0pt,
-%     log origin=infty,
-%     legend pos=outer north east,
-%     width=0.7\textwidth,
-%     legend style={nodes={scale=0.8, transform shape}}
-% ]
-%
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/variable_members/solving_time_greedy.dat};
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/variable_members/solving_time_grasp.dat};
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/variable_members/solving_time_ls.dat};
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/variable_members/solving_time_grasp_with_ls.dat};
-%
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/variable_members/solving_time_cplex.dat};
-%
-% \legend{Greedy,GRASP(100 Iter. w/o local search \bm{$\alpha$} = 0.1),Local Search,GRASP(10 Iter. w/ local search \bm{$\alpha$} = 0.1),ILP}
-% \end{axis}
-% \end{tikzpicture}
-% \captionsetup{labelformat=empty}
-% \caption{Figure 4.3}
-% \label{fig:fig43}
-% \end{figure}
-%
-%
-%
-%
-%
-% \subsection{Solving Quality}
-%
-%
-% \begin{figure}[H]
-% \begin{tikzpicture}
-% \begin{axis}[
-%     title={\textbf{Quality of Solutions (10 datasets with 45 members)}},
-%     xlabel=\textbf{{Dataset Number}},
-%     ylabel=\textbf{{Total Income}},
-%     xmin=1, xmax=10,
-%     ymin=4000, ymax=5300,
-%     xtick=data,
-%     ytick={4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300},
-%     ymajorgrids=true,
-%     grid style=dashed,
-%     width=0.7\textwidth,
-%     legend pos=outer north east,
-%     legend style={nodes={scale=0.8, transform shape}}
-% ]
-%
-% \addplot[green,thick,mark=triangle] table {data/45members/objective_greedy.dat};
-% \addplot[blue,thick,mark=triangle] table {data/45members/objective_grasp.dat};
-% \addplot[brown,thick,mark=triangle] table {data/45members/objective_ls.dat};
-% \addplot[black,thick,mark=triangle] table {data/45members/objective_grasp_with_ls.dat};
-% \addplot[red,thick,mark=square*] table {data/45members/objective_cplex.dat};
-%
-%
-% \legend{Greedy,GRASP(100 Iter. w/o local search  $\alpha = 0.1$),Local Search,GRASP(10 Iter. w/ local search $\alpha = 0.1$),ILP(Optimal)}
-%
-% \end{axis}
-% \end{tikzpicture}
-% \captionsetup{labelformat=empty}
-% \caption{Figure 4.4}
-% \label{fig:fig44}
-% \end{figure}
-%
-%
-% \begin{figure}[H]
-% \begin{tikzpicture}
-% \begin{axis}[
-%     title={\textbf{Quality of Solutions (39 to 45 members)}},
-%     xlabel=\textbf{{Members}},
-%     ylabel=\textbf{{Total Income}},
-%     xmin=39, xmax=45,
-%     ymin=3500, ymax=5200,
-%     xtick=data,
-%     ytick={3500,3600,3700,3800,3900,4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200},
-%     ymajorgrids=true,
-%     grid style=dashed,
-%     width=0.7\textwidth,
-%     legend pos=outer north east,
-%     legend style={nodes={scale=0.8, transform shape}}
-% ]
-%
-% \addplot[green,thick,mark=triangle] table {data/variable_members/objective_greedy.dat};
-% \addplot[blue,thick,mark=triangle] table {data/variable_members/objective_grasp.dat};
-% \addplot[brown,thick,mark=triangle] table {data/variable_members/objective_ls.dat};
-% \addplot[black,thick,mark=triangle] table {data/variable_members/objective_grasp_with_ls.dat};
-% \addplot[red,thick,mark=square*] table {data/variable_members/objective_cplex.dat};
-%
-%
-% \legend{Greedy,GRASP(100 Iter. w/o local search  $\alpha = 0.1$),Local Search,GRASP(10 Iter. w/ local search $\alpha = 0.1$),ILP(Optimal)}
-%
-% \end{axis}
-% \end{tikzpicture}
-% \captionsetup{labelformat=empty}
-% \caption{Figure 4.5}
-% \label{fig:fig45}
-% \end{figure}
-%
-% \nameref{fig:fig44} and \nameref{fig:fig45} shows that the Greedy approach yields the worst solution. In contrast, both GRASP (100 iterations without local search) and Local Search provide similar results. Among the heuristic methods, GRASP (10 iterations with local search) offers the best solution.
+\section{Experiment Result Analysis}
+
+\subsubsection{Experiment Dataset And Environment}
+
+16 data files are generated in the folder \textit{src/project/testdata} with prefix \textit{project.\{39-44\}-1} and \textit{project.45-\{1-10\}}, containing 39 to 45 members for each dataset.\\
+These experiments were conducted on an Apple MacBook Pro laptop with an Apple M2 chip and 8GB of memory. Solving times may vary slightly on other computers, particularly for the ILP model.
+
+
+\subsection{Parameter Tuning For GRASP}
+
+We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 45 members without conducting the local search procedure, and the maximum iterations for the constructive phase is set to 100.
+
+\begin{figure}[H]
+\begin{tikzpicture}
+\begin{axis}[
+    title={\textbf{Quality of Solutions (100 iter. w/o local search phase)}},
+    xlabel=\bm{$\alpha$},
+    ylabel=\textbf{\textit{Total Income}},
+    xmin=0, xmax=1,
+    ymin=4000, ymax=5300,
+    xtick=data,
+    ytick={4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300},
+    ymajorgrids=true,
+    grid style=dashed,
+    width=0.7\textwidth,
+    legend pos=outer north east,
+    legend style={nodes={scale=1, transform shape}}
+]
+
+\addplot table {data/grasp/45-1.dat};
+\addplot table {data/grasp/45-2.dat};
+\addplot table {data/grasp/45-3.dat};
+\addplot table {data/grasp/45-4.dat};
+\addplot table {data/grasp/45-5.dat};
+\addplot table {data/grasp/45-6.dat};
+\addplot table {data/grasp/45-7.dat};
+\addplot table {data/grasp/45-8.dat};
+\addplot table {data/grasp/45-9.dat};
+\addplot table {data/grasp/45-10.dat};
+
+\legend{dataset=project.45-1.dat,dataset=project.45-2.dat,dataset=project.45-3.dat,dataset=project.45-4.dat,dataset=project.45-5.dat,dataset=project.45-6.dat,dataset=project.45-7.dat,dataset=project.45-8.dat,dataset=project.45-9.dat,dataset=project.45-10.dat}
+    
+\end{axis}
+\end{tikzpicture}
+\captionsetup{labelformat=empty}
+\caption{Figure 4.1}
+\label{fig:fig41}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{||c c||} 
+ \hline
+ Dataset & \bm{$\alpha$} for $Solution^{best}$ \\ [0.5ex] 
+ \hline\hline
+project.45-1.dat & 0  \\ 
+project.45-2.dat & 0  \\
+project.45-3.dat & 0.3  \\
+project.45-4.dat & 0  \\
+project.45-5.dat & 0.1  \\
+project.45-6.dat & 0  \\
+project.45-7.dat & 0.1  \\
+project.45-8.dat & 0  \\
+project.45-9.dat & 0.4  \\
+project.45-10.dat & 0.2  \\ [1ex] 
+ \hline
+\end{tabular}
+\captionsetup{labelformat=empty}
+\caption{Table 4.1}
+\label{table41}
+\end{table}
+
+\noindent As shown in figure \nameref{fig:fig41} and table \nameref{table41}, a better solution is most likely achieved when \bm{$\alpha$} is set from 0 to 0.1. \textbf{In the following experiments, we will set \bm{$\alpha$} equal to 0.1 when conducting the GRASP method to give a good balance between quality and randomness}.
+
+
+\subsection{Solving Time}
+
+As shown in \nameref{fig:fig42} the ILP model takes approximately 11 to 75 minutes to reach the optimal solution, while the Greedy method requires less than 200 milliseconds. This means the Greedy method is roughly 10000 times faster than the ILP model. \\
+The Local Search method takes about 20 seconds to solve the problem.
+Additionally, when GRASP is executed with 10 iterations and followed by the Local Search procedure, it takes about ten times longer than the Local Search method alone. \\
+Furthermore, when GRASP is executed with 100 iterations and not followed by the Local Search procedure, it takes around 25 seconds to solve the problem.\\
+As demonstrated in \nameref{fig:fig43}, the time required to solve the ILP model varies significantly. At times, we may be fortunate enough to obtain the optimal solution quickly. Specifically, if the number of members is small (fewer than 42), we can effectively use the ILP model to achieve the optimal solution.
+
+\begin{figure}[H]
+
+\begin{tikzpicture}[]
+\begin{axis}[
+    title={\textbf{Solving Time (10 datasets with 45 members)}},
+    x tick label style={
+        /pgf/number format/1000 sep=},
+    ylabel=\textbf{Solving Time} ($\mathbf{s})$,
+    xlabel=\textbf{Dataset Number},
+    ybar interval=0.8,
+    xtick=data,
+    bar width = 10pt,
+    ymode=log,
+    ymax=10000,
+    bar shift=0pt,
+    log origin=infty,
+    legend pos=outer north east,
+    width=0.7\textwidth,
+    legend style={nodes={scale=0.8, transform shape}}
+]
+
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/45members/solving_time_greedy.dat};
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/45members/solving_time_grasp.dat};
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/45members/solving_time_ls.dat};
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/45members/solving_time_grasp_with_ls.dat};
+
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/45members/solving_time_cplex.dat};
+
+\legend{Greedy,GRASP(100 Iter. w/o local search \bm{$\alpha$} = 0.1),Local Search,GRASP(10 Iter. w/ local search \bm{$\alpha$} = 0.1),ILP}
+\end{axis}
+\end{tikzpicture}
+\captionsetup{labelformat=empty}
+\caption{Figure 4.2}
+\label{fig:fig42}
+\end{figure}
+
+
+\begin{figure}[H]
+
+\begin{tikzpicture}[]
+\begin{axis}[
+    title={\textbf{Solving Time (39 to 45 members)}},
+    x tick label style={
+        /pgf/number format/1000 sep=},
+    ylabel=\textbf{Solving Time } ($\mathbf{s})$,
+    xlabel=\textbf{Members},
+    ybar interval=0.8,
+    xtick=data,
+    bar width = 10pt,
+    ymode=log,
+    ymax=10000,
+    bar shift=0pt,
+    log origin=infty,
+    legend pos=outer north east,
+    width=0.7\textwidth,
+    legend style={nodes={scale=0.8, transform shape}}
+]
+
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/variable_members/solving_time_greedy.dat};
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/variable_members/solving_time_grasp.dat};
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/variable_members/solving_time_ls.dat};
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/variable_members/solving_time_grasp_with_ls.dat};
+
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/variable_members/solving_time_cplex.dat};
+
+\legend{Greedy,GRASP(100 Iter. w/o local search \bm{$\alpha$} = 0.1),Local Search,GRASP(10 Iter. w/ local search \bm{$\alpha$} = 0.1),ILP}
+\end{axis}
+\end{tikzpicture}
+\captionsetup{labelformat=empty}
+\caption{Figure 4.3}
+\label{fig:fig43}
+\end{figure}
+
+
+
+
+
+\subsection{Solving Quality}
+
+
+\begin{figure}[H]
+\begin{tikzpicture}
+\begin{axis}[
+    title={\textbf{Quality of Solutions (10 datasets with 45 members)}},
+    xlabel=\textbf{{Dataset Number}},
+    ylabel=\textbf{{Total Income}},
+    xmin=1, xmax=10,
+    ymin=4000, ymax=5300,
+    xtick=data,
+    ytick={4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300},
+    ymajorgrids=true,
+    grid style=dashed,
+    width=0.7\textwidth,
+    legend pos=outer north east,
+    legend style={nodes={scale=0.8, transform shape}}
+]
+
+\addplot[green,thick,mark=triangle] table {data/45members/objective_greedy.dat};
+\addplot[blue,thick,mark=triangle] table {data/45members/objective_grasp.dat};
+\addplot[brown,thick,mark=triangle] table {data/45members/objective_ls.dat};
+\addplot[black,thick,mark=triangle] table {data/45members/objective_grasp_with_ls.dat};
+\addplot[red,thick,mark=square*] table {data/45members/objective_cplex.dat};
+
+
+\legend{Greedy,GRASP(100 Iter. w/o local search  $\alpha = 0.1$),Local Search,GRASP(10 Iter. w/ local search $\alpha = 0.1$),ILP(Optimal)}
+    
+\end{axis}
+\end{tikzpicture}
+\captionsetup{labelformat=empty}
+\caption{Figure 4.4}
+\label{fig:fig44}
+\end{figure}
+
+
+\begin{figure}[H]
+\begin{tikzpicture}
+\begin{axis}[
+    title={\textbf{Quality of Solutions (39 to 45 members)}},
+    xlabel=\textbf{{Members}},
+    ylabel=\textbf{{Total Income}},
+    xmin=39, xmax=45,
+    ymin=3500, ymax=5200,
+    xtick=data,
+    ytick={3500,3600,3700,3800,3900,4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200},
+    ymajorgrids=true,
+    grid style=dashed,
+    width=0.7\textwidth,
+    legend pos=outer north east,
+    legend style={nodes={scale=0.8, transform shape}}
+]
+
+\addplot[green,thick,mark=triangle] table {data/variable_members/objective_greedy.dat};
+\addplot[blue,thick,mark=triangle] table {data/variable_members/objective_grasp.dat};
+\addplot[brown,thick,mark=triangle] table {data/variable_members/objective_ls.dat};
+\addplot[black,thick,mark=triangle] table {data/variable_members/objective_grasp_with_ls.dat};
+\addplot[red,thick,mark=square*] table {data/variable_members/objective_cplex.dat};
+
+
+\legend{Greedy,GRASP(100 Iter. w/o local search  $\alpha = 0.1$),Local Search,GRASP(10 Iter. w/ local search $\alpha = 0.1$),ILP(Optimal)}
+    
+\end{axis}
+\end{tikzpicture}
+\captionsetup{labelformat=empty}
+\caption{Figure 4.5}
+\label{fig:fig45}
+\end{figure}
+
+\nameref{fig:fig44} and \nameref{fig:fig45} shows that the Greedy approach yields the worst solution. In contrast, both GRASP (100 iterations without local search) and Local Search provide similar results. Among the heuristic methods, GRASP (10 iterations with local search) offers the best solution.
 
 
 \subsection{Experiment Conclusion}
