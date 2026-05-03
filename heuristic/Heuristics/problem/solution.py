@@ -24,7 +24,7 @@ class Solution(_Solution):
         self.pipes = pipes
         self.specialists = specialists
 
-        self.group = [0] * nBases          # partition: 0 or 1 for each base
+        self.group = [0] * nBases           # partition: 0 or 1 for each base
         self.cutPipeIds = set()             # ids of pipes crossing the partition
         self.specialistToPipe = {}          # specId -> pipeId
         self.pipeToSpecialists = {}         # pipeId -> [specId, ...]
@@ -33,8 +33,6 @@ class Solution(_Solution):
 
     def clone(self):
         return copy.deepcopy(self)
-
-    # ---- Partition management ----
 
     def setGroup(self, baseId, groupId):
         self.group[baseId] = groupId
@@ -53,8 +51,6 @@ class Solution(_Solution):
         hasOne = any(g == 1 for g in self.group)
         return hasZero and hasOne
 
-    # ---- Cut computation ----
-
     def computeCutPipes(self):
         self.cutPipeIds = set()
         for pipe in self.pipes:
@@ -64,7 +60,6 @@ class Solution(_Solution):
     def getCutPipeIds(self):
         return self.cutPipeIds
 
-    # ---- Specialist assignment (greedy knapsack) ----
 
     def assignSpecialistsGreedy(self):
         """Assign specialists to cut pipes using a greedy knapsack approach.
@@ -110,7 +105,6 @@ class Solution(_Solution):
         self.fitness = sum(self.specialists[sId].getCost() for sId in self.specialistToPipe)
         return True
 
-    # ---- Full evaluation ----
 
     def evaluate(self):
         """Recompute cut pipes and reassign specialists. Returns True if feasible."""
@@ -121,7 +115,6 @@ class Solution(_Solution):
         self.computeCutPipes()
         return self.assignSpecialistsGreedy()
 
-    # ---- Output ----
 
     def __str__(self):
         strSolution = 'z = %10.8f;\n' % self.fitness

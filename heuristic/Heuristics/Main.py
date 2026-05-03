@@ -44,20 +44,21 @@ class Main:
             if self.config.verbose: print('Solving the Problem...')
             if instance.checkInstance():
                 initialSolution = None
-                if self.config.solver == 'Greedy' or self.config.solver == 'Random':
+                if self.config.solver == 'Greedy':
                     solver = Solver_Greedy(self.config, instance)
                 elif self.config.solver == 'GRASP':
                     solver = Solver_GRASP(self.config, instance)
-                elif self.config.solver == 'BRKGA':
-                    verbose = self.config.verbose
-                    self.config.verbose = False
-                    greedy = Solver_Greedy(self.config, instance)
-                    initialSolution = greedy.solve(solver='Greedy', localSearch=False)
-                    self.config.verbose = verbose
-                    decoder = Decoder(self.config, instance)
-                    solver = Solver_BRKGA(decoder, instance)
+                # elif self.config.solver == 'BRKGA':
+                #     verbose = self.config.verbose
+                #     self.config.verbose = False
+                #     greedy = Solver_Greedy(self.config, instance)
+                #     initialSolution = greedy.solve(solver='Greedy', localSearch=False)
+                #     self.config.verbose = verbose
+                #     decoder = Decoder(self.config, instance)
+                #     solver = Solver_BRKGA(decoder, instance)
                 else:
                     raise AMMMException('Solver %s not supported.' % str(self.config.solver))
+
                 solution = solver.solve(solution=initialSolution)
                 print(solution)
                 solution.saveToFile(self.config.solutionFile)
