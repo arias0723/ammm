@@ -59,7 +59,7 @@ class Main:
                 else:
                     raise AMMMException('Solver %s not supported.' % str(self.config.solver))
                 solution = solver.solve(solution=initialSolution)
-                print('Solution (CPUid: [TasksId]): %s' % str(solution.cpuIdToListTaskId))
+                print(solution)
                 solution.saveToFile(self.config.solutionFile)
             else:
                 print('Instance is infeasible.')
@@ -73,7 +73,7 @@ class Main:
 
 
 if __name__ == '__main__':
-    parser = ArgumentParser(description='AMMM Lab Heuristics')
+    parser = ArgumentParser(description='AMMM Project Heuristics')
     parser.add_argument('-c', '--configFile', nargs='?', type=Path,
                         default=Path(__file__).parent / 'config/config.dat', help='specifies the config file')
     args = parser.parse_args()
@@ -84,8 +84,8 @@ if __name__ == '__main__':
     ValidateInputData.validate(inputData)
 
     if config.verbose:
-        print('AMMM Lab Heuristics')
-        print('-------------------')
+        print('AMMM Project Heuristics')
+        print('-----------------------')
         print('Config file %s' % args.configFile)
         print('Input Data file %s' % config.inputDataFile)
 

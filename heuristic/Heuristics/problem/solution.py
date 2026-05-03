@@ -1,153 +1,147 @@
 """
-AMMM Lab Heuristics
-Representation of a solution instance
-Copyright 2020 Luis Velasco.
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+AMMM Project Heuristics
+Solution for the pipe-destruction (graph cut) problem.
 """
 
 import copy
 from Heuristics.solution import _Solution
 
 
-# This class stores the load of the highest loaded CPU
-# when a task is assigned to a CPU.
 class Assignment(object):
-    def __init__(self, taskId, cpuId, highestLoad):
-        self.taskId = taskId
-        self.cpuId = cpuId
-        self.highestLoad = highestLoad
+    """Represents a candidate move: reassigning a base to a new group."""
+    def __init__(self, baseId, newGroup, cost):
+        self.baseId = baseId
+        self.newGroup = newGroup
+        self.cost = cost
 
     def __str__(self):
-        return "<t_%d, c_%d>: highestLoad: %.2f%%" % (self.taskId, self.cpuId, self.highestLoad*100)
+        return "<base_%d -> group_%d>: cost: %.2f" % (self.baseId, self.newGroup, self.cost)
 
 
-# Solution includes functions to manage the solution, to perform feasibility
-# checks and to dump the solution into a string or file.
 class Solution(_Solution):
-    def __init__(self, tasks, cpus, capacityPerCPUId):
-        self.tasks = tasks
-        self.cpus = cpus
-        self.taskIdToCPUId = {}  # hash table: task Id => CPU Id
-        self.cpuIdToListTaskId = {}  # hash table: CPU Id => list<task Id>
-        # vector of available capacities per CPU initialized as a copy of maxCapacityPerCPUId vector.
-        self.availCapacityPerCPUId = copy.deepcopy(capacityPerCPUId)
-        # vector of loads per CPU (nCPUs entries initialized to 0.0) 
-        self.loadPerCPUId = [0.0] * len(cpus)
+    def __init__(self, nBases, pipes, specialists):
+        self.nBases = nBases
+        self.pipes = pipes
+        self.specialists = specialists
+
+        self.group = [0] * nBases          # partition: 0 or 1 for each base
+        self.cutPipeIds = set()             # ids of pipes crossing the partition
+        self.specialistToPipe = {}          # specId -> pipeId
+        self.pipeToSpecialists = {}         # pipeId -> [specId, ...]
+
         super().__init__()
 
-    def updateHighestLoad(self):
+    def clone(self):
+        return copy.deepcopy(self)
+
+    # ---- Partition management ----
+
+    def setGroup(self, baseId, groupId):
+        self.group[baseId] = groupId
+
+    def getGroup(self, baseId):
+        return self.group[baseId]
+
+    def getPartition(self):
+        return self.group[:]
+
+    def setPartition(self, partition):
+        self.group = partition[:]
+
+    def isValidPartition(self):
+        hasZero = any(g == 0 for g in self.group)
+        hasOne = any(g == 1 for g in self.group)
+        return hasZero and hasOne
+
+    # ---- Cut computation ----
+
+    def computeCutPipes(self):
+        self.cutPipeIds = set()
+        for pipe in self.pipes:
+            if self.group[pipe.getBaseI()] != self.group[pipe.getBaseJ()]:
+                self.cutPipeIds.add(pipe.getId())
+
+    def getCutPipeIds(self):
+        return self.cutPipeIds
+
+    # ---- Specialist assignment (greedy knapsack) ----
+
+    def assignSpecialistsGreedy(self):
+        """Assign specialists to cut pipes using a greedy knapsack approach.
+        Pipes are processed by demand descending; specialists by cost-effectiveness ascending."""
+        self.specialistToPipe = {}
+        self.pipeToSpecialists = {}
         self.fitness = 0.0
-        for cpu in self.cpus:
-            cpuId = cpu.getId()
-            totalCapacity = cpu.getTotalCapacity()
-            usedCapacity = totalCapacity - self.availCapacityPerCPUId[cpuId]
-            load = usedCapacity / totalCapacity
-            self.loadPerCPUId[cpuId] = load
-            self.fitness = max(self.fitness, load)
 
-    def isFeasibleToAssignTaskToCPU(self, taskId, cpuId):
-        if taskId in self.taskIdToCPUId:
+        cutPipes = sorted(
+            [p for p in self.pipes if p.getId() in self.cutPipeIds],
+            key=lambda p: p.getDemand(), reverse=True
+        )
+        if not cutPipes:
+            self.makeInfeasible()
             return False
 
-        if self.availCapacityPerCPUId[cpuId] < self.tasks[taskId].getTotalResources():
+        sortedSpecs = sorted(self.specialists, key=lambda s: s.getCostEffectiveness())
+        usedSpecialists = set()
+
+        for pipe in cutPipes:
+            demand = pipe.getDemand()
+            pipeId = pipe.getId()
+            assigned = []
+            coveredCapacity = 0
+
+            for spec in sortedSpecs:
+                if spec.getId() in usedSpecialists:
+                    continue
+                assigned.append(spec.getId())
+                coveredCapacity += spec.getCapacity()
+                usedSpecialists.add(spec.getId())
+                if coveredCapacity >= demand:
+                    break
+
+            if coveredCapacity < demand:
+                self.makeInfeasible()
+                return False
+
+            self.pipeToSpecialists[pipeId] = assigned
+            for sId in assigned:
+                self.specialistToPipe[sId] = pipeId
+
+        self.fitness = sum(self.specialists[sId].getCost() for sId in self.specialistToPipe)
+        return True
+
+    # ---- Full evaluation ----
+
+    def evaluate(self):
+        """Recompute cut pipes and reassign specialists. Returns True if feasible."""
+        self.feasible = True
+        if not self.isValidPartition():
+            self.makeInfeasible()
             return False
+        self.computeCutPipes()
+        return self.assignSpecialistsGreedy()
 
-        return True
-
-    def isFeasibleToUnassignTaskFromCPU(self, taskId, cpuId):
-        if taskId not in self.taskIdToCPUId: return False
-        if cpuId not in self.cpuIdToListTaskId: return False
-        if taskId not in self.cpuIdToListTaskId[cpuId]: return False
-        return True
-
-    def getCPUIdAssignedToTaskId(self, taskId):
-        if taskId not in self.taskIdToCPUId: return None
-        return self.taskIdToCPUId[taskId]
-
-    def assign(self, taskId, cpuId):
-        if not self.isFeasibleToAssignTaskToCPU(taskId, cpuId):return False
-
-        self.taskIdToCPUId[taskId] = cpuId
-        if cpuId not in self.cpuIdToListTaskId: self.cpuIdToListTaskId[cpuId] = []
-        self.cpuIdToListTaskId[cpuId].append(taskId)
-        self.availCapacityPerCPUId[cpuId] -= self.tasks[taskId].getTotalResources()
-
-        self.updateHighestLoad()
-        return True
-
-    def unassign(self, taskId, cpuId):
-        if not self.isFeasibleToUnassignTaskFromCPU(taskId, cpuId): return False
-
-        del self.taskIdToCPUId[taskId]
-        self.cpuIdToListTaskId[cpuId].remove(taskId)
-        self.availCapacityPerCPUId[cpuId] += self.tasks[taskId].getTotalResources()
-
-        self.updateHighestLoad()
-        return True
-
-    def findFeasibleAssignments(self, taskId):
-        feasibleAssignments = []
-        for cpu in self.cpus:
-            cpuId = cpu.getId()
-            feasible = self.assign(taskId, cpuId)
-            if not feasible: continue
-            assignment = Assignment(taskId, cpuId, self.fitness)
-            feasibleAssignments.append(assignment)
-
-            self.unassign(taskId, cpuId)
-
-        return feasibleAssignments
-
-    def findBestFeasibleAssignment(self, taskId):
-        bestAssignment = Assignment(taskId, None, float('infinity'))
-        for cpu in self.cpus:
-            cpuId = cpu.getId()
-            feasible = self.assign(taskId, cpuId)
-            if not feasible: continue
-
-            curHighestLoad = self.fitness
-            if bestAssignment.highestLoad > curHighestLoad:
-                bestAssignment.cpuId = cpuId
-                bestAssignment.highestLoad = curHighestLoad
-
-            self.unassign(taskId, cpuId)
-
-        return bestAssignment
+    # ---- Output ----
 
     def __str__(self):
         strSolution = 'z = %10.8f;\n' % self.fitness
-        if self.fitness == float('inf'): return strSolution
+        if self.fitness == float('inf'):
+            return strSolution
 
-        # Xtc: decision variable containing the assignment of tasks to CPUs
-        # pre-fill with no assignments (all-zeros)
-        xtc = []
-        for t in range(0, len(self.tasks)):  # t = 0..(nTasks-1)
-            xtcEntry = [0] * len(self.cpus)  # results in a vector of 0's with nCPUs elements
-            xtc.append(xtcEntry)
+        strSolution += '\nDestroyed pipes:\n'
+        for pipe in self.pipes:
+            if pipe.getId() in self.cutPipeIds:
+                specs = self.pipeToSpecialists.get(pipe.getId(), [])
+                strSolution += '  Pipe {%d,%d} (demand=%d) <- specialists: %s\n' % (
+                    pipe.getBaseI(), pipe.getBaseJ(), pipe.getDemand(),
+                    ', '.join(str(s) for s in specs)
+                )
 
-        # iterate over hash table taskIdToCPUId and fill in xtc
-        for taskId, cpuId in self.taskIdToCPUId.items():
-            xtc[taskId][cpuId] = 1
-
-        strSolution += 'xtc = [\n'
-        for xtcEntry in xtc:
-            strSolution += '\t[ '
-            for xtcValue in xtcEntry:
-                strSolution += str(xtcValue) + ' '
-            strSolution += ']\n'
-        strSolution += '];\n'
+        group0 = [i for i in range(self.nBases) if self.group[i] == 0]
+        group1 = [i for i in range(self.nBases) if self.group[i] == 1]
+        strSolution += '\nPartition:\n'
+        strSolution += '  Group 0: {%s}\n' % ', '.join(str(b) for b in group0)
+        strSolution += '  Group 1: {%s}\n' % ', '.join(str(b) for b in group1)
 
         return strSolution
 

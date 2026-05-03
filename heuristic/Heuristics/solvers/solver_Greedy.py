@@ -1,64 +1,106 @@
 '''
-AMMM Lab Heuristics
-Greedy solver
-Copyright 2020 Luis Velasco.
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+AMMM Project Heuristics
+Greedy solver for the pipe-destruction problem.
+Karger-inspired: contracts heaviest pipes (keeps them), leaving lightest pipes as the cut.
+Specialist assignment uses greedy knapsack.
 '''
 
-import random, time
+import random
+import time
 from Heuristics.solver import _Solver
 from Heuristics.solvers.localSearch import LocalSearch
 
 
-# Inherits from the parent abstract solver.
+class UnionFind(object):
+    """Disjoint-set / Union-Find with path compression and union by rank."""
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank = [0] * n
+        self.numComponents = n
+
+    def find(self, x):
+        root = x
+        while self.parent[root] != root:
+            root = self.parent[root]
+        while self.parent[x] != root:
+            next_x = self.parent[x]
+            self.parent[x] = root
+            x = next_x
+        return root
+
+    def union(self, x, y):
+        px, py = self.find(x), self.find(y)
+        if px == py:
+            return False
+        if self.rank[px] < self.rank[py]:
+            px, py = py, px
+        self.parent[py] = px
+        if self.rank[px] == self.rank[py]:
+            self.rank[px] += 1
+        self.numComponents -= 1
+        return True
+
+    def connected(self, x, y):
+        return self.find(x) == self.find(y)
+
+    def getComponents(self, n):
+        components = {}
+        for i in range(n):
+            root = self.find(i)
+            if root not in components:
+                components[root] = []
+            components[root].append(i)
+        return components
+
+
 class Solver_Greedy(_Solver):
 
-    def _selectCandidate(self, candidateList):
-        if self.config.solver == 'Greedy':
-            # sort candidate assignments by highestLoad in ascending order
-            sortedCandidateList = sorted(candidateList, key=lambda x: x.highestLoad)
-            # choose assignment with minimum highest load
-            return sortedCandidateList[0]
-        return random.choice(candidateList)
-
     def construction(self):
-        # get an empty solution for the problem
         solution = self.instance.createSolution()
+        pipes = self.instance.getPipes()
+        nBases = self.instance.getNumBases()
 
-        # get tasks and sort them by their total required resources in descending order
-        tasks = self.instance.getTasks()
-        sortedTasks = sorted(tasks, key=lambda t: t.getTotalResources(), reverse=True)
+        uf = UnionFind(nBases)
 
+        # Karger-inspired: sort pipes by demand descending (contract heaviest first = keep them)
+        sortedPipes = sorted(pipes, key=lambda p: p.getDemand(), reverse=True)
 
-        # for each task taken in sorted order
-        for task in sortedTasks:
-            taskId = task.getId()
+        mergesNeeded = nBases - 2
+        mergesDone = 0
 
-            # compute feasible assignments
-            candidateList = solution.findFeasibleAssignments(taskId)
-
-            # no candidate assignments => no feasible assignment found
-            if not candidateList:
-                solution.makeInfeasible()
+        for pipe in sortedPipes:
+            if mergesDone >= mergesNeeded:
                 break
+            baseI, baseJ = pipe.getBaseI(), pipe.getBaseJ()
+            if not uf.connected(baseI, baseJ):
+                uf.union(baseI, baseJ)
+                mergesDone += 1
 
-            # select assignment
-            candidate = self._selectCandidate(candidateList)
+        # If graph is sparse and we still have > 2 components, merge remaining
+        if uf.numComponents > 2:
+            components = uf.getComponents(nBases)
+            roots = list(components.keys())
+            while uf.numComponents > 2:
+                uf.union(roots[0], roots[-1])
+                roots.pop()
 
-            # assign the current task to the CPU that resulted in a minimum highest load
-            solution.assign(taskId, candidate.cpuId)
+        if uf.numComponents < 2:
+            solution.makeInfeasible()
+            return solution
+
+        # Build partition from the 2 final components
+        components = uf.getComponents(nBases)
+        groupId = 0
+        for root, members in components.items():
+            for base in members:
+                solution.setGroup(base, groupId)
+            groupId += 1
+
+        # Compute cut and assign specialists via greedy knapsack
+        solution.computeCutPipes()
+        feasible = solution.assignSpecialistsGreedy()
+        if not feasible:
+            solution.makeInfeasible()
 
         return solution
 
@@ -75,10 +117,10 @@ class Solver_Greedy(_Solver):
         self.writeLogLine(float('inf'), 0)
 
         solution = self.construction()
-        if self.config.localSearch:
-            localSearch = LocalSearch(self.config, None)
-            endTime= self.startTime + self.config.maxExecTime
-            solution = localSearch.solve(solution=solution, startTime=self.startTime, endTime=endTime)
+        if self.config.localSearch and solution.isFeasible():
+            ls = LocalSearch(self.config, None)
+            endTime = self.startTime + self.config.maxExecTime
+            solution = ls.solve(solution=solution, startTime=self.startTime, endTime=endTime)
 
         self.elapsedEvalTime = time.time() - self.startTime
         self.writeLogLine(solution.getFitness(), 1)
