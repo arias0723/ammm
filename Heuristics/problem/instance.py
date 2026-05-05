@@ -58,6 +58,8 @@ class Instance(object):
             return False
         if len(self.pipes) == 0:
             return False
+
+        # TODO: look for a better argument of a 'good' instance
         # Can destroy at least one pipe
         totalCapacity = sum(s.getCapacity() for s in self.specialists)
         minDemand = min(p.getDemand() for p in self.pipes)

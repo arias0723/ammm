@@ -1,56 +1,15 @@
 '''
 AMMM Project Heuristics
-Greedy solver for the pipe-destruction problem.
-Karger-inspired: contracts heaviest pipes (keeps them), leaving lightest pipes as the cut.
-Specialist assignment uses greedy knapsack.
+
+Karger-inspired algorithm: contracts heaviest pipes (keeps them), leaving lightest pipes as the cut.
+Specialist assignment uses greedy 0-1 knapsack.
 '''
 
 import random
 import time
 from Heuristics.solver import _Solver
 from Heuristics.solvers.localSearch import LocalSearch
-
-
-class UnionFind(object):
-    """Disjoint-set / Union-Find with path compression and union by rank."""
-    def __init__(self, n):
-        self.parent = list(range(n))
-        self.rank = [0] * n
-        self.numComponents = n
-
-    def find(self, x):
-        root = x
-        while self.parent[root] != root:
-            root = self.parent[root]
-        while self.parent[x] != root:
-            next_x = self.parent[x]
-            self.parent[x] = root
-            x = next_x
-        return root
-
-    def union(self, x, y):
-        px, py = self.find(x), self.find(y)
-        if px == py:
-            return False
-        if self.rank[px] < self.rank[py]:
-            px, py = py, px
-        self.parent[py] = px
-        if self.rank[px] == self.rank[py]:
-            self.rank[px] += 1
-        self.numComponents -= 1
-        return True
-
-    def connected(self, x, y):
-        return self.find(x) == self.find(y)
-
-    def getComponents(self, n):
-        components = {}
-        for i in range(n):
-            root = self.find(i)
-            if root not in components:
-                components[root] = []
-            components[root].append(i)
-        return components
+from Heuristics.util import UnionFind
 
 
 class Solver_Greedy(_Solver):
@@ -60,9 +19,10 @@ class Solver_Greedy(_Solver):
         pipes = self.instance.getPipes()
         nBases = self.instance.getNumBases()
 
+        # Using a UnionFind data structure for efficiency
         uf = UnionFind(nBases)
 
-        # Karger-inspired: sort pipes by demand descending (contract heaviest first = keep them)
+        # Sort pipes by demand descending (contract heaviest first = keep them)
         sortedPipes = sorted(pipes, key=lambda p: p.getDemand(), reverse=True)
 
         mergesNeeded = nBases - 2
@@ -76,7 +36,7 @@ class Solver_Greedy(_Solver):
                 uf.union(baseI, baseJ)
                 mergesDone += 1
 
-        # If graph is sparse and we still have > 2 components, merge remaining
+        # Keep merging until there are only two components (a.k.a gropus) left in the graph
         if uf.numComponents > 2:
             components = uf.getComponents(nBases)
             roots = list(components.keys())
@@ -97,12 +57,13 @@ class Solver_Greedy(_Solver):
             groupId += 1
 
         # Compute cut and assign specialists via greedy knapsack
-        solution.computeCutPipes()
-        feasible = solution.assignSpecialistsGreedy()
+        solution.computePipesToDestroy()
+        feasible = solution.assignSpecialistsToDestroyPipes()
         if not feasible:
             solution.makeInfeasible()
 
         return solution
+
 
     def solve(self, **kwargs):
         self.startTimeMeasure()
@@ -128,5 +89,3 @@ class Solver_Greedy(_Solver):
         self.printPerformance()
 
         return solution
-
-
