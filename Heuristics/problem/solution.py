@@ -62,7 +62,7 @@ class Solution(_Solution):
         self.fitness = 0.0
 
         cutPipes = sorted(
-            [p for p in self.pipes if p.getId() in self.cutPipeIds],
+            [p for p in self.pipes if p.getId() in self.pipeToDestroyIds],
             key=lambda p: p.getDemand(), reverse=True
         )
         if not cutPipes:
