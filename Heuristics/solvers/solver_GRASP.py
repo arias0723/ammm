@@ -1,6 +1,6 @@
 '''
 AMMM Project Heuristics
-GRASP solver for the pipe-destruction problem.
+
 Randomized Karger construction + local search.
 '''
 
@@ -8,7 +8,7 @@ import random
 import time
 from Heuristics.solver import _Solver
 from Heuristics.solvers.localSearch import LocalSearch
-from Heuristics.solvers.solver_Greedy import UnionFind
+from Heuristics.util import UnionFind
 
 
 class Solver_GRASP(_Solver):
@@ -69,7 +69,7 @@ class Solver_GRASP(_Solver):
 
         # Compute cut and assign specialists
         solution.computeCutPipes()
-        feasible = solution.assignSpecialistsGreedy()
+        feasible = solution.assignSpecialistsToDestroyPipes()
         if not feasible:
             solution.makeInfeasible()
 

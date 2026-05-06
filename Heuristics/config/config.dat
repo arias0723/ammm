@@ -13,6 +13,6 @@ verbose              = True;                        # Verbose mode?
 alpha                = 0.7;                 # Alpha parameter for the GRASP solver.
 
 # --- Local Search specific parameters ------------------------------------------------------------------------
-localSearch          = True;                # Enable local search?
+localSearch          = False;                # Enable local search?
 neighborhoodStrategy = TaskExchange;        # Supported Neighborhoods: TaskExchange
 policy               = FirstImprovement;    # Supported Policies: FirstImprovement / BestImprovement
