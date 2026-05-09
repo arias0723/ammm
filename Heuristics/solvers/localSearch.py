@@ -13,7 +13,7 @@ from Heuristics.solver import _Solver
 from AMMMGlobals import AMMMException
 
 
-class LocalSearch2(_Solver):
+class LocalSearch(_Solver):
     def __init__(self, config, instance):
         self.enabled = config.localSearch
         self.policy = config.policy

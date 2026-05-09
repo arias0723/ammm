@@ -7,17 +7,21 @@ Phase 2: Greedy resource allocation of specialists to cut pipes.
 
 import time
 from Heuristics.solver import _Solver
+from Heuristics.solvers.karger import Karger
 from Heuristics.solvers.stoer_wagner import StoerWagner
-from Heuristics.solvers.localSearch2 import LocalSearch2
-from Heuristics.problem.solution2 import Solution2
+from Heuristics.solvers.localSearch import LocalSearch
+from Heuristics.problem.solution import Solution
 
 
-class Solver_Greedy2(_Solver):
+class Solver_Greedy(_Solver):
 
     def _computeMinCut(self):
         pipes = self.instance.getPipes()
         nBases = self.instance.getNumBases()
-        cut_weight, partition = StoerWagner(nBases, pipes)
+        # cut_weight, partition = StoerWagner(nBases, pipes)
+        cut_weight, partition = Karger(nBases, pipes, 1)
+        if self.config.verbose: print('MinCut: ' + str(partition))
+
         return partition
 
     def _getCutPipes(self, partition):
@@ -37,7 +41,7 @@ class Solver_Greedy2(_Solver):
         nBases = self.instance.getNumBases()
         specialists = self.instance.getSpecialists()
 
-        solution = Solution2(nBases, partition, cutPipes, specialists)
+        solution = Solution(nBases, partition, cutPipes, specialists)
 
         if not cutPipes:
             solution.makeInfeasible()
@@ -79,7 +83,7 @@ class Solver_Greedy2(_Solver):
 
         solution = self.construction()
         if self.config.localSearch and solution.isFeasible():
-            ls = LocalSearch2(self.config, None)
+            ls = LocalSearch(self.config, None)
             endTime = self.startTime + self.config.maxExecTime
             solution = ls.solve(solution=solution, startTime=self.startTime, endTime=endTime)
 

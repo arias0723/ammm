@@ -13,11 +13,11 @@ import random
 import time
 from Heuristics.solver import _Solver
 from Heuristics.solvers.stoer_wagner import StoerWagner
-from Heuristics.solvers.localSearch2 import LocalSearch2
-from Heuristics.problem.solution2 import Solution2
+from Heuristics.solvers.localSearch import LocalSearch
+from Heuristics.problem.solution import Solution
 
 
-class Solver_GRASP2(_Solver):
+class Solver_GRASP(_Solver):
 
     def _computeMinCut(self):
         """Find the min-cut partition."""

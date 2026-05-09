@@ -1,6 +1,9 @@
 """
 AMMM Project Heuristics
-Solution for the pipe-destruction (graph cut) problem.
+Solution for the resource-allocation sub-problem (Phase 2).
+
+After Stoer-Wagner determines the min-cut (partition), this solution represents
+the assignment of specialists to the cut pipes (resource allocation).
 """
 
 import copy
@@ -8,130 +11,130 @@ from Heuristics.solution import _Solution
 
 
 class Solution(_Solution):
-    def __init__(self, nBases, pipes, specialists):
+    """
+    Represents a specialist-to-pipe assignment for a fixed set of cut pipes.
+
+    Decision: for each specialist, either unassigned or assigned to exactly one pipe.
+    Feasibility: every pipe's demand must be covered by total capacity of assigned specialists.
+    Objective: minimize total cost of assigned specialists.
+    """
+
+    def __init__(self, nBases, partition, cutPipes, specialists):
+        """
+        Args:
+            nBases: number of bases
+            partition: list[int] of length nBases (0/1 group assignment)
+            cutPipes: list of Pipe objects that cross the partition (to be destroyed)
+            specialists: list of all Specialist objects
+        """
         self.nBases = nBases
-        self.pipes = pipes
+        self.partition = partition[:]
+        self.cutPipes = cutPipes          # fixed set of pipes to destroy
         self.specialists = specialists
 
-        self.group = [0] * nBases                   # partition: 0 or 1 for each base
-        self.pipeToDestroyIds = set()               # ids of pipes crossing the partition
-        self.specialistToPipe = {}                  # specId -> pipeId
-        self.pipeToSpecialists = {}                 # pipeId -> [specId, ...]
+        # Assignment state
+        self.specialistToPipe = {}         # specId -> pipeId (or absent if unassigned)
+        self.pipeToSpecialists = {p.getId(): [] for p in cutPipes}  # pipeId -> [specId, ...]
+        self.pipeRemainingDemand = {p.getId(): p.getDemand() for p in cutPipes}
 
         super().__init__()
 
     def clone(self):
         return copy.deepcopy(self)
 
-    def setGroup(self, baseId, groupId):
-        self.group[baseId] = groupId
+    # ---- Assignment operations ----
 
-    def getGroup(self, baseId):
-        return self.group[baseId]
+    def assign(self, specId, pipeId):
+        """Assign specialist specId to pipe pipeId."""
+        self.specialistToPipe[specId] = pipeId
+        self.pipeToSpecialists[pipeId].append(specId)
+        self.pipeRemainingDemand[pipeId] -= self.specialists[specId].getCapacity()
 
-    def getPartition(self):
-        return self.group[:]
+    def unassign(self, specId):
+        """Remove specialist specId from its current assignment."""
+        if specId not in self.specialistToPipe:
+            return
+        pipeId = self.specialistToPipe[specId]
+        self.pipeToSpecialists[pipeId].remove(specId)
+        self.pipeRemainingDemand[pipeId] += self.specialists[specId].getCapacity()
+        del self.specialistToPipe[specId]
 
-    def setPartition(self, partition):
-        self.group = partition[:]
+    def isSpecialistAssigned(self, specId):
+        return specId in self.specialistToPipe
 
-    # TODO: make this static and reuse!
-    def isValidPartition(self):
-        hasZero = any(g == 0 for g in self.group)
-        hasOne = any(g == 1 for g in self.group)
-        return hasZero and hasOne
+    def getAssignedPipe(self, specId):
+        return self.specialistToPipe.get(specId, None)
 
-    def computePipesToDestroy(self):
-        self.pipeToDestroyIds = set()
-        for pipe in self.pipes:
-            # We should have only two groups in a feasible solution.
-            # Pipes crossing groups are marked for termination!!!
-            if self.group[pipe.getBaseI()] != self.group[pipe.getBaseJ()]:
-                self.pipeToDestroyIds.add(pipe.getId())
+    def getSpecialistsOnPipe(self, pipeId):
+        return self.pipeToSpecialists[pipeId][:]
 
-    def getPipeToDestroyIds(self):
-        return self.pipeToDestroyIds
+    def getUnassignedSpecialists(self):
+        return [s for s in self.specialists if s.getId() not in self.specialistToPipe]
 
+    def getAssignedSpecialists(self):
+        return [s for s in self.specialists if s.getId() in self.specialistToPipe]
 
-    # TODO: improve this strategy to always destroy all pipes with min cost
-    def assignSpecialistsToDestroyPipes(self):
-        """Assign specialists to the cut found and try to destroy all pipes with the best cost.
-         This uses a greedy 0-1 knapsack approach."""
-        self.specialistToPipe = {}
-        self.pipeToSpecialists = {}
-        self.fitness = 0.0
+    def isPipeCovered(self, pipeId):
+        return self.pipeRemainingDemand[pipeId] <= 0
 
-        cutPipes = sorted(
-            [p for p in self.pipes if p.getId() in self.pipeToDestroyIds],
-            key=lambda p: p.getDemand(), reverse=True
-        )
-        if not cutPipes:
-            self.makeInfeasible()
-            return False
+    def allPipesCovered(self):
+        return all(self.pipeRemainingDemand[p.getId()] <= 0 for p in self.cutPipes)
 
-        sortedSpecs = sorted(self.specialists, key=lambda s: s.getCostEffectiveness())
-        usedSpecialists = set()
-
-        for pipe in cutPipes:
-            demand = pipe.getDemand()
-            pipeId = pipe.getId()
-            assigned = []
-            coveredCapacity = 0
-
-            for spec in sortedSpecs:
-                if spec.getId() in usedSpecialists:
-                    continue
-                assigned.append(spec.getId())
-                coveredCapacity += spec.getCapacity()
-                usedSpecialists.add(spec.getId())
-                if coveredCapacity >= demand:
-                    break
-
-            if coveredCapacity < demand:
-                self.makeInfeasible()
-                return False
-
-            self.pipeToSpecialists[pipeId] = assigned
-            for sId in assigned:
-                self.specialistToPipe[sId] = pipeId
-
-        self.fitness = sum(self.specialists[sId].getCost() for sId in self.specialistToPipe)
-        return True
-
+    def computeCost(self):
+        return sum(self.specialists[sId].getCost() for sId in self.specialistToPipe)
 
     def evaluate(self):
-        """Recompute the cut and assign specialists. Returns True if feasible."""
-        self.feasible = True
-        if not self.isValidPartition():
+        """Recompute feasibility and fitness."""
+        if not self.cutPipes:
             self.makeInfeasible()
             return False
-        self.computePipesToDestroy()
-        return self.assignSpecialistsToDestroyPipes()
+        if self.allPipesCovered():
+            self.feasible = True
+            self.fitness = self.computeCost()
+            return True
+        else:
+            self.makeInfeasible()
+            return False
 
+    def getExcessCapacity(self, pipeId):
+        """How much extra capacity beyond demand is assigned to this pipe."""
+        return -self.pipeRemainingDemand[pipeId]  # positive = excess
+
+    def canRemoveSpecialist(self, specId):
+        """Check if removing this specialist still leaves its pipe feasible."""
+        if specId not in self.specialistToPipe:
+            return False
+        pipeId = self.specialistToPipe[specId]
+        excess = self.getExcessCapacity(pipeId)
+        return excess >= self.specialists[specId].getCapacity()
+
+    def getPartition(self):
+        return self.partition[:]
 
     def __str__(self):
-        strSolution = 'z = %10.8f;\n' % self.fitness
+        strSol = 'z = %10.8f;\n' % self.fitness
         if self.fitness == float('inf'):
-            return strSolution
+            return strSol
 
-        strSolution += '\nDestroyed pipes:\n'
-        for pipe in self.pipes:
-            if pipe.getId() in self.pipeToDestroyIds:
-                specs = self.pipeToSpecialists.get(pipe.getId(), [])
-                strSolution += '  Pipe {%d,%d} (demand=%d) <- specialists: %s\n' % (
-                    pipe.getBaseI(), pipe.getBaseJ(), pipe.getDemand(),
-                    ', '.join(str(s) for s in specs)
-                )
+        strSol += '\nMin-cut partition:\n'
+        group0 = [i for i in range(self.nBases) if self.partition[i] == 0]
+        group1 = [i for i in range(self.nBases) if self.partition[i] == 1]
+        strSol += '  Group 0: {%s}\n' % ', '.join(str(b) for b in group0)
+        strSol += '  Group 1: {%s}\n' % ', '.join(str(b) for b in group1)
 
-        group0 = [i for i in range(self.nBases) if self.group[i] == 0]
-        group1 = [i for i in range(self.nBases) if self.group[i] == 1]
-        strSolution += '\nPartition:\n'
-        strSolution += '  Group 0: {%s}\n' % ', '.join(str(b) for b in group0)
-        strSolution += '  Group 1: {%s}\n' % ', '.join(str(b) for b in group1)
+        strSol += '\nDestroyed pipes (resource allocation):\n'
+        for pipe in self.cutPipes:
+            pipeId = pipe.getId()
+            specs = self.pipeToSpecialists.get(pipeId, [])
+            totalCap = sum(self.specialists[sId].getCapacity() for sId in specs)
+            strSol += '  Pipe {%d,%d} (demand=%d, assigned_cap=%d) <- specialists: %s\n' % (
+                pipe.getBaseI(), pipe.getBaseJ(), pipe.getDemand(), totalCap,
+                ', '.join(str(s) for s in specs)
+            )
 
-        return strSolution
+        strSol += '\nTotal cost: %d\n' % int(self.fitness)
+        return strSol
 
     def saveToFile(self, filePath):
-        f = open(filePath, 'w')
-        f.write(self.__str__())
-        f.close()
+        with open(filePath, 'w') as f:
+            f.write(self.__str__())
