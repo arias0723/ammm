@@ -20,14 +20,14 @@ from Heuristics.problem.solution2 import Solution2
 class Solver_GRASP2(_Solver):
 
     def _computeMinCut(self):
-        """Use Stoer-Wagner to find the min-cut partition."""
+        """Find the min-cut partition."""
         pipes = self.instance.getPipes()
         nBases = self.instance.getNumBases()
         cut_weight, partition = StoerWagner(nBases, pipes)
         return partition
 
     def _getCutPipes(self, partition):
-        """Identify pipes crossing the partition."""
+        """Pipes crossing the partition."""
         pipes = self.instance.getPipes()
         return [p for p in pipes if partition[p.getBaseI()] != partition[p.getBaseJ()]]
 
@@ -86,7 +86,7 @@ class Solver_GRASP2(_Solver):
     def solve(self, **kwargs):
         self.startTimeMeasure()
 
-        # Compute min-cut once (deterministic)
+        # Compute min-cut once
         partition = self._computeMinCut()
         cutPipes = self._getCutPipes(partition)
 
