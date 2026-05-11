@@ -21,9 +21,6 @@ def StoerWagner( nBases, pipes):
         (cut_weight, partition): cut_weight is the total demand of the min cut,
         partition is a list of length nBases with values 0 or 1.
     """
-    if self.config.verbose:
-        print('Running Stoer-Wagner MinCut ...')
-
     # Build adjacency matrix
     adj = [[0] * nBases for _ in range(nBases)]
     for pipe in pipes:

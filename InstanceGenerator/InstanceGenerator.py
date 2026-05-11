@@ -69,12 +69,9 @@ class InstanceGenerator(object):
             fInstance.write('c=[%s];\n' % (' '.join(map(str, specialistFee))))
             fInstance.write('w=[%s];\n' % (' '.join(map(str, specialistCapacity))))
             fInstance.write('t=[\n')
-            for row_idx, row in enumerate(pipeHours):
+            for row in pipeHours:
                 row_str = ' '.join(map(str, row))
-                if row_idx < len(pipeHours) - 1:
-                    fInstance.write('  [%s],\n' % row_str)
-                else:
-                    fInstance.write('  [%s]\n' % row_str)
+                fInstance.write('[%s]\n' % row_str)
             fInstance.write('];\n')
 
             fInstance.close()

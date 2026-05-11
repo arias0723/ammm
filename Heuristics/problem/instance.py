@@ -13,11 +13,11 @@ class Instance(object):
         self.config = config
         self.inputData = inputData
 
-        n = inputData.n   # number of bases
-        m = inputData.m   # number of specialists
-        w = inputData.w   # work capacity per specialist
-        c = inputData.c   # cost per specialist
-        t = inputData.t   # adjacency matrix of pipe demands
+        n = inputData.numBases         # number of bases
+        m = inputData.numSpecialists   # number of specialists
+        w = inputData.w                # work capacity per specialist
+        c = inputData.c                # cost per specialist
+        t = inputData.t                # adjacency matrix of pipe demands
 
         self.nBases = n
 
