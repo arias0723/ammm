@@ -1,0 +1,19 @@
+# --- Common specific parameters ------------------------------------------------------------------------------
+inputDataFile        = data/01_small.dat;           # Input DAT file
+solutionFile         = solutions/example.sol;       # Output DAT file (solution)
+solver               = Greedy;                      # Supported solvers: Greedy / GRASP
+maxExecTime          = 60;                          # Maximum execution time in seconds
+verbose              = True;                        # Verbose mode?
+
+# --- Greedy / Random specific parameters ---------------------------------------------------------------------
+minCut               = Karger;                      # Algorithm for Min Cut : Karger / Stoer-Wagner
+
+
+# --- GRASP constructive specific parameters ------------------------------------------------------------------
+# Ignored if solver is not GRASP.
+alpha                = 0.7;                 # Alpha parameter for the GRASP solver.
+
+# --- Local Search specific parameters ------------------------------------------------------------------------
+localSearch          = False;                # Enable local search?
+neighborhoodStrategy = Remove;               # Supported Neighborhoods: Remove/ Replace
+policy               = FirstImprovement;     # Supported Policies: FirstImprovement / BestImprovement

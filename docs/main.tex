@@ -1,0 +1,807 @@
+\documentclass{article}
+\usepackage[english]{babel}
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{xcolor}
+\usepackage{algcompatible}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{pgffor}
+\usepackage{pgfplots}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{nameref}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{authblk}
+\usepackage{bm}
+
+\title{\textbf{AMMM Final Project Report}}
+
+%\author{123(\href{mailto:@estudiantat.upc.edu}{Email})
+%\and 123(\href{mailto:@estudiantat.upc.edu}{Email})}
+\author[1]{Elly}
+\author[2]{Jose}
+
+\affil[1]{MIRI \href{mailto:@estudiantat.upc.edu}{@estudiantat.upc.edu}}
+\affil[2]{MIRI \href{mailto:@estudiantat.upc.edu}{@estudiantat.upc.edu}}
+
+
+\begin{document}
+\maketitle
+
+
+\tableofcontents
+
+\newpage
+
+\section{Conflict Resolution Problem Statement}
+
+The Conflict Resolving problem can be formally stated as follows:\\
+\\
+\textbf{\textit{Given}}:
+\begin{itemize}
+    \item The set $Members$ of N members.
+    \item The matrix $m(n, n)$ represents the pairwise bids between members.
+\end{itemize}
+
+\textbf{\textit{Find}}:
+\begin{itemize}
+    \item $Priority(n,n)$ represents the assignment of priorities to ordered member pair $<i,j>$ subject to the following constraints: \begin{itemize}
+        \item A priority is assigned to one member of each unordered pair in case of a clash between the two members.
+        \item Members and Solution (set of member pairs, for each pair $<i,j>$ where member $i$ prioritizes member $j$) form a directed acyclic graph, with members as vertices and solution as edges of the graph.
+    \end{itemize}
+\end{itemize}
+
+\textbf{\textit{Objective}}:
+\begin{itemize}
+    \item Maximize the total sum of bids taken from the higher priority pairwise members.
+\end{itemize}
+
+
+\section{ILP Model Formulation}
+
+The conflict resolving problem can be modeled as an Integer Linear Program. To achieve this, the following sets and parameters are defined:\\
+\\
+\textit{Members} \hspace{2.7cm} Set of N members, index n. \\
+\textit{$m_{ij}$} \hspace{3.5cm}  Member \textit{i} places bids over member \textit{j}. \\
+\\
+The following decision variables are also defined:\\
+\\
+\textit{$Priority_{ij}$} \hspace{2.5cm} Binary. Equal to 1 if member \textit{i} prioritizes member \textit{j}; 0 otherwise. \\
+\textit{$O_{n}$} \hspace{3.55cm} Topological sort of the directed graph formed with members as vertices and $\{<i,j> \forall i,j \in Members \quad and \quad Priority_{ij} = 1 \}$ as edges.\\ 
+\textit{Income} \hspace{2.95cm} Positive real. The total sum of money taken from a member with higher priority from each unordered pair.
+\begin{displaymath}
+    Income = \sum_{i,j \epsilon Members} Priority_{ij} \cdot m_{ij}
+\end{displaymath}
+
+Finally, the ILP model for the conflict resolving problem is as follows:
+
+\begin{equation}
+    \textrm{maximize} \quad Income
+\end{equation}
+ subject to:
+\begin{equation}
+     Priority_{ij} + Priority_{ji} = 1 \qquad \forall \quad i,j \in Members \quad \textrm{and} \quad m_{ij} + m_{ji} \neq 0
+\end{equation}
+
+\begin{equation}
+    O_{i} + 1 \leq O_{j} + (1 - Priority_{ij}) \cdot N \qquad \forall \quad i,j \in Members \quad \textrm{and} \quad m_{ij} + m_{ji} \neq 0
+\end{equation}
+\\
+\\
+The equation (3) can be derived through the following reasoning.\\
+If the directed graph is acyclic, we can obtain a topological ordering of the vertices. This ordering is an array in which each vertex appears before all the vertices it points to. Our objective is to achieve the topological order of the directed priority graph. If we successfully obtain this order, we can ensure that no cycles are formed in the graph.\\
+$Priority_{ij}$ is used to indicate whether or not vertex $i$ is before vertex $j$.
+If $Priority_{ij} = 1$ we wish to have $O_{i} + 1 \leq O_{j}$, i.e. if $(1 - Priority_{ij}) = 0$ we wish to have $O_{i} + 1 \leq O_{j}$. This condition is imposed if $O_{i} + 1 - O_{j} \leq M(1-Priority_{ij})$ where $M$ is a sufficiently large number. In order to find how large $M$ must be we consider the case $Priority_{ij} = 0$ giving $O_{i} + 1 - O_{j} \leq M$. $M$ must be chosen to be an upper bound for the expression $O_{i} + 1 - O_{j}$, which is $M = N + 1 - 1 = N$. Then we obtain (3).\\
+We do not need to consider the reverse of (3), which states that $ O_{i} < O_{j}
+ \rightarrow Priority_{ij} = 1$. This means that if $Priority_{ij} = 0$, then $O_{i} \geq O_{j}$. However, equation (2) ensures that if $Priority_{ij} = 0$, then $Priority_{ji} = 1$, which leads to the conclusion that $O_{j} < O_{i}$.
+
+
+\section{Heuristics Method}
+
+
+
+
+\subsection{Greedy Method}
+
+\subsubsection{Variable Declaration} \label{declaration}
+
+\begin{itemize}
+    \item $Members$: Set of members.
+    \item $Bids_{ij}$: The bid member $i$ places over member $j$.
+    \item $CandidatePairs$: Set of all pairs of members $<i,j>$.
+    \item $Priority(i,j)$: Binary. Equal to 1 if member $i$ prioritizes member $j$, 0 otherwise.
+    \item $Solution$: Set of member pairs. For each pair $<i,j>$ $Priority[i][i] = 1$.
+k    \item $CoveredMembers$: Set of members covered in the $Solution$.
+    
+\end{itemize}
+
+\subsubsection{Greedy Cost Function} \label{greedy_function}
+
+We always consider the pair $<i,j>$ with the highest bid. If adding $<i,j>$ to the partial solution makes it infeasible, then we swap $<i,j>$ for $<j,i>$ in the solution.
+Whenever we add a pair to the partial solution, we assess its feasibility. If the pair $<i,j>$ is infeasible, we can be certain that $<j,i>$ is feasible.\\
+For example, if the pair (2,3) results in an infeasible solution, we assume that (2,3), (3,1), and (1,2) create a priority cycle. Similarly, if (3,2) leads to an infeasible solution, we assume that (3,2), (2,4), and (4,3) also form a priority cycle. In this case, (3,1), (1,2), (2,4), and (4,3) would then constitute another priority cycle. However, we've already assessed the feasibility of (3,1), (1,2), (2,4), and (4,3), which presents a contradiction.
+
+\begin{displaymath}
+    q(<i,j>, S) = \begin{cases}
+    -1 & if \quad G(S, <i,j>) \textrm{ is not a DAG}\\
+    Bids_{ij} & if \quad G(S, <i,j>) \textrm{ is a DAG}
+    \end{cases}
+\end{displaymath}
+
+\subsubsection{Pseudocode}
+
+\begin{algorithm}[H]
+\renewcommand{\thealgorithm}{}
+\caption{Greedy Algorithm}
+\begin{algorithmic}
+
+\Function{ValidateCandidatePair}{$partialSolution$, $<i,j>$}
+\State $topologicalOrder, residualEdges \gets TopologicalSort(partialSolution \cup \{{i,j}\})$
+\If{$residualEdges= \phi$}
+\State \Return True
+\Else
+\State \Return False
+\EndIf
+\EndFunction
+
+\Statex
+
+\State $Solution \gets \phi$
+\State $CoveredMembers \gets \phi$
+\State $CandidatePairs \gets \{<i,j> \mid i,j \in Members \quad \textrm{and} \quad Bids_{ij} + Bids_{ji} \neq 0\}$
+\State $Priority(i,j) \gets 0 \quad \forall <i,j> \in CandidatePairs$
+\While{$CandidatePairs \neq \phi$}
+    \State Evaluate $q(<i',j'>, Solution) \quad \forall <i',j'> \in CandidatePairs$
+    \State $<i,j> \gets argmax\{q(<i', j'>, Solution)\lvert <i', j'> \in CandidatePairs \}$
+    \State $CandidatePairs \gets CandidatePairs \setminus \{<i,j>, <j,i>\}$
+    \State $CoveredMembers \gets CoveredMembers \cup \{i,j\}$
+    \State $Solution \gets Solution \cup \{<i,j>\}$
+    \State $Priority(i,j) \gets 1$
+\EndWhile
+\State \Return $Solution$
+
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Local Search Method}
+
+\subsubsection{Neighborhood}
+
+The neighborhood of this conflict resolution problem is defined as the solution obtained by replacing the member pair $<i,j>$ currently not included in the solution (indicated by $Priority(<i,j>)$ = 0) with its flipped counterpart $<j,i>$ included in the solution (indicated by $Priority(<j,i>)$ = 1), if $Bids_{ij} > Bids_{ji} \quad \forall i,j \in Members$.
+
+\subsubsection{Exploration Strategy}
+
+Based on the neighborhood mentioned above, the replacing procedure may necessitate the flipping of other pairs as a knock-on effect. If the total decrease in bids from passively flipped pairs (defined as \textbf{\textit{knock-on flipped pairs}}, represented by \bm{$edges^{flip}$}) is less than the increase from the actively flipped pair $<i,j>$, we achieve a better solution.\\
+For example, if we have $(Bids_{ij} > Bids_{ji}$ and $<j,i> \in Solution$ (which indicates that $Priority(<j,i>) = 1$), when we consider replacing $<j,i>$ with $<i,j>$ in the current solution, some priority cycles may be formed. To address this, we need to develop a strategy for identifying pairs to flip within this directed graph, ensuring that no cycles remain.\\
+First, we reverse the pair (representing the edges in the directed graph) from $<j, i>$ to $<i, j>$ in the current solution (representing the vertices in the directed graph). We then proceed to eliminate all edges with an indegree of 0 or an outdegree of 0, ensuring that all remaining edges in the graph are part of a cycle.\\
+Once we have the remaining edges $edges^{remain}$, we utilize equation $max(q(<i,j'>, edges^{flip}))$ to continuously select edge $<i',j'>$ and added to $edges^{flip}$ until no cycles are left in the graph. We prioritize edges $<i', j'>$ with higher indegree and outdegree, as we believe such edges are more capable of eliminating multiple cycles compared to others. If multiple edges are tied, we will select the edge with the lowest bid decrease ($Bids_{i',j'} - Bids_{j'i'}$).The $edges^{flip}$ cost function is defined as follows.\\
+\newpage
+
+$q(<i',j'>, edges^{flip})$=\\
+\\
+\begin{displaymath}
+    \begin{cases}
+    -1 & \\
+    \qquad\quad\textrm{if} \quad Bids_{i'j'} - Bids_{j'i'} + \sum_{<i'',j''> \in edges^{flip}} Bids_{i''j''} - Bids{j''i''} \geq Bids_{ij} - Bids_{ji}\\
+    \qquad\quad\quad\textrm{or } edges^{remain} \mid edges^{flip} = edges^{remain} \mid edges^{flip} \cup \{<i',j'>\})\\
+    \\
+    \sum_{k' \in \{i',j'\}} indegree(k') + outdegree(k') & \\
+    \\
+    \qquad\quad\textrm{if} \quad Bids_{i'j'} - Bids_{j'i'} + \sum_{<i'',j''> \in edges^{flip}} Bids_{i''j''} - Bids{j''i''} < Bids_{ij} - Bids_{ji}\\
+    \qquad\quad\quad\textrm{and } edges^{remain} \mid edges^{flip} > edges^{remain} \mid edges^{flip} \cup \{<i',j'>\}
+    \end{cases}
+\end{displaymath}
+\\
+Finally, we check whether flipping every knock-on edge $<i',j'> \in edges^{flip}$ will create any cycle in the graph. If there are no cycles formed, we can replace the pair $<i,j>$ in the current solution. This change will yield a better solution with the objective value calculated as follows: $Objective + (Bids_{ij} - Bids_{ji}) - \sum_{<i',j'> \in edges^{flip}} Bids_{i'j'} - Bids_{j'i'}$.\\
+\\
+\textbf{\textit{We continue executing the above procedure until no improvements are reached.}}
+
+\subsubsection{Variable Declaration} \label{ls_declaration}
+
+Alongside the variables established in the Greedy Method \ref{declaration}, additional auxiliary variables for the local search procedure are defined as follows:
+\begin{itemize}
+    \item $pairsWithHigherBid$: Member pair $<i,j>$ not included in solution but having higher bid than their flipped counterpart $<j,i>$ included in solution.
+    \item $edges^{flip}$: Set of member pairs needed to be flipped if member pair in $pairsWithHigherBid$ requires flipping.
+\end{itemize}
+
+\subsubsection{Pseudocode}
+
+\begin{algorithm}[H]
+\renewcommand{\thealgorithm}{}
+\caption{Local Search Algorithm (Part 1: Auxiliary functions)}
+\begin{algorithmic}
+
+\Function{FlipPairWithImprovement}{$<i,j>$}
+    \State $bidIncrease \gets Bids_{ij} - Bids_{ji}, $
+    \State $potentialSolution \gets solution$
+    \State $potentialSolution[potentialSolution.\textrm{INDEX}(<j,i>)] \gets <i,j>$
+    \State $edges, indegree, outdegree \gets TrimGraph(potentialSolution)$
+    \If{$edges = \phi$}
+        \State \Return True, $bidIncrease, \phi$
+    \EndIf
+    \State $edges^{flip}, bidDecrease \gets GetKnockonFlippedPairs(bidIncrease, edges, indegree, outdegree)$
+    \If{$bidDecrease = -1$}
+        \State \Return False, 0, $\phi$
+    \EndIf
+    \If{$CanBeFlipped(<i,j>, edges^{flip}) = $True}
+        \State \Return True, $bidIncrease - bidDecrease, edges^{flip}$
+    \EndIf
+    \State \Return False, 0, $\phi$
+\EndFunction
+
+\algstore{local_search}
+\end{algorithmic}
+\end{algorithm}
+\newpage
+
+\begin{algorithm}[]
+%\renewcommand{\thealgorithm}{}
+%\caption{Local Search Algorithm (Part 1: Auxiliary functions)}
+\begin{algorithmic}
+\algrestore{local_search}
+
+\Function{CanBeFlipped}{$<i,j>, edges^{flip}$}
+    \State $potentialSolution \gets currentSolution$
+    \State $potentialSolution[potentialSolution.\textrm{INDEX}(<j,i>)] \gets <i,j>$
+    \For{\textbf{each} $<i',j'> \in edges^{flip}$}
+        \State $potentialSolution[potentialSolution.\textrm{INDEX}(<i',j'>)] \gets <j',i'>$
+    \EndFor
+    \State $edges \gets TrimGraph(potentailSolution)$
+    \If{$edges \neq \phi$}
+    \State \Return False
+    \EndIf
+    \State \Return True
+\EndFunction
+
+\Statex
+
+\Function{GetKnockonFlippedPairs}{$bidIncrease$, $solution$, $indegree$, $outdegree$}
+\State $totalBidDecrease, edges^{flip} \gets 0, \phi$
+\While{$edges^{remain} \neq \phi$}
+\State $edges^{candidate} \gets \{<i,j> \in edges^{remain} \mid Bids_{ij} - Bids_{ji} + totalBidDecrease < bidIncrease\}$
+\If{$edges^{candidate} = \phi$}
+    \State \Return $\phi, -1$
+\EndIf
+\State $vertices \gets GetVerticesFromEdges(edges)$
+\State $edgeDegrees(<i',j'>) \gets \sum_{k' \in {i',j'}} indegree(k') + outdegree(k') \quad \forall <i',j'> \in edges^{remain}$
+\State $sortedEdges^{candidate} \gets \textrm{SORT}$(
+\State \qquad $edges^{candidate}, (vertexDegrees(<i',j'>), Bids_{j'i'} - Bids_{i'j'}), DESC)$
+\State $foundCandidate \gets \textrm{FALSE}$
+\For{\textbf{each} $<i',j'> \in edges^{candidate}$}
+\State $edges^{remain'} \gets edges^{remain}$
+\State $edges^{remain'}[edges^{remain'}.\textrm{INDEX}(<i',j'>)] \gets <j',i'>$
+\State $edges^{remain'}, indegree, outdegree \gets TrimGraph(edges^{remain'})$
+\If{$edges^{remain'} \subset edges^{remain}$}
+\State $totalBidDecrease \gets totalBidDecrease + Bids_{i'j'} - Bids_{j'i'}$
+\State $edges^{remain} \gets edges^{remain'}$
+\State $edges^{flip} \gets edges^{flip} \cup \{{i',j'}\}$
+\State $foundCandiate \gets$ True
+\State \textbf{break}
+\EndIf
+\EndFor
+\If{$foundCandidate = \textrm{FALSE}$}
+\State \Return $\phi, -1$
+\EndIf
+\EndWhile
+\State \Return $edges^{flip}, totalBidDecrease$
+\EndFunction
+
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\renewcommand{\thealgorithm}{}
+\caption{Local Search Algorithm (Part 2: Main Algorithm)}
+\begin{algorithmic}
+
+\State $Solution \gets GreedyConstructionPhase()$
+\State $improved \gets$ True
+\While{$improved$}
+    \State $improved \gets$ False
+    \State $pairsWithHigherBids \gets \{<i,j> \mid <j,i> \in Solution \textrm{ and } Bids_{ij} > Bids_{ji}\}$
+    \For{\textbf{each} $<i,j> \in pairsWithHigherBids$}
+        \State $canBeFlipped, bidIncrease, edges^{flip} \gets FlipPairWithImprovement(<i,j>)$
+        \If{$canBeFlipped = $ True}
+            \State $improved \gets$ True
+            \For{\textbf{each} $<i^{'}, j^{'}> \in edges^{flip} \cup \{ <j,i>\}$}
+                \State $Solution[Solution.\textrm{INDEX}(<i^{'}, j^{'}>)] \gets <j^{'}, i^{'}>$
+                \State $Priority(<i',j'>) \gets 0$
+                \State $Priority(<j',i'>) \gets 1$
+            \EndFor
+        \EndIf
+    \EndFor
+\EndWhile
+\State \Return $Solution$
+
+\end{algorithmic}
+\end{algorithm}
+
+%\newpage
+
+\subsection{GRASP Method}
+\subsubsection{Variable Declaration}
+The same as \ref{ls_declaration}.
+
+\subsubsection{Pseudocode}
+
+\begin{algorithm}[H]
+\renewcommand{\thealgorithm}{}
+\caption{GRASP Construction Phase}
+\begin{algorithmic}
+
+\State $Solution \gets \phi$
+\State $CoveredMembers \gets \phi$
+\State $CandidatePairs \gets \{<i,j> \mid i,j \in Members \quad \textrm{and} \quad Bids_{ij} + Bids_{ji} \neq 0\}$
+\State $Priority(i,j) \gets 0 \quad \forall <i,j> \in CandidatePairs$
+\While{$CandidatePairs \neq \phi$}
+    \State Evaluate $q(<i',j'>, Solution) \quad \forall <i',j'> \in CandidatePairs$
+    \State $CandidatePairs \gets \{<i',j'> \in CandidatePairs \mid q(<i',j'>,S) > 0\}$
+    \State \textcolor{red}{$q^{min} \gets \textrm{min}\{q(<i',j'>,Solution) \mid <i',j'> \in CandidatePairs\}$} \Comment{RCL Procedure}
+    \State \textcolor{red}{$q^{max} \gets \textrm{max}\{q(<i',j'>,Solution) \mid <i',j'> \in CandidatePairs\}$}
+    \State \textcolor{red}{$\textrm{RCL}_{max} \gets \{<i',j'> \in CandidatePairs \mid q(<i',j'>, Solution) \geq q^{max} - \alpha(q^{max} - q^{min}) \}$}
+    \State \textcolor{red}{$<i,j> \gets \textrm{ select} <i',j'> \in \textrm{RCL}$ at random}
+    \State $CandidatePairs \gets CandidatePairs \setminus \{<i,j>, <j,i>\}$
+    \State $CoveredMembers \gets CoveredMembers \cup \{i,j\}$
+    \State $Solution \gets Solution \cup \{<i,j>\}$
+    \State $Priority(<i,j>) \gets 1$
+\EndWhile
+\State \Return $Solution$
+
+\end{algorithmic}
+\end{algorithm}
+
+
+\begin{algorithm}[H]
+\renewcommand{\thealgorithm}{}
+\caption{GRASP Procedure}
+\begin{algorithmic}
+
+\State $Object^{best}, Solution^{best} \gets 0, \phi$
+\For{$retry = \textrm{1 to MaxIterations}$}
+\State $Obejctive, Solution \gets 0, \phi$
+\State $Solution \gets doConstructionPhase()$
+\State $Solution \gets doLocalSearchPhase(Solution)$
+\If{$Obejctive > Objective^{best}$}
+\State $Objective^{best} \gets Obejctive$
+\State $Solution^{best} \gets Solution$
+\EndIf
+\EndFor
+\State \Return $Solution^{best}$
+
+\end{algorithmic}    
+\end{algorithm}
+
+% \section{Experiment Result Analysis}
+%
+% \subsubsection{Experiment Dataset And Environment}
+%
+% 16 data files are generated in the folder \textit{src/project/testdata} with prefix \textit{project.\{39-44\}-1} and \textit{project.45-\{1-10\}}, containing 39 to 45 members for each dataset.\\
+% These experiments were conducted on an Apple MacBook Pro laptop with an Apple M2 chip and 8GB of memory. Solving times may vary slightly on other computers, particularly for the ILP model.
+%
+%
+% \subsection{Parameter Tuning For GRASP}
+%
+% We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 45 members without conducting the local search procedure, and the maximum iterations for the constructive phase is set to 100.
+%
+% \begin{figure}[H]
+% \begin{tikzpicture}
+% \begin{axis}[
+%     title={\textbf{Quality of Solutions (100 iter. w/o local search phase)}},
+%     xlabel=\bm{$\alpha$},
+%     ylabel=\textbf{\textit{Total Income}},
+%     xmin=0, xmax=1,
+%     ymin=4000, ymax=5300,
+%     xtick=data,
+%     ytick={4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300},
+%     ymajorgrids=true,
+%     grid style=dashed,
+%     width=0.7\textwidth,
+%     legend pos=outer north east,
+%     legend style={nodes={scale=1, transform shape}}
+% ]
+%
+% \addplot table {data/grasp/45-1.dat};
+% \addplot table {data/grasp/45-2.dat};
+% \addplot table {data/grasp/45-3.dat};
+% \addplot table {data/grasp/45-4.dat};
+% \addplot table {data/grasp/45-5.dat};
+% \addplot table {data/grasp/45-6.dat};
+% \addplot table {data/grasp/45-7.dat};
+% \addplot table {data/grasp/45-8.dat};
+% \addplot table {data/grasp/45-9.dat};
+% \addplot table {data/grasp/45-10.dat};
+%
+% \legend{dataset=project.45-1.dat,dataset=project.45-2.dat,dataset=project.45-3.dat,dataset=project.45-4.dat,dataset=project.45-5.dat,dataset=project.45-6.dat,dataset=project.45-7.dat,dataset=project.45-8.dat,dataset=project.45-9.dat,dataset=project.45-10.dat}
+%
+% \end{axis}
+% \end{tikzpicture}
+% \captionsetup{labelformat=empty}
+% \caption{Figure 4.1}
+% \label{fig:fig41}
+% \end{figure}
+%
+% \begin{table}[H]
+% \centering
+% \begin{tabular}{||c c||}
+%  \hline
+%  Dataset & \bm{$\alpha$} for $Solution^{best}$ \\ [0.5ex]
+%  \hline\hline
+% project.45-1.dat & 0  \\
+% project.45-2.dat & 0  \\
+% project.45-3.dat & 0.3  \\
+% project.45-4.dat & 0  \\
+% project.45-5.dat & 0.1  \\
+% project.45-6.dat & 0  \\
+% project.45-7.dat & 0.1  \\
+% project.45-8.dat & 0  \\
+% project.45-9.dat & 0.4  \\
+% project.45-10.dat & 0.2  \\ [1ex]
+%  \hline
+% \end{tabular}
+% \captionsetup{labelformat=empty}
+% \caption{Table 4.1}
+% \label{table41}
+% \end{table}
+%
+% \noindent As shown in figure \nameref{fig:fig41} and table \nameref{table41}, a better solution is most likely achieved when \bm{$\alpha$} is set from 0 to 0.1. \textbf{In the following experiments, we will set \bm{$\alpha$} equal to 0.1 when conducting the GRASP method to give a good balance between quality and randomness}.
+%
+%
+% \subsection{Solving Time}
+%
+% As shown in \nameref{fig:fig42} the ILP model takes approximately 11 to 75 minutes to reach the optimal solution, while the Greedy method requires less than 200 milliseconds. This means the Greedy method is roughly 10000 times faster than the ILP model. \\
+% The Local Search method takes about 20 seconds to solve the problem.
+% Additionally, when GRASP is executed with 10 iterations and followed by the Local Search procedure, it takes about ten times longer than the Local Search method alone. \\
+% Furthermore, when GRASP is executed with 100 iterations and not followed by the Local Search procedure, it takes around 25 seconds to solve the problem.\\
+% As demonstrated in \nameref{fig:fig43}, the time required to solve the ILP model varies significantly. At times, we may be fortunate enough to obtain the optimal solution quickly. Specifically, if the number of members is small (fewer than 42), we can effectively use the ILP model to achieve the optimal solution.
+%
+% \begin{figure}[H]
+%
+% \begin{tikzpicture}[]
+% \begin{axis}[
+%     title={\textbf{Solving Time (10 datasets with 45 members)}},
+%     x tick label style={
+%         /pgf/number format/1000 sep=},
+%     ylabel=\textbf{Solving Time} ($\mathbf{s})$,
+%     xlabel=\textbf{Dataset Number},
+%     ybar interval=0.8,
+%     xtick=data,
+%     bar width = 10pt,
+%     ymode=log,
+%     ymax=10000,
+%     bar shift=0pt,
+%     log origin=infty,
+%     legend pos=outer north east,
+%     width=0.7\textwidth,
+%     legend style={nodes={scale=0.8, transform shape}}
+% ]
+%
+%
+% \addplot table[
+%     header=true,
+%     x=id,
+%     y=time
+% ] {data/45members/solving_time_greedy.dat};
+%
+% \addplot table[
+%     header=true,
+%     x=id,
+%     y=time
+% ] {data/45members/solving_time_grasp.dat};
+%
+% \addplot table[
+%     header=true,
+%     x=id,
+%     y=time
+% ] {data/45members/solving_time_ls.dat};
+%
+% \addplot table[
+%     header=true,
+%     x=id,
+%     y=time
+% ] {data/45members/solving_time_grasp_with_ls.dat};
+%
+%
+% \addplot table[
+%     header=true,
+%     x=id,
+%     y=time
+% ] {data/45members/solving_time_cplex.dat};
+%
+% \legend{Greedy,GRASP(100 Iter. w/o local search \bm{$\alpha$} = 0.1),Local Search,GRASP(10 Iter. w/ local search \bm{$\alpha$} = 0.1),ILP}
+% \end{axis}
+% \end{tikzpicture}
+% \captionsetup{labelformat=empty}
+% \caption{Figure 4.2}
+% \label{fig:fig42}
+% \end{figure}
+%
+%
+% \begin{figure}[H]
+%
+% \begin{tikzpicture}[]
+% \begin{axis}[
+%     title={\textbf{Solving Time (39 to 45 members)}},
+%     x tick label style={
+%         /pgf/number format/1000 sep=},
+%     ylabel=\textbf{Solving Time } ($\mathbf{s})$,
+%     xlabel=\textbf{Members},
+%     ybar interval=0.8,
+%     xtick=data,
+%     bar width = 10pt,
+%     ymode=log,
+%     ymax=10000,
+%     bar shift=0pt,
+%     log origin=infty,
+%     legend pos=outer north east,
+%     width=0.7\textwidth,
+%     legend style={nodes={scale=0.8, transform shape}}
+% ]
+%
+%
+% \addplot table[
+%     header=true,
+%     x=id,
+%     y=time
+% ] {data/variable_members/solving_time_greedy.dat};
+%
+% \addplot table[
+%     header=true,
+%     x=id,
+%     y=time
+% ] {data/variable_members/solving_time_grasp.dat};
+%
+% \addplot table[
+%     header=true,
+%     x=id,
+%     y=time
+% ] {data/variable_members/solving_time_ls.dat};
+%
+% \addplot table[
+%     header=true,
+%     x=id,
+%     y=time
+% ] {data/variable_members/solving_time_grasp_with_ls.dat};
+%
+%
+% \addplot table[
+%     header=true,
+%     x=id,
+%     y=time
+% ] {data/variable_members/solving_time_cplex.dat};
+%
+% \legend{Greedy,GRASP(100 Iter. w/o local search \bm{$\alpha$} = 0.1),Local Search,GRASP(10 Iter. w/ local search \bm{$\alpha$} = 0.1),ILP}
+% \end{axis}
+% \end{tikzpicture}
+% \captionsetup{labelformat=empty}
+% \caption{Figure 4.3}
+% \label{fig:fig43}
+% \end{figure}
+%
+%
+%
+%
+%
+% \subsection{Solving Quality}
+%
+%
+% \begin{figure}[H]
+% \begin{tikzpicture}
+% \begin{axis}[
+%     title={\textbf{Quality of Solutions (10 datasets with 45 members)}},
+%     xlabel=\textbf{{Dataset Number}},
+%     ylabel=\textbf{{Total Income}},
+%     xmin=1, xmax=10,
+%     ymin=4000, ymax=5300,
+%     xtick=data,
+%     ytick={4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300},
+%     ymajorgrids=true,
+%     grid style=dashed,
+%     width=0.7\textwidth,
+%     legend pos=outer north east,
+%     legend style={nodes={scale=0.8, transform shape}}
+% ]
+%
+% \addplot[green,thick,mark=triangle] table {data/45members/objective_greedy.dat};
+% \addplot[blue,thick,mark=triangle] table {data/45members/objective_grasp.dat};
+% \addplot[brown,thick,mark=triangle] table {data/45members/objective_ls.dat};
+% \addplot[black,thick,mark=triangle] table {data/45members/objective_grasp_with_ls.dat};
+% \addplot[red,thick,mark=square*] table {data/45members/objective_cplex.dat};
+%
+%
+% \legend{Greedy,GRASP(100 Iter. w/o local search  $\alpha = 0.1$),Local Search,GRASP(10 Iter. w/ local search $\alpha = 0.1$),ILP(Optimal)}
+%
+% \end{axis}
+% \end{tikzpicture}
+% \captionsetup{labelformat=empty}
+% \caption{Figure 4.4}
+% \label{fig:fig44}
+% \end{figure}
+%
+%
+% \begin{figure}[H]
+% \begin{tikzpicture}
+% \begin{axis}[
+%     title={\textbf{Quality of Solutions (39 to 45 members)}},
+%     xlabel=\textbf{{Members}},
+%     ylabel=\textbf{{Total Income}},
+%     xmin=39, xmax=45,
+%     ymin=3500, ymax=5200,
+%     xtick=data,
+%     ytick={3500,3600,3700,3800,3900,4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200},
+%     ymajorgrids=true,
+%     grid style=dashed,
+%     width=0.7\textwidth,
+%     legend pos=outer north east,
+%     legend style={nodes={scale=0.8, transform shape}}
+% ]
+%
+% \addplot[green,thick,mark=triangle] table {data/variable_members/objective_greedy.dat};
+% \addplot[blue,thick,mark=triangle] table {data/variable_members/objective_grasp.dat};
+% \addplot[brown,thick,mark=triangle] table {data/variable_members/objective_ls.dat};
+% \addplot[black,thick,mark=triangle] table {data/variable_members/objective_grasp_with_ls.dat};
+% \addplot[red,thick,mark=square*] table {data/variable_members/objective_cplex.dat};
+%
+%
+% \legend{Greedy,GRASP(100 Iter. w/o local search  $\alpha = 0.1$),Local Search,GRASP(10 Iter. w/ local search $\alpha = 0.1$),ILP(Optimal)}
+%
+% \end{axis}
+% \end{tikzpicture}
+% \captionsetup{labelformat=empty}
+% \caption{Figure 4.5}
+% \label{fig:fig45}
+% \end{figure}
+%
+% \nameref{fig:fig44} and \nameref{fig:fig45} shows that the Greedy approach yields the worst solution. In contrast, both GRASP (100 iterations without local search) and Local Search provide similar results. Among the heuristic methods, GRASP (10 iterations with local search) offers the best solution.
+
+
+\subsection{Experiment Conclusion}
+
+If the number of members is small (fewer than 42), we should always use the ILP model to achieve the optimal solution. If the number of members is large (more than 42) and we need a reasonably good solution within a short timeframe, we should apply the GRASP with 10 iterations, followed by a local search procedure. This approach will yield the best solution among the heuristic methods we tested.
+
+\section{Personal Reflections}
+
+Initially, we had limited knowledge of graph theory and were unfamiliar with concepts like topological sorting or directed acyclic graphs. We approached the subject incorrectly at first, but after receiving guidance from our professors and exploring graph theory in more depth, a new world opened up for us. We were amazed by the efficiency of graph algorithms.\\
+For us, the optimization methods used in linear programming represent a significant shift in thinking. These methods can be elegant, and we always strive to pursue optimal solutions in theory. However, in practice, solving problems can sometimes be quite costly. Therefore, for these problems we should employ heuristic methods as a tradeoff. It is essential to experiment and iterate in order to discover better solutions.\\
+We will continue to refine this project by optimizing the heuristic methods, which we believe will reduce solving time and improve solution quality.
+
+
+\section{Acknowledgements}
+
+We want to give a big thank you to Prof. Enric Rodriguez and Prof. Luis Velasco for all their guidance and support throughout this report and during the whole course. Your help has truly meant a lot to us!
+
+\newpage
+\appendix
+
+\section{Pseudocode of Auxiliary Functions for Directed Graph}
+
+
+Some auxiliary functions are utilized to process directed graphs for the \textit{Greedy}, \textit{Local Search}, and \textit{GRASP} methods.
+\begin{itemize}
+    \item The function $TopologicalSort$ implements \textbf{\textit{Kahn's algorithm}} to obtain the topological sort of a directed graph, which has $CoveredMembers$ as vertices and $Solution$ (in Greedy method, it is the partial solution) as edges. If there are edges remaining, this indicates that a cycle exists in the graph.
+    \item The function $TrimGraph$ continues to eliminate all vertices with zero indegree or zero outdegree until every remaining edge is part of a cycle.
+\end{itemize}
+
+\begin{algorithm}[H]
+\renewcommand{\thealgorithm}{}
+\caption{Auxiliary functions For Directed Graph}
+\begin{algorithmic}
+
+\Function{GetVerticesFromEdges}{$edges$}
+\State $vertices \gets \phi$
+\For{\textbf{each} $<i,j> \in edges$}
+\State $vertices \gets vertices \cup {i, j}$
+\EndFor
+\State \Return $vertices$
+\EndFunction
+
+\Statex
+
+\Function{ConstructNeighbors}{$vertices$, $eges$}
+\State $neighbors \gets \phi$
+\For{\textbf{each} $<i,j> \in edges$}
+\State $neighbors(i) \gets neighbors(i) \cup {j}$
+\EndFor
+\State \Return $neighbors$
+\EndFunction
+
+\Statex
+
+\Function{TopologicalSort}{$edges$}
+\State $topologicalOrder, indegree \gets \phi, \phi$
+\State $neighbors \gets ConstructNeighbors(vertices, edges)$
+\For{\textbf{each} $vertex \in vertices$}
+    \For{\textbf{each} $neighbor \in neighbors(vetex)$}
+        \State $indegree(neighbor) \gets indegree(neighbor) + 1$
+    \EndFor
+\EndFor
+\State $nodesWithZeroIndegree \gets \{vertex \in vertices| indegree(vertex) = 0\}$
+\While{$nodesWithZeroIndegree \neq \phi$}
+    \State $node \gets nodesWithZeroIndegree.\textrm{POP}()$
+    \State $topologicalOrder \gets topologicalOrder \cup \{node\}$
+    \For{\textbf{each} $neighbor \in neighbors(node)$}
+        \State $indegree(node) \gets indegree(node) - 1$
+        \If{$indegree(neighbor) = 0$}
+            \State $nodesWithZeroIndegree \gets nodesWithZeroIndegree \cup \{neighbor\}$
+        \EndIf
+    \EndFor
+\EndWhile
+\State \Return $topologicalOrder$
+\EndFunction
+
+\algstore{graph}
+\end{algorithmic}
+\end{algorithm}
+
+\newpage
+
+\begin{algorithm}
+\begin{algorithmic}
+\algrestore{graph}
+
+\Function{TrimGraph}{$edges$}
+\State $indegree, outdegree, previousEdges \gets \phi, \phi, \phi$
+\State $vertices \gets GetVerticesFromEdges(edges)$
+\State $neighbors \gets ConstructNeighbors(vertices, edges)$
+\For{\textbf{each} $vertex \in vertices$}
+    \State $outdegree(vertex) \gets \lvert neighbors(vertex) \rvert$
+    \For{\textbf{each} $neighbor \in neighbors(vetex)$}
+        \State $indegree(neighbor) \gets indegree(neighbor) + 1$
+    \EndFor
+\EndFor
+\State $nodesWithZeroIndegree \gets \{vertex \in vertices| indegree(vertex) = 0\}$
+\State $nodesWithZeroOutdegree \gets \{vertex \in vertices| outdegree(vertex) = 0\}$
+\While{$edges \subset previousEdges $}
+\State $previousEdges \gets edges$
+\While{$nodesWithZeroIndegree \neq \phi$}
+    \State $node \gets nodesWithZeroIndegree.\textrm{POP}()$
+    \For{\textbf{each} $neighbor \in neighbors(node)$}
+        \State $indegree(node) \gets indegree(node) - 1$
+        \State $outdegree(node) \gets outdegree(node) - 1$
+        \If{$<node, neighbor>$}
+             \State $edges.\textrm{REMOVE}(<node, neighbor>)$
+        \EndIf
+        \If{$indegree(neighbor) = 0$}
+            \State $nodesWithZeroIndegree \gets nodesWithZeroIndegree \cup \{neighbor\}$
+        \EndIf
+        \If{$outdegree(node) = 0$}
+            \State $nodesWithZeroOutdegree \gets nodesWithZeroOutdegree \cup \{node\}$
+        \EndIf
+    \EndFor
+\EndWhile
+\While{$nodesWithZeroOutdegree \neq \phi$}
+    \State $node \gets nodesWithZeroOutdegree.\textrm{POP}()$
+    \For{\textbf{each} $node' \in neighbors$}
+    \If{$outdegree(node')> 0$ AND $node \in neighbors(node')$ }
+    \State $outdegree(node') \gets outdegree(node') - 1$
+    \State $indegree(node) \gets indegree(node) - 1$
+    \If{$<node', node> \in edges$}
+        \State $edges.\textrm{REMOVE}(<node', node>)$
+    \EndIf
+    \If{$outdegree(node') = 0$}
+        \State $nodesWithZeroOutdegree \gets nodesWithZeroOutdegree \cup \{node'\}$
+    \EndIf
+    \If{$indegree(node) = 0$}
+        \State $nodesWithZeroIndegree \gets nodesWithZeroIndegree \cup \{node\}$
+    \EndIf
+    \EndIf
+    \EndFor
+\EndWhile
+\EndWhile
+\State \Return $edges, indegree, outdegree$
+\EndFunction
+
+\end{algorithmic}
+\end{algorithm}
+
+\section{Source Code}
+
+All code implementations of heuristic methods and ILP model are available at \href{https://github.com/tmactong/AMMM-project}{Github Repo}.\\
+The \href{https://github.com/tmactong/AMMM-project/blob/main/README.md}{README} provides the explanation of how to use the code to solve the problem.
+ 
+\end{document}

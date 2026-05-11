@@ -1,0 +1,15 @@
+# file name: ../AMMMLabHeuristics/data/instance_XX.dat
+instancesDirectory = output;
+fileNamePrefix = test2;
+fileNameExtension = dat;
+numInstances = 1;
+
+numBases = 10;
+minHours = 5;
+maxHours = 30;
+
+numSpecialists = 30;
+minCapacity= 3;
+maxCapacity = 100;
+minFee = 10;
+maxFee = 100;
