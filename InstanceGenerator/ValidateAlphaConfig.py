@@ -1,46 +1,38 @@
-'''
-AMMM P2 Instance Generator v2.0
-Config attributes validator.
-Copyright 2020 Luis Velasco
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
+"""
+AMMM Project Heuristics
+Alpha Tuning Config attributes validator.
+"""
 
 from AMMMGlobals import AMMMException
 
 
-class ValidateConfig(object):
-    # Validate config attributes read from a DAT file.
+class ValidateAlphaConfig(object):
+    # Validate config attributes read from a DAT file for alpha tuning.
 
     @staticmethod
     def validate(data):
         # Validate that mandatory input parameters were found
         paramList = ['instancesDirectory', 'fileNamePrefix', 'fileNameExtension', 'numInstances',
-                      'numBases', 'minHours', 'maxHours',
-                      'numSpecialists', 'minCapacity', 'maxCapacity','minFee', 'maxFee']
+                     'numBases', 'minHours', 'maxHours',
+                     'numSpecialists', 'minCapacity', 'maxCapacity', 'minFee', 'maxFee',
+                     'alphaValues', 'numRunsPerAlpha', 'outputFile', 'verbose']
+
         for paramName in paramList:
             if paramName not in data.__dict__:
-                raise AMMMException('Parameter(%s) has not been not specified in Configuration' % str(paramName))
+                raise AMMMException('Parameter(%s) has not been specified in Configuration' % str(paramName))
 
+        # Validate instance generation parameters
         instancesDirectory = data.instancesDirectory
-        if len(instancesDirectory) == 0: raise AMMMException('Value for instancesDirectory is empty')
+        if len(instancesDirectory) == 0:
+            raise AMMMException('Value for instancesDirectory is empty')
 
         fileNamePrefix = data.fileNamePrefix
-        if len(fileNamePrefix) == 0: raise AMMMException('Value for fileNamePrefix is empty')
+        if len(fileNamePrefix) == 0:
+            raise AMMMException('Value for fileNamePrefix is empty')
 
         fileNameExtension = data.fileNameExtension
-        if len(fileNameExtension) == 0: raise AMMMException('Value for fileNameExtension is empty')
+        if len(fileNameExtension) == 0:
+            raise AMMMException('Value for fileNameExtension is empty')
 
         numInstances = data.numInstances
         if not isinstance(numInstances, int) or (numInstances <= 0):
@@ -82,8 +74,29 @@ class ValidateConfig(object):
 
         maxFee = data.maxFee
         if not isinstance(maxFee, int) or (maxFee <= 0):
-            raise AMMMException('masFee(%s) has to be a positive integer value.' % str(maxFee))
+            raise AMMMException('maxFee(%s) has to be a positive integer value.' % str(maxFee))
 
         if maxFee < minFee:
             raise AMMMException('maxFee(%s) has to be >= minFee(%s).' % (str(maxFee), str(minFee)))
 
+        # Validate alpha tuning specific parameters
+        data.alphaValues = list(data.alphaValues)
+        alphaValues = data.alphaValues
+        if len(alphaValues) == 0:
+            raise AMMMException('alphaValues list is empty')
+
+        for alpha in alphaValues:
+            if not isinstance(alpha, (int, float)) or (alpha < 0.0) or (alpha > 1.0):
+                raise AMMMException('Alpha value(%s) must be between 0.0 and 1.0.' % str(alpha))
+
+        numRunsPerAlpha = data.numRunsPerAlpha
+        if not isinstance(numRunsPerAlpha, int) or (numRunsPerAlpha <= 0):
+            raise AMMMException('numRunsPerAlpha(%s) has to be a positive integer value.' % str(numRunsPerAlpha))
+
+        outputFile = data.outputFile
+        if len(outputFile) == 0:
+            raise AMMMException('Value for outputFile is empty')
+
+        verbose = data.verbose
+        if not isinstance(verbose, bool):
+            raise AMMMException('verbose(%s) has to be a boolean value.' % str(verbose))

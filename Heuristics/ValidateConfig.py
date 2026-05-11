@@ -55,7 +55,9 @@ class ValidateConfig(object):
         solver = data.solver
         if solver == 'Greedy' or solver == 'Random':
             # Validate that mandatory input parameters for Greedy solver were found
-            pass
+            if not 'minCut' in data.__dict__ :
+                raise AMMMException(
+                    'Parameter/Set(%s) not contained in Configuration. Required by Greedy solver.' % str('minCut'))
         elif solver == 'GRASP':
             # Validate that mandatory input parameters for GRASP solver were found
             for paramName in ['maxExecTime', 'alpha']:
@@ -113,8 +115,8 @@ class ValidateConfig(object):
 
             # Validate neighborhoodStrategy
             neighborhoodStrategy = data.neighborhoodStrategy
-            if neighborhoodStrategy not in ['TaskExchange', 'Reassignment']:
-                raise AMMMException('neighborhoodStrategy(%s) has to be one of [Reassignment, Exchange].' % str(neighborhoodStrategy))
+            if neighborhoodStrategy not in ['Remove', 'Replace']:
+                raise AMMMException('neighborhoodStrategy(%s) has to be one of [Remove, Replace].' % str(neighborhoodStrategy))
 
             # Validate policy
             policy = data.policy

@@ -1,18 +1,19 @@
 # --- Common specific parameters ------------------------------------------------------------------------------
-inputDataFile        = data/01_small.dat;           # Input DAT file
+inputDataFile        = data/03_small_infeasible_mincut.dat;           # Input DAT file
 solutionFile         = solutions/example.sol;       # Output DAT file (solution)
-solver               = Greedy;                      # Supported solvers: Greedy / GRASP
-maxExecTime          = 60;                          # Maximum execution time in seconds
+solver               = GRASP;                      # Supported solvers: Greedy / GRASP
+maxExecTime          = 10;                          # Maximum execution time in seconds
 verbose              = True;                        # Verbose mode?
 
 # --- Greedy / Random specific parameters ---------------------------------------------------------------------
-# No specific parameters
+minCut               = Karger;                      # Algorithm for Min Cut : Karger / Stoer-Wagner
+
 
 # --- GRASP constructive specific parameters ------------------------------------------------------------------
 # Ignored if solver is not GRASP.
 alpha                = 0.7;                 # Alpha parameter for the GRASP solver.
 
 # --- Local Search specific parameters ------------------------------------------------------------------------
-localSearch          = False;                # Enable local search?
+localSearch          = True;                # Enable local search?
 neighborhoodStrategy = TaskExchange;        # Supported Neighborhoods: TaskExchange
 policy               = FirstImprovement;    # Supported Policies: FirstImprovement / BestImprovement

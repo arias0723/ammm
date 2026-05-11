@@ -22,9 +22,15 @@ class Solver_GRASP(_Solver):
     def _computeMinCut(self):
         pipes = self.instance.getPipes()
         nBases = self.instance.getNumBases()
-        # cut_weight, partition = StoerWagner(nBases, pipes)
-        cut_weight, partition = Karger(nBases, pipes, 1)
-
+        if self.config.minCut == "Karger" :
+            cut_weight, partition = Karger(nBases, pipes, 1)
+            if self.config.verbose:
+                print('Running Karger MinCut ...')
+        else :
+            cut_weight, partition = StoerWagner(nBases, pipes)
+            if self.config.verbose:
+                print('Running Stoer-Wagner MinCut ...')
+        if self.config.verbose: print('MinCut: ' + str(partition))
         return partition
 
     def _getCutPipes(self, partition):

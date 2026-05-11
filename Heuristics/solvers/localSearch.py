@@ -154,19 +154,20 @@ class LocalSearch(_Solver):
 
 
     def exploreNeighborhood(self, solution):
-        # TODO: Use config parameter and IF
+        neighbor = solution
 
-        # First try Remove (cheapest improvement)
-        improved = self._exploreRemove(solution)
-        if improved.getFitness() < solution.getFitness():
-            return improved
+        if self.config.neighborhoodStrategy == 'Remove' :
+            # Explore Remove
+            improved = self._exploreRemove(solution)
+            if improved.getFitness() < solution.getFitness():
+                neighbor=improved
+        else :
+            # Explore Replace
+            improved = self._exploreReplace(solution)
+            if (improved.getFitness() < solution.getFitness()):
+                neighbor = improved
 
-        # Then try Replace
-        improved = self._exploreReplace(solution)
-        if improved.getFitness() < solution.getFitness():
-            return improved
-
-        return solution
+        return neighbor
 
 
     def solve(self, **kwargs):
@@ -191,8 +192,14 @@ class LocalSearch(_Solver):
                 break
             neighborFitness = neighbor.getFitness()
             if incumbentFitness <= neighborFitness:
+                if self.config.verbose:
+                    print(f" Local optimum reached after {iterations} iterations")
                 break
             incumbent = neighbor
             incumbentFitness = neighborFitness
+
+        if self.config.verbose:
+            print(f" Final cost: {incumbentFitness:.2f} "
+                  f"(improvement: {initialSolution.getFitness() - incumbentFitness:.2f})")
 
         return incumbent
