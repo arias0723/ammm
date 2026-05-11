@@ -1,8 +1,7 @@
 """
 AMMM Project Heuristics
-GRASP solver for the Stoer-Wagner + Resource Allocation approach.
 
-Phase 1: Stoer-Wagner min-cut (deterministic).
+Phase 1: Min-cut to determine the partition and cut pipes.
 Phase 2: GRASP construction + local search for resource allocation.
 
 The randomization is in the specialist selection during assignment:
@@ -12,6 +11,7 @@ instead of always picking the best cost-effective specialist, we use an RCL.
 import random
 import time
 from Heuristics.solver import _Solver
+from Heuristics.solvers.karger import Karger
 from Heuristics.solvers.stoer_wagner import StoerWagner
 from Heuristics.solvers.localSearch import LocalSearch
 from Heuristics.problem.solution import Solution
@@ -20,16 +20,17 @@ from Heuristics.problem.solution import Solution
 class Solver_GRASP(_Solver):
 
     def _computeMinCut(self):
-        """Find the min-cut partition."""
         pipes = self.instance.getPipes()
         nBases = self.instance.getNumBases()
-        cut_weight, partition = StoerWagner(nBases, pipes)
+        # cut_weight, partition = StoerWagner(nBases, pipes)
+        cut_weight, partition = Karger(nBases, pipes, 1)
+
         return partition
 
     def _getCutPipes(self, partition):
-        """Pipes crossing the partition."""
         pipes = self.instance.getPipes()
         return [p for p in pipes if partition[p.getBaseI()] != partition[p.getBaseJ()]]
+
 
     def _greedyRandomizedConstruction(self, alpha, partition, cutPipes):
         """
@@ -41,27 +42,27 @@ class Solver_GRASP(_Solver):
         nBases = self.instance.getNumBases()
         specialists = self.instance.getSpecialists()
 
-        solution = Solution2(nBases, partition, cutPipes, specialists)
+        solution = Solution(nBases, partition, cutPipes, specialists)
 
         if not cutPipes:
             solution.makeInfeasible()
             return solution
 
-        # Randomize pipe processing order (bias toward high demand)
+        # Sort cut pipes by demand descending (hardest first)
         sortedPipes = sorted(cutPipes, key=lambda p: p.getDemand(), reverse=True)
+
+        # Sort specialists by cost-effectiveness (cost/capacity, lower = better)
+        sortedSpecs = sorted(specialists, key=lambda s: s.getCostEffectiveness())
 
         for pipe in sortedPipes:
             pipeId = pipe.getId()
 
             while not solution.isPipeCovered(pipeId):
-                # Available specialists (not yet assigned)
-                available = [s for s in specialists if not solution.isSpecialistAssigned(s.getId())]
+                # Available specialists
+                available = [s for s in sortedSpecs if not solution.isSpecialistAssigned(s.getId())]
                 if not available:
                     solution.makeInfeasible()
                     return solution
-
-                # Sort by cost-effectiveness
-                available.sort(key=lambda s: s.getCostEffectiveness())
 
                 # Build RCL
                 bestCE = available[0].getCostEffectiveness()
@@ -73,8 +74,8 @@ class Solver_GRASP(_Solver):
                     rcl = [available[0]]
 
                 # Pick randomly from RCL
-                selected = random.choice(rcl)
-                solution.assign(selected.getId(), pipeId)
+                selectedSpec = random.choice(rcl)
+                solution.assign(selectedSpec.getId(), pipeId)
 
         solution.evaluate()
         return solution
@@ -90,7 +91,7 @@ class Solver_GRASP(_Solver):
         partition = self._computeMinCut()
         cutPipes = self._getCutPipes(partition)
 
-        incumbent = Solution2(
+        incumbent = Solution(
             self.instance.getNumBases(), partition, cutPipes, self.instance.getSpecialists()
         )
         incumbent.makeInfeasible()
@@ -107,7 +108,7 @@ class Solver_GRASP(_Solver):
             solution = self._greedyRandomizedConstruction(alpha, partition, cutPipes)
 
             if self.config.localSearch and solution.isFeasible():
-                ls = LocalSearch2(self.config, None)
+                ls = LocalSearch(self.config, None)
                 endTime = self.startTime + self.config.maxExecTime
                 solution = ls.solve(solution=solution, startTime=self.startTime, endTime=endTime)
 

@@ -1,7 +1,7 @@
 """
 AMMM Project Heuristics
 
-Phase 1: Stoer-Wagner min-cut to determine the partition and cut pipes.
+Phase 1: Min-cut to determine the partition and cut pipes.
 Phase 2: Greedy resource allocation of specialists to cut pipes.
 """
 
