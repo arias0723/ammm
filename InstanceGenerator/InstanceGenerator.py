@@ -62,8 +62,8 @@ class InstanceGenerator(object):
                         pipeHours[k][r] = value
                         pipeHours[r][k] = value
 
-            fInstance.write('numBases=%d;\n' % numBases)
-            fInstance.write('numSpecialists=%d;\n' % numSpecialists)
+            fInstance.write('n=%d;\n' % numBases)
+            fInstance.write('m=%d;\n' % numSpecialists)
 
             # translate vector of floats into vector of strings and concatenate that strings separating them by a single space character
             fInstance.write('c=[%s];\n' % (' '.join(map(str, specialistFee))))

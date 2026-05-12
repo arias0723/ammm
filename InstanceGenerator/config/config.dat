@@ -4,12 +4,12 @@ fileNamePrefix = test2;
 fileNameExtension = dat;
 numInstances = 1;
 
-numBases = 10;
-minHours = 5;
-maxHours = 30;
+numBases = 1000;
+minHours = 10;
+maxHours = 100;
 
-numSpecialists = 30;
-minCapacity= 3;
+numSpecialists = 1000;
+minCapacity= 10;
 maxCapacity = 100;
-minFee = 10;
-maxFee = 100;
+minFee = 100;
+maxFee = 200;
