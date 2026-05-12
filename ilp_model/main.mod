@@ -4,28 +4,28 @@ main {
 	var def = new IloOplModelDefinition(src);
 	var cplex = new IloCplex();
 	var model = new IloOplModel(def,cplex);
-	var data = new IloOplDataSource("project.1.dat");
+	var data = new IloOplDataSource("04_big.dat");
 	model.addDataSource(data);
 	model.generate();
 	
 	var start = new Date();
 	var start_time = start.getTime();
 	
-	cplex.epgap=0.01;
+//	cplex.epgap=0.01;
 	
 	// POSTPROCESSING AND SOLUTION
 	if(cplex.solve()) {
 		writeln("OBJECTIVE: " + cplex.getObjValue());
 		writeln();
-		write("PATH: 0 -> ")
-		for (var i in model.nodes){
-        	for (var j in model.nodes){
-            	if (model.x[i][j] != 0) {
-              		write(j, " -> ");
-				}		
-			}		
-		}
-	writeln("0");
+//		write("PATH: 0 -> ")
+//		for (var i in model.nodes){
+//        	for (var j in model.nodes){
+//            	if (model.x[i][j] != 0) {
+//              		write(j, " -> ");
+//				}		
+//			}		
+//		}
+//	writeln("0");
 	writeln();
 	}	
 	else{

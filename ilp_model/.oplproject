@@ -6,9 +6,6 @@
         		
         <config default="true" name="Configuration1" category="opl">
             			
-            <ref name="settings.ops" type="setting">
-			</ref>
-            			
             <ref name="main.mod" type="model">
 			</ref>
             		
