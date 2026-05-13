@@ -156,13 +156,12 @@ class LocalSearch(_Solver):
     def exploreNeighborhood(self, solution):
         neighbor = solution
 
+        # TODO: Implement BOTH policy
         if self.config.neighborhoodStrategy == 'Remove' :
-            # Explore Remove
             improved = self._exploreRemove(solution)
             if improved.getFitness() < solution.getFitness():
-                neighbor=improved
-        else :
-            # Explore Replace
+                neighbor = improved
+        else:
             improved = self._exploreReplace(solution)
             if (improved.getFitness() < solution.getFitness()):
                 neighbor = improved
@@ -173,7 +172,7 @@ class LocalSearch(_Solver):
     def solve(self, **kwargs):
         initialSolution = kwargs.get('solution', None)
         if initialSolution is None:
-            raise AMMMException('[local search 2] No solution provided')
+            raise AMMMException('[local search] No solution provided')
 
         if not initialSolution.isFeasible():
             return initialSolution
@@ -187,19 +186,22 @@ class LocalSearch(_Solver):
 
         while time.time() < endTime:
             iterations += 1
+
             neighbor = self.exploreNeighborhood(incumbent)
             if neighbor is None:
                 break
             neighborFitness = neighbor.getFitness()
+
             if incumbentFitness <= neighborFitness:
-                if self.config.verbose:
-                    print(f" Local optimum reached after {iterations} iterations")
+                # if self.config.verbose:
+                #     print(f" Local optimum reached after {iterations} iterations")
                 break
+
             incumbent = neighbor
             incumbentFitness = neighborFitness
 
-        if self.config.verbose:
-            print(f" Final cost: {incumbentFitness:.2f} "
-                  f"(improvement: {initialSolution.getFitness() - incumbentFitness:.2f})")
+        # if self.config.verbose:
+        #     print(f" Final cost: {incumbentFitness:.2f} "
+        #           f"(improvement: {initialSolution.getFitness() - incumbentFitness:.2f})")
 
         return incumbent

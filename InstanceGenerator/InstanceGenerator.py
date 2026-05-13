@@ -19,6 +19,7 @@ class InstanceGenerator(object):
         numInstances = self.config.numInstances
 
         numBases = self.config.numBases
+        nPipes = self.config.numPipes
         minHours = self.config.minHours
         maxHours = self.config.maxHours
 
@@ -50,17 +51,35 @@ class InstanceGenerator(object):
             for a in range(numBases):
                 pipeHours[a][a] = 0
 
-            for b in range(1, numBases):
-                value = random.randint(minHours, maxHours)
-                pipeHours[b][b - 1] = value
-                pipeHours[b - 1][b] = value
+            added_edges = 0
+            # Generate a random spanning tree to ensure connectivity
+            connected_nodes = [0]
+            unconnected_nodes = list(range(1, numBases))
+            random.shuffle(unconnected_nodes)
 
+            while unconnected_nodes:
+                u = random.choice(connected_nodes)
+                v = unconnected_nodes.pop()
+                value = random.randint(minHours, maxHours)
+                pipeHours[u][v] = value
+                pipeHours[v][u] = value
+                connected_nodes.append(v)
+                added_edges += 1
+
+            possible_edges = []
             for k in range(numBases):
                 for r in range(k + 1, numBases):
-                    if pipeHours[k][r] == -1 and random.random() < 0.8 :
-                        value = random.randint(minHours, maxHours)
-                        pipeHours[k][r] = value
-                        pipeHours[r][k] = value
+                    if pipeHours[k][r] == -1:
+                        possible_edges.append((k, r))
+            
+            random.shuffle(possible_edges)
+
+            while added_edges < nPipes and possible_edges:
+                k, r = possible_edges.pop()
+                value = random.randint(minHours, maxHours)
+                pipeHours[k][r] = value
+                pipeHours[r][k] = value
+                added_edges += 1
 
             fInstance.write('n=%d;\n' % numBases)
             fInstance.write('m=%d;\n' % numSpecialists)
