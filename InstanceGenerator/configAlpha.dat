@@ -1,5 +1,3 @@
-# Configuration file for Alpha Tuning
-
 # Instance generation parameters
 instancesDirectory = instances_tuning/;
 fileNamePrefix = tuning_instance;
@@ -7,15 +5,17 @@ fileNameExtension = dat;
 numInstances = 10;
 
 # Problem size parameters
-numBases = 20;
-minHours = 5;
-maxHours = 30;
+numBases = 500;
+minHours = 100;
+maxHours = 500;
 
-numSpecialists = 50;
-minCapacity = 10;
-maxCapacity = 100;
-minFee = 10;
-maxFee = 100;
+numPipes = 5000;
+
+numSpecialists = 500;
+minCapacity= 300;
+maxCapacity = 500;
+minFee = 200;
+maxFee = 300;
 
 # Alpha tuning parameters
 alphaValues = [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0];
