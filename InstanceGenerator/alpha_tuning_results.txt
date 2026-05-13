@@ -1,0 +1,495 @@
+================================================================================
+ALPHA PARAMETER TUNING RESULTS
+================================================================================
+
+Alpha      Mean Obj        Best Obj        Worst Obj       Success %   
+--------------------------------------------------------------------------------
+0.0        3105.06         1802.00         3718.80         100.0       
+0.1        2974.76         1203.00         3423.80         100.0       
+0.2        2947.60         1203.00         3719.00         100.0       
+0.3        3071.80         1600.00         3507.40         100.0       
+0.4        2901.48         1203.00         3574.80         100.0       
+0.5        3137.50         1802.00         3879.40         100.0       
+0.6        2987.18         1602.00         3636.80         100.0       
+0.7        3093.72         1600.00         4630.20         100.0       
+0.8        3035.86         1203.00         3292.20         100.0       
+0.9        2888.96         1602.00         3719.00         100.0       
+1.0        2949.26         1805.00         3635.00         100.0       
+
+================================================================================
+DETAILED RESULTS PER INSTANCE
+================================================================================
+
+
+Alpha = 0.0
+--------------------------------------------------------------------------------
+  tuning_instance_0.dat:
+    Mean: 2863.60, Best: 2007.00, Worst: 4863.00, StdDev: 1183.71
+    Success rate: 5/5
+    Average time: 3.789s
+  tuning_instance_1.dat:
+    Mean: 3027.00, Best: 2420.00, Worst: 3838.00, StdDev: 672.30
+    Success rate: 5/5
+    Average time: 2.805s
+  tuning_instance_2.dat:
+    Mean: 3261.20, Best: 2815.00, Worst: 3828.00, StdDev: 439.45
+    Success rate: 5/5
+    Average time: 3.863s
+  tuning_instance_3.dat:
+    Mean: 3718.80, Best: 2214.00, Worst: 6088.00, StdDev: 1425.36
+    Success rate: 5/5
+    Average time: 4.860s
+  tuning_instance_4.dat:
+    Mean: 2486.80, Best: 1802.00, Worst: 3008.00, StdDev: 464.63
+    Success rate: 5/5
+    Average time: 1.904s
+  tuning_instance_5.dat:
+    Mean: 3111.00, Best: 1808.00, Worst: 4047.00, StdDev: 894.12
+    Success rate: 5/5
+    Average time: 2.846s
+  tuning_instance_6.dat:
+    Mean: 3543.80, Best: 2209.00, Worst: 4639.00, StdDev: 1087.22
+    Success rate: 5/5
+    Average time: 3.196s
+  tuning_instance_7.dat:
+    Mean: 2889.80, Best: 2608.00, Worst: 3211.00, StdDev: 303.88
+    Success rate: 5/5
+    Average time: 2.084s
+  tuning_instance_8.dat:
+    Mean: 3173.20, Best: 2206.00, Worst: 3821.00, StdDev: 733.88
+    Success rate: 5/5
+    Average time: 1.756s
+  tuning_instance_9.dat:
+    Mean: 2975.40, Best: 2008.00, Worst: 3420.00, StdDev: 559.52
+    Success rate: 5/5
+    Average time: 1.732s
+
+Alpha = 0.1
+--------------------------------------------------------------------------------
+  tuning_instance_0.dat:
+    Mean: 3025.00, Best: 2216.00, Worst: 4451.00, StdDev: 886.30
+    Success rate: 5/5
+    Average time: 4.062s
+  tuning_instance_1.dat:
+    Mean: 2702.00, Best: 2417.00, Worst: 3636.00, StdDev: 529.31
+    Success rate: 5/5
+    Average time: 2.459s
+  tuning_instance_2.dat:
+    Mean: 3423.80, Best: 3219.00, Worst: 3828.00, StdDev: 248.44
+    Success rate: 5/5
+    Average time: 4.407s
+  tuning_instance_3.dat:
+    Mean: 2987.80, Best: 2215.00, Worst: 3639.00, StdDev: 633.64
+    Success rate: 5/5
+    Average time: 2.825s
+  tuning_instance_4.dat:
+    Mean: 3336.60, Best: 2405.00, Worst: 4634.00, StdDev: 1021.20
+    Success rate: 5/5
+    Average time: 3.376s
+  tuning_instance_5.dat:
+    Mean: 2703.00, Best: 1806.00, Worst: 4046.00, StdDev: 1000.06
+    Success rate: 5/5
+    Average time: 2.680s
+  tuning_instance_6.dat:
+    Mean: 2572.40, Best: 1203.00, Worst: 3825.00, StdDev: 961.05
+    Success rate: 5/5
+    Average time: 1.787s
+  tuning_instance_7.dat:
+    Mean: 3210.80, Best: 2405.00, Worst: 4017.00, StdDev: 587.47
+    Success rate: 5/5
+    Average time: 2.446s
+  tuning_instance_8.dat:
+    Mean: 2365.60, Best: 1804.00, Worst: 2807.00, StdDev: 519.19
+    Success rate: 5/5
+    Average time: 1.250s
+  tuning_instance_9.dat:
+    Mean: 3420.60, Best: 2812.00, Worst: 3826.00, StdDev: 475.97
+    Success rate: 5/5
+    Average time: 2.228s
+
+Alpha = 0.2
+--------------------------------------------------------------------------------
+  tuning_instance_0.dat:
+    Mean: 3309.40, Best: 2209.00, Worst: 4245.00, StdDev: 809.59
+    Success rate: 5/5
+    Average time: 4.373s
+  tuning_instance_1.dat:
+    Mean: 3719.00, Best: 2625.00, Worst: 5471.00, StdDev: 1072.54
+    Success rate: 5/5
+    Average time: 4.366s
+  tuning_instance_2.dat:
+    Mean: 2775.60, Best: 2007.00, Worst: 3831.00, StdDev: 736.18
+    Success rate: 5/5
+    Average time: 3.013s
+  tuning_instance_3.dat:
+    Mean: 2500.40, Best: 2017.00, Worst: 3024.00, StdDev: 393.76
+    Success rate: 5/5
+    Average time: 2.351s
+  tuning_instance_4.dat:
+    Mean: 3336.40, Best: 2807.00, Worst: 4024.00, StdDev: 564.57
+    Success rate: 5/5
+    Average time: 2.877s
+  tuning_instance_5.dat:
+    Mean: 3431.40, Best: 2819.00, Worst: 4455.00, StdDev: 613.92
+    Success rate: 5/5
+    Average time: 3.793s
+  tuning_instance_6.dat:
+    Mean: 2452.80, Best: 1203.00, Worst: 4030.00, StdDev: 1247.06
+    Success rate: 5/5
+    Average time: 1.975s
+  tuning_instance_7.dat:
+    Mean: 2931.60, Best: 2407.00, Worst: 3823.00, StdDev: 581.78
+    Success rate: 5/5
+    Average time: 1.960s
+  tuning_instance_8.dat:
+    Mean: 2003.80, Best: 1803.00, Worst: 2807.00, StdDev: 449.00
+    Success rate: 5/5
+    Average time: 1.032s
+  tuning_instance_9.dat:
+    Mean: 3015.60, Best: 2207.00, Worst: 4029.00, StdDev: 729.92
+    Success rate: 5/5
+    Average time: 1.767s
+
+Alpha = 0.3
+--------------------------------------------------------------------------------
+  tuning_instance_0.dat:
+    Mean: 3267.60, Best: 2414.00, Worst: 3838.00, StdDev: 633.85
+    Success rate: 5/5
+    Average time: 4.131s
+  tuning_instance_1.dat:
+    Mean: 2660.00, Best: 2215.00, Worst: 3026.00, StdDev: 300.53
+    Success rate: 5/5
+    Average time: 2.398s
+  tuning_instance_2.dat:
+    Mean: 3507.40, Best: 2007.00, Worst: 5660.00, StdDev: 1570.25
+    Success rate: 5/5
+    Average time: 5.698s
+  tuning_instance_3.dat:
+    Mean: 3393.20, Best: 2627.00, Worst: 4652.00, StdDev: 791.31
+    Success rate: 5/5
+    Average time: 3.224s
+  tuning_instance_4.dat:
+    Mean: 2848.80, Best: 1600.00, Worst: 3817.00, StdDev: 916.93
+    Success rate: 5/5
+    Average time: 2.723s
+  tuning_instance_5.dat:
+    Mean: 3065.20, Best: 1806.00, Worst: 4246.00, StdDev: 867.64
+    Success rate: 5/5
+    Average time: 3.445s
+  tuning_instance_6.dat:
+    Mean: 2530.20, Best: 1805.00, Worst: 3014.00, StdDev: 505.82
+    Success rate: 5/5
+    Average time: 1.596s
+  tuning_instance_7.dat:
+    Mean: 3416.60, Best: 2809.00, Worst: 4024.00, StdDev: 495.62
+    Success rate: 5/5
+    Average time: 2.254s
+  tuning_instance_8.dat:
+    Mean: 3295.20, Best: 2204.00, Worst: 5240.00, StdDev: 1300.69
+    Success rate: 5/5
+    Average time: 2.177s
+  tuning_instance_9.dat:
+    Mean: 2733.80, Best: 1602.00, Worst: 4436.00, StdDev: 1150.19
+    Success rate: 5/5
+    Average time: 1.575s
+
+Alpha = 0.4
+--------------------------------------------------------------------------------
+  tuning_instance_0.dat:
+    Mean: 2860.60, Best: 2007.00, Worst: 3431.00, StdDev: 599.70
+    Success rate: 5/5
+    Average time: 3.461s
+  tuning_instance_1.dat:
+    Mean: 2782.40, Best: 2214.00, Worst: 3431.00, StdDev: 484.45
+    Success rate: 5/5
+    Average time: 2.640s
+  tuning_instance_2.dat:
+    Mean: 3140.80, Best: 2613.00, Worst: 3829.00, StdDev: 529.17
+    Success rate: 5/5
+    Average time: 3.470s
+  tuning_instance_3.dat:
+    Mean: 3148.40, Best: 2213.00, Worst: 3636.00, StdDev: 584.95
+    Success rate: 5/5
+    Average time: 3.204s
+  tuning_instance_4.dat:
+    Mean: 3173.00, Best: 2206.00, Worst: 3817.00, StdDev: 627.79
+    Success rate: 5/5
+    Average time: 2.739s
+  tuning_instance_5.dat:
+    Mean: 2293.60, Best: 1806.00, Worst: 3026.00, StdDev: 666.76
+    Success rate: 5/5
+    Average time: 2.237s
+  tuning_instance_6.dat:
+    Mean: 2660.20, Best: 1203.00, Worst: 6883.00, StdDev: 2373.38
+    Success rate: 5/5
+    Average time: 2.453s
+  tuning_instance_7.dat:
+    Mean: 3574.80, Best: 3211.00, Worst: 4221.00, StdDev: 414.00
+    Success rate: 5/5
+    Average time: 2.769s
+  tuning_instance_8.dat:
+    Mean: 2729.40, Best: 1804.00, Worst: 3824.00, StdDev: 736.85
+    Success rate: 5/5
+    Average time: 1.438s
+  tuning_instance_9.dat:
+    Mean: 2651.60, Best: 1602.00, Worst: 3420.00, StdDev: 747.52
+    Success rate: 5/5
+    Average time: 1.511s
+
+Alpha = 0.5
+--------------------------------------------------------------------------------
+  tuning_instance_0.dat:
+    Mean: 3879.40, Best: 3433.00, Worst: 4246.00, StdDev: 334.20
+    Success rate: 5/5
+    Average time: 5.323s
+  tuning_instance_1.dat:
+    Mean: 3431.20, Best: 2623.00, Worst: 4240.00, StdDev: 639.57
+    Success rate: 5/5
+    Average time: 3.575s
+  tuning_instance_2.dat:
+    Mean: 2614.00, Best: 2009.00, Worst: 3019.00, StdDev: 403.88
+    Success rate: 5/5
+    Average time: 2.476s
+  tuning_instance_3.dat:
+    Mean: 3149.60, Best: 2416.00, Worst: 3642.00, StdDev: 512.58
+    Success rate: 5/5
+    Average time: 4.280s
+  tuning_instance_4.dat:
+    Mean: 3049.20, Best: 2404.00, Worst: 3412.00, StdDev: 387.67
+    Success rate: 5/5
+    Average time: 2.767s
+  tuning_instance_5.dat:
+    Mean: 3642.40, Best: 2421.00, Worst: 6102.00, StdDev: 1448.38
+    Success rate: 5/5
+    Average time: 4.270s
+  tuning_instance_6.dat:
+    Mean: 3340.40, Best: 2210.00, Worst: 4639.00, StdDev: 877.95
+    Success rate: 5/5
+    Average time: 2.837s
+  tuning_instance_7.dat:
+    Mean: 3010.60, Best: 2808.00, Worst: 3209.00, StdDev: 200.03
+    Success rate: 5/5
+    Average time: 2.220s
+  tuning_instance_8.dat:
+    Mean: 2809.00, Best: 1802.00, Worst: 4021.00, StdDev: 819.42
+    Success rate: 5/5
+    Average time: 1.633s
+  tuning_instance_9.dat:
+    Mean: 2449.20, Best: 1804.00, Worst: 3015.00, StdDev: 437.49
+    Success rate: 5/5
+    Average time: 1.403s
+
+Alpha = 0.6
+--------------------------------------------------------------------------------
+  tuning_instance_0.dat:
+    Mean: 3636.80, Best: 2622.00, Worst: 4450.00, StdDev: 746.62
+    Success rate: 5/5
+    Average time: 4.744s
+  tuning_instance_1.dat:
+    Mean: 2863.60, Best: 2215.00, Worst: 4039.00, StdDev: 721.68
+    Success rate: 5/5
+    Average time: 2.709s
+  tuning_instance_2.dat:
+    Mean: 3018.40, Best: 2009.00, Worst: 3828.00, StdDev: 769.59
+    Success rate: 5/5
+    Average time: 3.870s
+  tuning_instance_3.dat:
+    Mean: 2785.40, Best: 2017.00, Worst: 3839.00, StdDev: 692.47
+    Success rate: 5/5
+    Average time: 5.813s
+  tuning_instance_4.dat:
+    Mean: 2810.20, Best: 1802.00, Worst: 4225.00, StdDev: 925.03
+    Success rate: 5/5
+    Average time: 2.210s
+  tuning_instance_5.dat:
+    Mean: 3106.40, Best: 2418.00, Worst: 3840.00, StdDev: 619.62
+    Success rate: 5/5
+    Average time: 3.447s
+  tuning_instance_6.dat:
+    Mean: 3220.00, Best: 2006.00, Worst: 5046.00, StdDev: 1173.31
+    Success rate: 5/5
+    Average time: 2.538s
+  tuning_instance_7.dat:
+    Mean: 2728.40, Best: 2406.00, Worst: 3813.00, StdDev: 612.61
+    Success rate: 5/5
+    Average time: 2.038s
+  tuning_instance_8.dat:
+    Mean: 3050.20, Best: 2605.00, Worst: 3615.00, StdDev: 522.02
+    Success rate: 5/5
+    Average time: 1.667s
+  tuning_instance_9.dat:
+    Mean: 2652.40, Best: 1602.00, Worst: 4029.00, StdDev: 984.26
+    Success rate: 5/5
+    Average time: 1.525s
+
+Alpha = 0.7
+--------------------------------------------------------------------------------
+  tuning_instance_0.dat:
+    Mean: 2902.00, Best: 2414.00, Worst: 4042.00, StdDev: 683.99
+    Success rate: 5/5
+    Average time: 3.273s
+  tuning_instance_1.dat:
+    Mean: 2783.20, Best: 2420.00, Worst: 3227.00, StdDev: 332.02
+    Success rate: 5/5
+    Average time: 2.561s
+  tuning_instance_2.dat:
+    Mean: 3017.80, Best: 2411.00, Worst: 3828.00, StdDev: 590.47
+    Success rate: 5/5
+    Average time: 3.745s
+  tuning_instance_3.dat:
+    Mean: 2741.20, Best: 2215.00, Worst: 3430.00, StdDev: 527.90
+    Success rate: 5/5
+    Average time: 5.963s
+  tuning_instance_4.dat:
+    Mean: 2565.60, Best: 1600.00, Worst: 3614.00, StdDev: 745.38
+    Success rate: 5/5
+    Average time: 2.079s
+  tuning_instance_5.dat:
+    Mean: 4630.20, Best: 3024.00, Worst: 8609.00, StdDev: 2265.79
+    Success rate: 5/5
+    Average time: 6.857s
+  tuning_instance_6.dat:
+    Mean: 3260.80, Best: 2007.00, Worst: 5248.00, StdDev: 1323.29
+    Success rate: 5/5
+    Average time: 2.911s
+  tuning_instance_7.dat:
+    Mean: 3010.00, Best: 2406.00, Worst: 3617.00, StdDev: 493.58
+    Success rate: 5/5
+    Average time: 2.311s
+  tuning_instance_8.dat:
+    Mean: 3294.20, Best: 2205.00, Worst: 5036.00, StdDev: 1085.74
+    Success rate: 5/5
+    Average time: 2.280s
+  tuning_instance_9.dat:
+    Mean: 2732.20, Best: 1804.00, Worst: 3218.00, StdDev: 615.85
+    Success rate: 5/5
+    Average time: 1.614s
+
+Alpha = 0.8
+--------------------------------------------------------------------------------
+  tuning_instance_0.dat:
+    Mean: 3230.80, Best: 2011.00, Worst: 3838.00, StdDev: 747.72
+    Success rate: 5/5
+    Average time: 3.680s
+  tuning_instance_1.dat:
+    Mean: 3106.80, Best: 2417.00, Worst: 4040.00, StdDev: 602.01
+    Success rate: 5/5
+    Average time: 3.018s
+  tuning_instance_2.dat:
+    Mean: 3181.00, Best: 2210.00, Worst: 4439.00, StdDev: 922.03
+    Success rate: 5/5
+    Average time: 4.020s
+  tuning_instance_3.dat:
+    Mean: 3194.60, Best: 2213.00, Worst: 4463.00, StdDev: 858.83
+    Success rate: 5/5
+    Average time: 2.080s
+  tuning_instance_4.dat:
+    Mean: 3134.40, Best: 1600.00, Worst: 4022.00, StdDev: 1075.18
+    Success rate: 5/5
+    Average time: 3.084s
+  tuning_instance_5.dat:
+    Mean: 2943.40, Best: 1806.00, Worst: 3634.00, StdDev: 712.96
+    Success rate: 5/5
+    Average time: 3.116s
+  tuning_instance_6.dat:
+    Mean: 2571.60, Best: 1203.00, Worst: 3420.00, StdDev: 882.78
+    Success rate: 5/5
+    Average time: 1.721s
+  tuning_instance_7.dat:
+    Mean: 3011.60, Best: 2607.00, Worst: 4024.00, StdDev: 590.13
+    Success rate: 5/5
+    Average time: 1.974s
+  tuning_instance_8.dat:
+    Mean: 3292.20, Best: 2605.00, Worst: 3819.00, StdDev: 466.04
+    Success rate: 5/5
+    Average time: 1.871s
+  tuning_instance_9.dat:
+    Mean: 2692.20, Best: 1602.00, Worst: 3623.00, StdDev: 803.14
+    Success rate: 5/5
+    Average time: 1.589s
+
+Alpha = 0.9
+--------------------------------------------------------------------------------
+  tuning_instance_0.dat:
+    Mean: 3719.00, Best: 2616.00, Worst: 5068.00, StdDev: 1077.56
+    Success rate: 5/5
+    Average time: 5.329s
+  tuning_instance_1.dat:
+    Mean: 2782.20, Best: 2417.00, Worst: 3632.00, StdDev: 542.36
+    Success rate: 5/5
+    Average time: 2.678s
+  tuning_instance_2.dat:
+    Mean: 3139.60, Best: 2411.00, Worst: 4234.00, StdDev: 724.78
+    Success rate: 5/5
+    Average time: 3.813s
+  tuning_instance_3.dat:
+    Mean: 2579.80, Best: 2213.00, Worst: 2822.00, StdDev: 264.40
+    Success rate: 5/5
+    Average time: 1.437s
+  tuning_instance_4.dat:
+    Mean: 2606.60, Best: 1802.00, Worst: 3211.00, StdDev: 586.10
+    Success rate: 5/5
+    Average time: 1.944s
+  tuning_instance_5.dat:
+    Mean: 2213.00, Best: 1806.00, Worst: 3223.00, StdDev: 624.32
+    Success rate: 5/5
+    Average time: 2.232s
+  tuning_instance_6.dat:
+    Mean: 2773.20, Best: 2007.00, Worst: 3419.00, StdDev: 627.97
+    Success rate: 5/5
+    Average time: 2.003s
+  tuning_instance_7.dat:
+    Mean: 2848.80, Best: 2406.00, Worst: 3614.00, StdDev: 539.94
+    Success rate: 5/5
+    Average time: 2.134s
+  tuning_instance_8.dat:
+    Mean: 3211.60, Best: 2606.00, Worst: 4020.00, StdDev: 589.44
+    Success rate: 5/5
+    Average time: 1.923s
+  tuning_instance_9.dat:
+    Mean: 3015.80, Best: 1602.00, Worst: 3623.00, StdDev: 833.17
+    Success rate: 5/5
+    Average time: 1.819s
+
+Alpha = 1.0
+--------------------------------------------------------------------------------
+  tuning_instance_0.dat:
+    Mean: 2820.20, Best: 2007.00, Worst: 3228.00, StdDev: 517.46
+    Success rate: 5/5
+    Average time: 3.222s
+  tuning_instance_1.dat:
+    Mean: 3635.00, Best: 2419.00, Worst: 4448.00, StdDev: 848.61
+    Success rate: 5/5
+    Average time: 3.949s
+  tuning_instance_2.dat:
+    Mean: 3180.20, Best: 2613.00, Worst: 3629.00, StdDev: 439.73
+    Success rate: 5/5
+    Average time: 3.988s
+  tuning_instance_3.dat:
+    Mean: 3066.60, Best: 2417.00, Worst: 3432.00, StdDev: 416.03
+    Success rate: 5/5
+    Average time: 1.691s
+  tuning_instance_4.dat:
+    Mean: 3048.40, Best: 2806.00, Worst: 3614.00, StdDev: 361.35
+    Success rate: 5/5
+    Average time: 2.757s
+  tuning_instance_5.dat:
+    Mean: 2741.20, Best: 2220.00, Worst: 3029.00, StdDev: 336.69
+    Success rate: 5/5
+    Average time: 2.658s
+  tuning_instance_6.dat:
+    Mean: 2449.20, Best: 1805.00, Worst: 2812.00, StdDev: 436.68
+    Success rate: 5/5
+    Average time: 1.485s
+  tuning_instance_7.dat:
+    Mean: 2728.40, Best: 2005.00, Worst: 3415.00, StdDev: 579.82
+    Success rate: 5/5
+    Average time: 2.123s
+  tuning_instance_8.dat:
+    Mean: 2848.40, Best: 2204.00, Worst: 3616.00, StdDev: 577.39
+    Success rate: 5/5
+    Average time: 1.559s
+  tuning_instance_9.dat:
+    Mean: 2975.00, Best: 2207.00, Worst: 3826.00, StdDev: 661.94
+    Success rate: 5/5
+    Average time: 1.809s
