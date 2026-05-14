@@ -13,8 +13,6 @@ class ValidateAlphaConfig(object):
     def validate(data):
         # Validate that mandatory input parameters were found
         paramList = ['instancesDirectory', 'fileNamePrefix', 'fileNameExtension', 'numInstances',
-                     'numBases', 'minHours', 'maxHours',
-                     'numSpecialists', 'minCapacity', 'maxCapacity', 'minFee', 'maxFee',
                      'alphaValues', 'numRunsPerAlpha', 'outputFile', 'verbose']
 
         for paramName in paramList:
@@ -37,47 +35,6 @@ class ValidateAlphaConfig(object):
         numInstances = data.numInstances
         if not isinstance(numInstances, int) or (numInstances <= 0):
             raise AMMMException('numInstances(%s) has to be a positive integer value.' % str(numInstances))
-
-        numBases = data.numBases
-        if not isinstance(numBases, int) or (numBases <= 0):
-            raise AMMMException('numBases(%s) has to be a positive integer value.' % str(numBases))
-
-        minHours = data.minHours
-        if not isinstance(minHours, int) or (minHours <= 0):
-            raise AMMMException('minHours(%s) has to be a positive integer value.' % str(minHours))
-
-        maxHours = data.maxHours
-        if not isinstance(maxHours, int) or (maxHours <= 0):
-            raise AMMMException('maxHours(%s) has to be a positive integer value.' % str(maxHours))
-
-        if maxHours < minHours:
-            raise AMMMException('maxHours(%s) has to be >= minHours(%s).' % (str(maxHours), str(minHours)))
-
-        numSpecialists = data.numSpecialists
-        if not isinstance(numSpecialists, int) or (numSpecialists <= 0):
-            raise AMMMException('numSpecialists(%s) has to be a positive integer value.' % str(numSpecialists))
-
-        minCapacity = data.minCapacity
-        if not isinstance(minCapacity, int) or (minCapacity <= 0):
-            raise AMMMException('minCapacity(%s) has to be a positive integer value.' % str(minCapacity))
-
-        maxCapacity = data.maxCapacity
-        if not isinstance(maxCapacity, int) or (maxCapacity <= 0):
-            raise AMMMException('maxCapacity(%s) has to be a positive integer value.' % str(maxCapacity))
-
-        if maxCapacity < minCapacity:
-            raise AMMMException('maxCapacity(%s) has to be >= minCapacity(%s).' % (str(maxCapacity), str(minCapacity)))
-
-        minFee = data.minFee
-        if not isinstance(minFee, int) or (minFee <= 0):
-            raise AMMMException('minFee(%s) has to be a positive integer value.' % str(minFee))
-
-        maxFee = data.maxFee
-        if not isinstance(maxFee, int) or (maxFee <= 0):
-            raise AMMMException('maxFee(%s) has to be a positive integer value.' % str(maxFee))
-
-        if maxFee < minFee:
-            raise AMMMException('maxFee(%s) has to be >= minFee(%s).' % (str(maxFee), str(minFee)))
 
         # Validate alpha tuning specific parameters
         data.alphaValues = list(data.alphaValues)

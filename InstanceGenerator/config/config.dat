@@ -3,3 +3,15 @@ instancesDirectory = output/instances;
 fileNamePrefix = s100_p1000_instance;
 fileNameExtension = dat;
 numInstances = 5;
+
+numBases = 100;
+minHours = 100;
+maxHours = 500;
+
+numPipes = 1000;
+
+numSpecialists = 100;
+minCapacity= 100;
+maxCapacity = 300;
+minFee = 200;
+maxFee = 300;

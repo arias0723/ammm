@@ -13,6 +13,7 @@ from typing import Any
 from Heuristics.datParser import DATParser
 from AMMMGlobals import AMMMException
 from ValidateAlphaConfig import ValidateAlphaConfig
+from ValidateConfig import ValidateConfig
 from InstanceGenerator import InstanceGenerator
 from AlphaTuning import AlphaTuning
 
@@ -86,7 +87,7 @@ def run():
         print("AMMM Alpha Parameter Tuning")
         print("=" * 80)
 
-        print("Reading Config files %s..." % configFile)
+        print("Reading Config files...")
         genConfigFile = "config/config.dat"
         genConfig = DATParser.parse(genConfigFile)
         ValidateConfig.validate(genConfig)

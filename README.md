@@ -45,7 +45,33 @@ BaseExchange: NOT YET !!!
 2. When only 2 components/groups left, assign Specialist greedily to destroy Pipes
 ```
 
-#### Notes
+## Parameter Tuning For GRASP
+
+- We tested α from 0 to 1 in increments of 0.1
+- Using datasets with 100 specs and 1000 pipes (the graphs were generated sparsed, randomized, and connected)
+- Without conducting the local search
+- Maximum iterations for the constructive phase is set to 100
+- We are keeping the best solution of all iterations per alpha value. At the end we summarize for every dataset which alpha returned the best solution, and then we select the alpha range that works the best
+
+#### GPT suggestions
+
+*1. Validate with Local Search*
+In GRASP, the best constructive solution doesn't always lead to the best local optimum. Sometimes, a slightly more randomized construction (which might yield a worse initial score) drops the search into a different basin of attraction that yields a better final solution after Local Search.
+_Improvement: Once you narrow down your top 2 to 3 α values from this pure constructive test, run a secondary tuning pass with Local Search enabled to ensure those α values still yield the best final results._
+
+*2. Look at the Mean and Variance, Not Just the Best*
+Selecting an α purely based on the absolute best iteration can make you susceptible to outliers.
+_Improvement: Look at the average (mean) solution quality and the standard deviation across those 100 iterations. An α value that consistently produces good solutions (good mean, low variance) is typically much more robust than one that performs poorly on average but gets lucky once. The CSV exporter we just set up includes these metrics precisely for this reason._
+
+*3. Instance Diversity*
+The optimal α can sometimes be highly dependent on the problem topology.
+_Improvement: While using 100 specialists / 1000 pipes on sparse, randomized, connected graphs is a good anchor, it's worth running the same tuning on a small batch of instances with different characteristics (e.g., 50 specs / 500 pipes, or 200 specs / 2000 pipes, or even dense graphs). This will confirm if your chosen α is universally robust or if it only works well for that specific size._
+
+*4. Refine the Grid (Optional)*
+_Improvement: If you find that the best solutions congregate around a specific sub-range (for example, between 0.2 and 0.4), you can do a fast second pass using a finer grid (increments of 0.05, such as 0.25, 0.35) inside that tight boundary to squeeze out maximum performance._
+
+
+## Notes
 
 - Only `BaseReassignment` strategy is not sufficient when the cut is one isolated node. Maybe we need both `BaseReassignment` and `BaseExchange` strategies ???
   - `01_small` improves with `BaseReassignment` localSearch, though the solution is NOT optimal due to the greedy knapsack
