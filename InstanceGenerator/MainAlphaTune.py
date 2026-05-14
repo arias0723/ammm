@@ -54,7 +54,7 @@ def run_your_heuristic_with_alpha(alpha, instance_file):
         return None
 
 
-def get_config(alpha, instance_file, project_root: str | bytes | LiteralString | Any) -> str:
+def get_config(alpha, instance_file, project_root: str) -> str:
     # Read parameters from config.dat
     config_path = os.path.join(project_root, "Heuristics", "config", "config.dat")
     base_config_lines = []

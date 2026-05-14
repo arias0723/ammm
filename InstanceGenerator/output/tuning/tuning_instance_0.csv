@@ -1,0 +1,12 @@
+alpha,instance,mean_objective,best_objective,worst_objective,std_objective,mean_time,feasible_runs,total_runs,success_rate
+0.0,tuning_instance_0.dat,2853.20,1806.00,3620.00,746.13,4.975,5,5,100.0
+0.1,tuning_instance_0.dat,3097.80,1805.00,3624.00,764.40,3.588,5,5,100.0
+0.2,tuning_instance_0.dat,2650.60,2006.00,3013.00,387.36,2.821,5,5,100.0
+0.3,tuning_instance_0.dat,3384.40,2007.00,4843.00,1066.32,4.069,5,5,100.0
+0.4,tuning_instance_0.dat,2973.60,2006.00,4226.00,895.33,4.221,5,5,100.0
+0.5,tuning_instance_0.dat,2974.60,2208.00,3620.00,718.75,3.995,5,5,100.0
+0.6,tuning_instance_0.dat,2734.40,1806.00,4028.00,1182.80,3.491,5,5,100.0
+0.7,tuning_instance_0.dat,2654.40,1806.00,3826.00,734.05,2.929,5,5,100.0
+0.8,tuning_instance_0.dat,3217.40,1806.00,4226.00,902.03,4.433,5,5,100.0
+0.9,tuning_instance_0.dat,3217.40,2611.00,3826.00,429.57,4.021,5,5,100.0
+1.0,tuning_instance_0.dat,2530.80,1806.00,3620.00,707.10,2.825,5,5,100.0

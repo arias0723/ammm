@@ -3,6 +3,7 @@ AMMM Project Heuristics
 Alpha parameter tuning for GRASP constructive phase.
 """
 
+import csv
 import os
 import time
 from statistics import mean, stdev
@@ -30,6 +31,28 @@ class AlphaTuning(object):
         self.config = config
         self.verbose = config.verbose
         self.results = {}
+        self.instance_names = []
+        self.output_directory, self.final_results_file = self._resolve_output_paths()
+
+    def _resolve_output_paths(self):
+        """Resolve the tuning output directory and final CSV file path."""
+        base_directory = os.path.dirname(os.path.abspath(__file__))
+        raw_output = self.config.outputFile
+
+        if os.path.isabs(raw_output):
+            resolved_output = raw_output
+        else:
+            resolved_output = os.path.normpath(os.path.join(base_directory, raw_output))
+
+        _, extension = os.path.splitext(resolved_output)
+        if extension.lower() == '.csv':
+            final_results_file = resolved_output
+            output_directory = os.path.dirname(final_results_file)
+        else:
+            output_directory = resolved_output
+            final_results_file = os.path.join(output_directory, 'final_results.csv')
+
+        return output_directory, final_results_file
 
     def _print(self, message, end='\n'):
         """Print message only if verbose is True."""
@@ -104,6 +127,7 @@ class AlphaTuning(object):
         alphaValues = self.config.alphaValues
         numRunsPerAlpha = self.config.numRunsPerAlpha
         instance_files = self.get_instance_files()
+        self.instance_names = [os.path.basename(instance_file) for instance_file in instance_files]
 
         self._print("=" * 80)
         self._print("ALPHA PARAMETER TUNING FOR GRASP")
@@ -122,6 +146,7 @@ class AlphaTuning(object):
                 'overall_mean': 0.0,
                 'overall_best': float('inf'),
                 'overall_worst': 0.0,
+                'overall_mean_time': 0.0,
                 'success_rate': 0.0
             }
 
@@ -152,12 +177,14 @@ class AlphaTuning(object):
         for alpha in alphaValues:
             instance_means = []
             instance_bests = []
+            instance_times = []
             total_feasible = 0
             total_runs = 0
 
             for instance_name, stats in self.results[alpha]['instances'].items():
                 instance_means.append(stats['mean_objective'])
                 instance_bests.append(stats['best_objective'])
+                instance_times.append(stats['mean_time'])
                 total_feasible += stats['num_feasible']
                 total_runs += stats['num_runs']
 
@@ -165,6 +192,7 @@ class AlphaTuning(object):
                 self.results[alpha]['overall_mean'] = mean(instance_means)
                 self.results[alpha]['overall_best'] = min(instance_bests)
                 self.results[alpha]['overall_worst'] = max(instance_means)
+                self.results[alpha]['overall_mean_time'] = mean(instance_times)
                 self.results[alpha]['success_rate'] = (total_feasible / total_runs) * 100
 
         self.print_summary()
@@ -177,16 +205,16 @@ class AlphaTuning(object):
         self._print("\n" + "=" * 80)
         self._print("TUNING RESULTS SUMMARY")
         self._print("=" * 80)
-        self._print("%-10s %-15s %-15s %-15s %-12s" % ('Alpha', 'Mean Obj', 'Best Obj', 'Worst Obj', 'Success %'))
+        self._print("%-10s %-15s %-15s %-15s %-15s %-12s" % ('Alpha', 'Mean Obj', 'Best Obj', 'Worst Obj', 'Mean Time', 'Success %'))
         self._print("-" * 80)
 
         alphaValues = self.config.alphaValues
         for alpha in alphaValues:
             res = self.results[alpha]
             if res['overall_mean'] > 0:
-                self._print("%-10.1f %-15.2f %-15.2f %-15.2f %-12.1f" %
+                self._print("%-10.1f %-15.2f %-15.2f %-15.2f %-15.3f %-12.1f" %
                             (alpha, res['overall_mean'], res['overall_best'],
-                             res['overall_worst'], res['success_rate']))
+                             res['overall_worst'], res['overall_mean_time'], res['success_rate']))
 
         self._print("=" * 80)
 
@@ -207,41 +235,72 @@ class AlphaTuning(object):
         return best_alpha
 
     def save_results(self):
-        """Save detailed results to a file."""
-        output_file = self.config.outputFile
+        """Save detailed results to CSV files."""
         alphaValues = self.config.alphaValues
+        if not os.path.isdir(self.output_directory):
+            os.makedirs(self.output_directory, exist_ok=True)
 
-        with open(output_file, 'w') as f:
-            f.write("=" * 80 + "\n")
-            f.write("ALPHA PARAMETER TUNING RESULTS\n")
-            f.write("=" * 80 + "\n\n")
+        self._save_instance_csvs()
 
-            # Summary table
-            f.write("%-10s %-15s %-15s %-15s %-12s\n" % ('Alpha', 'Mean Obj', 'Best Obj', 'Worst Obj', 'Success %'))
-            f.write("-" * 80 + "\n")
+        self._save_final_csv()
 
-            for alpha in alphaValues:
+        self._print("CSV results saved to: %s" % self.output_directory)
+        self._print("Final summary file: %s" % self.final_results_file)
+
+    def _save_instance_csvs(self):
+        """Save one CSV file per tuning instance, with a row for each alpha value."""
+        for instance_name in sorted(self.instance_names):
+            file_name = os.path.splitext(instance_name)[0] + '.csv'
+            file_path = os.path.join(self.output_directory, file_name)
+
+            with open(file_path, 'w', newline='') as csv_file:
+                writer = csv.writer(csv_file)
+                writer.writerow([
+                    'alpha', 'instance', 'mean_objective', 'best_objective', 'worst_objective',
+                    'std_objective', 'mean_time', 'feasible_runs', 'total_runs', 'success_rate'
+                ])
+
+                for alpha in self.config.alphaValues:
+                    instance_stats = self.results[alpha]['instances'].get(instance_name)
+                    if instance_stats is None:
+                        continue
+
+                    success_rate = (instance_stats['num_feasible'] / instance_stats['num_runs']) * 100 if instance_stats['num_runs'] else 0.0
+                    writer.writerow([
+                        alpha,
+                        instance_name,
+                        '%.2f' % instance_stats['mean_objective'],
+                        '%.2f' % instance_stats['best_objective'],
+                        '%.2f' % instance_stats['worst_objective'],
+                        '%.2f' % instance_stats['std_objective'],
+                        '%.3f' % instance_stats['mean_time'],
+                        instance_stats['num_feasible'],
+                        instance_stats['num_runs'],
+                        '%.1f' % success_rate,
+                    ])
+
+    def _save_final_csv(self):
+        """Save the aggregated alpha tuning results used for summary charts."""
+        with open(self.final_results_file, 'w', newline='') as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerow([
+                'alpha', 'mean_objective', 'best_objective', 'worst_objective',
+                'mean_time', 'success_rate', 'num_instances', 'feasible_runs', 'total_runs'
+            ])
+
+            for alpha in self.config.alphaValues:
                 res = self.results[alpha]
                 if res['overall_mean'] > 0:
-                    f.write("%-10.1f %-15.2f %-15.2f %-15.2f %-12.1f\n" %
-                            (alpha, res['overall_mean'], res['overall_best'],
-                             res['overall_worst'], res['success_rate']))
-
-            # Detailed results per instance
-            f.write("\n" + "=" * 80 + "\n")
-            f.write("DETAILED RESULTS PER INSTANCE\n")
-            f.write("=" * 80 + "\n\n")
-
-            for alpha in alphaValues:
-                f.write("\nAlpha = %.1f\n" % alpha)
-                f.write("-" * 80 + "\n")
-
-                for instance_name, stats in self.results[alpha]['instances'].items():
-                    f.write("  %s:\n" % instance_name)
-                    f.write("    Mean: %.2f, Best: %.2f, Worst: %.2f, StdDev: %.2f\n" %
-                            (stats['mean_objective'], stats['best_objective'],
-                             stats['worst_objective'], stats['std_objective']))
-                    f.write("    Success rate: %d/%d\n" % (stats['num_feasible'], stats['num_runs']))
-                    f.write("    Average time: %.3fs\n" % stats['mean_time'])
-
-        self._print("Detailed results saved to: %s" % output_file)
+                    total_runs = sum(stats['num_runs'] for stats in res['instances'].values())
+                    feasible_runs = sum(stats['num_feasible'] for stats in res['instances'].values())
+                    writer.writerow([
+                        alpha,
+                        '%.2f' % res['overall_mean'],
+                        '%.2f' % res['overall_best'],
+                        '%.2f' % res['overall_worst'],
+                        '%.3f' % res['overall_mean_time'],
+                        '%.1f' % res['success_rate'],
+                        len(res['instances']),
+                        feasible_runs,
+                        total_runs,
+                    ])
