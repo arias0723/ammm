@@ -1,17 +1,5 @@
 # file name: ../AMMMLabHeuristics/data/instance_XX.dat
-instancesDirectory = output;
-fileNamePrefix = test2;
+instancesDirectory = output/instances;
+fileNamePrefix = s100_p1000_instance;
 fileNameExtension = dat;
-numInstances = 1;
-
-numBases = 500;
-minHours = 100;
-maxHours = 500;
-
-numPipes = 50000;
-
-numSpecialists = 500;
-minCapacity= 300;
-maxCapacity = 500;
-minFee = 200;
-maxFee = 300;
+numInstances = 5;

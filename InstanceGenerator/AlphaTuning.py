@@ -14,11 +14,6 @@ class AlphaTuning(object):
     """
     Tune the alpha parameter for GRASP constructive phase.
     Tests different alpha values and reports performance metrics.
-
-    Note: This class expects your heuristic to have:
-    - A method to set alpha value
-    - A method to run the heuristic
-    - A method to get the solution objective
     """
 
     def __init__(self, config):

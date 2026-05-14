@@ -1,0 +1,7 @@
+# Alpha tuning parameters
+alphaValues = [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0];
+numRunsPerAlpha = 1;
+
+# Output parameters
+outputFile = output/tuning/final_results.csv;
+verbose = True;
