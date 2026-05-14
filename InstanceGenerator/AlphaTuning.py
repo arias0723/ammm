@@ -6,7 +6,7 @@ Alpha parameter tuning for GRASP constructive phase.
 import csv
 import os
 import time
-from statistics import mean, stdev
+from statistics import mean, stdev, median
 from AMMMGlobals import AMMMException
 
 
@@ -106,6 +106,9 @@ class AlphaTuning(object):
             'worst_objective': max(objective_values),
             'std_objective': stdev(objective_values) if len(objective_values) > 1 else 0.0,
             'mean_time': mean(execution_times),
+            'median_time': median(execution_times) if execution_times else 0.0,
+            'min_time': min(execution_times) if execution_times else 0.0,
+            'max_time': max(execution_times) if execution_times else 0.0,
             'num_feasible': len(objective_values),
             'num_runs': num_runs
         }
@@ -142,6 +145,9 @@ class AlphaTuning(object):
                 'overall_best': float('inf'),
                 'overall_worst': 0.0,
                 'overall_mean_time': 0.0,
+                'overall_median_time': 0.0,
+                'overall_min_time': float('inf'),
+                'overall_max_time': 0.0,
                 'success_rate': 0.0
             }
 
@@ -173,6 +179,9 @@ class AlphaTuning(object):
             instance_means = []
             instance_bests = []
             instance_times = []
+            instance_min_times = []
+            instance_max_times = []
+            instance_median_times = []
             total_feasible = 0
             total_runs = 0
 
@@ -180,6 +189,9 @@ class AlphaTuning(object):
                 instance_means.append(stats['mean_objective'])
                 instance_bests.append(stats['best_objective'])
                 instance_times.append(stats['mean_time'])
+                instance_min_times.append(stats['min_time'])
+                instance_max_times.append(stats['max_time'])
+                instance_median_times.append(stats['median_time'])
                 total_feasible += stats['num_feasible']
                 total_runs += stats['num_runs']
 
@@ -188,6 +200,9 @@ class AlphaTuning(object):
                 self.results[alpha]['overall_best'] = min(instance_bests)
                 self.results[alpha]['overall_worst'] = max(instance_means)
                 self.results[alpha]['overall_mean_time'] = mean(instance_times)
+                self.results[alpha]['overall_median_time'] = median(instance_median_times)
+                self.results[alpha]['overall_min_time'] = min(instance_min_times)
+                self.results[alpha]['overall_max_time'] = max(instance_max_times)
                 self.results[alpha]['success_rate'] = (total_feasible / total_runs) * 100
 
         self.print_summary()
@@ -200,16 +215,16 @@ class AlphaTuning(object):
         self._print("\n" + "=" * 80)
         self._print("TUNING RESULTS SUMMARY")
         self._print("=" * 80)
-        self._print("%-10s %-15s %-15s %-15s %-15s %-12s" % ('Alpha', 'Mean Obj', 'Best Obj', 'Worst Obj', 'Mean Time', 'Success %'))
+        self._print("%-10s %-15s %-15s %-15s %-15s %-15s %-12s" % ('Alpha', 'Mean Obj', 'Best Obj', 'Worst Obj', 'Mean Time', 'Median Time', 'Success %'))
         self._print("-" * 80)
 
         alphaValues = self.config.alphaValues
         for alpha in alphaValues:
             res = self.results[alpha]
             if res['overall_mean'] > 0:
-                self._print("%-10.1f %-15.2f %-15.2f %-15.2f %-15.3f %-12.1f" %
+                self._print("%-10.1f %-15.2f %-15.2f %-15.2f %-15.3f %-15.3f %-12.1f" %
                             (alpha, res['overall_mean'], res['overall_best'],
-                             res['overall_worst'], res['overall_mean_time'], res['success_rate']))
+                             res['overall_worst'], res['overall_mean_time'], res['overall_median_time'], res['success_rate']))
 
         self._print("=" * 80)
 
@@ -252,7 +267,7 @@ class AlphaTuning(object):
                 writer = csv.writer(csv_file)
                 writer.writerow([
                     'alpha', 'instance', 'mean_objective', 'best_objective', 'worst_objective',
-                    'std_objective', 'mean_time', 'feasible_runs', 'total_runs', 'success_rate'
+                    'std_objective', 'min_time', 'max_time', 'median_time', 'mean_time', 'feasible_runs', 'total_runs', 'success_rate'
                 ])
 
                 for alpha in self.config.alphaValues:
@@ -268,6 +283,9 @@ class AlphaTuning(object):
                         '%.2f' % instance_stats['best_objective'],
                         '%.2f' % instance_stats['worst_objective'],
                         '%.2f' % instance_stats['std_objective'],
+                        '%.3f' % instance_stats['min_time'],
+                        '%.3f' % instance_stats['max_time'],
+                        '%.3f' % instance_stats['median_time'],
                         '%.3f' % instance_stats['mean_time'],
                         instance_stats['num_feasible'],
                         instance_stats['num_runs'],
@@ -280,7 +298,7 @@ class AlphaTuning(object):
             writer = csv.writer(csv_file)
             writer.writerow([
                 'alpha', 'mean_objective', 'best_objective', 'worst_objective',
-                'mean_time', 'success_rate', 'num_instances', 'feasible_runs', 'total_runs'
+                'min_time', 'max_time', 'median_time', 'mean_time', 'success_rate', 'num_instances', 'feasible_runs', 'total_runs'
             ])
 
             for alpha in self.config.alphaValues:
@@ -293,6 +311,9 @@ class AlphaTuning(object):
                         '%.2f' % res['overall_mean'],
                         '%.2f' % res['overall_best'],
                         '%.2f' % res['overall_worst'],
+                        '%.3f' % res['overall_min_time'],
+                        '%.3f' % res['overall_max_time'],
+                        '%.3f' % res['overall_median_time'],
                         '%.3f' % res['overall_mean_time'],
                         '%.1f' % res['success_rate'],
                         len(res['instances']),

@@ -53,6 +53,16 @@ BaseExchange: NOT YET !!!
 - Maximum iterations for the constructive phase is set to 100
 - We are keeping the best solution of all iterations per alpha value. At the end we summarize for every dataset which alpha returned the best solution, and then we select the alpha range that works the best
 
+#### Selected strategy
+
+- GRASP with execTime = 10s, No LS
+- 10 random instances of 100 specs and 1000 pipes (~55 min to solve in CPLEX using Macbook Pro M4 32 GB ram)
+- TODO: maybe generate other test suites of different sizes
+- Alpha values with 0.1 increment, doing 50 iterations per alpha
+- Select the best objective (best mean + low SD combination) as the metric per each alpha value (line chart)
+- Select the median, min, max time (using tuned alpha), plot and compare (bar and boxplot charts)
+- Plot in latex
+
 #### GPT suggestions
 
 *1. Validate with Local Search*
