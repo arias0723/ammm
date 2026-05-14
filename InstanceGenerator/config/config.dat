@@ -2,7 +2,7 @@
 instancesDirectory = output/instances;
 fileNamePrefix = s100_p1000_instance;
 fileNameExtension = dat;
-numInstances = 5;
+numInstances = 10;
 
 numBases = 100;
 minHours = 100;

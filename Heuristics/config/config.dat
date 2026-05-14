@@ -2,7 +2,7 @@
 inputDataFile        = data/05_big_sparse.dat;         # Input DAT file
 solutionFile         = solutions/example.sol;       # Output DAT file (solution)
 solver               = GRASP;                       # Supported solvers: Greedy / GRASP
-maxExecTime          = 60;                          # Maximum execution time in seconds
+maxExecTime          = 10;                          # Maximum execution time in seconds
 verbose              = True;                        # Verbose mode?
 
 # --- Greedy / Random specific parameters ---------------------------------------------------------------------
@@ -14,6 +14,6 @@ minCut               = Karger;                      # Algorithm for Min Cut : Ka
 alpha                = 0.9;                 # Alpha parameter for the GRASP solver.
 
 # --- Local Search specific parameters ------------------------------------------------------------------------
-localSearch          = True;                    # Enable local search?
+localSearch          = False;                    # Enable local search?
 neighborhoodStrategy = Replace;                 # Supported Neighborhoods: Remove, Replace, Both
 policy               = BestImprovement;         # Supported Policies: FirstImprovement / BestImprovement

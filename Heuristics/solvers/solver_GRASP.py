@@ -107,9 +107,7 @@ class Solver_GRASP(_Solver):
         iteration = 0
         while not self.stopCriteria():
             iteration += 1
-
-            # First iteration pure greedy (alpha=0), then randomized
-            alpha = 0.0 if iteration == 1 else self.config.alpha
+            alpha = self.config.alpha
 
             solution = self._greedyRandomizedConstruction(alpha, partition, cutPipes)
 

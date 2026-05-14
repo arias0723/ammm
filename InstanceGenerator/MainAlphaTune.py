@@ -96,8 +96,8 @@ def run():
         ValidateAlphaConfig.validate(alphaConfig)
 
         print("\nGenerating Tuning Instances...")
-        instGen = InstanceGenerator(genConfig)
-        instGen.generate()
+        # instGen = InstanceGenerator(genConfig)
+        # instGen.generate()
         print("Instances generated in: %s" % genConfig.instancesDirectory)
 
         print("\nStarting Alpha Tuning Process...")
