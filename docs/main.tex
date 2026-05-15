@@ -39,100 +39,145 @@
 
 \newpage
 
-\section{Conflict Resolution Problem Statement}
+\section{Martian Network Destruction Problem Statement}
 
-The Conflict Resolving problem can be formally stated as follows:\\
+The Martian Network Destruction problem can be formally stated as follows:\\
 \\
 \textbf{\textit{Given}}:
 \begin{itemize}
-    \item The set $Members$ of N members.
-    \item The matrix $m(n, n)$ represents the pairwise bids between members.
+    \item The set $B = \{1, 2, \ldots, n\}$ of Martian military bases. For each pair of bases $i, j \in B$, the number of specialist hours $t_{ij}$ required to destroy the pipe between them is specified (where $t_{ij} = 0$ or $t_{ij} = -1$ indicates that no pipe exists between the two bases $i$ and $j$).
+
+    \item The set $S = \{1, 2, \ldots, m\}$ of specialists. For each specialist $k \in S$, the available working hours $w_k$ and the cost per assignment $c_k$ are specified.
 \end{itemize}
 
-\textbf{\textit{Find}}:
+\textbf{\textit{Find:}}
 \begin{itemize}
-    \item $Priority(n,n)$ represents the assignment of priorities to ordered member pair $<i,j>$ subject to the following constraints: \begin{itemize}
-        \item A priority is assigned to one member of each unordered pair in case of a clash between the two members.
-        \item Members and Solution (set of member pairs, for each pair $<i,j>$ where member $i$ prioritizes member $j$) form a directed acyclic graph, with members as vertices and solution as edges of the graph.
-    \end{itemize}
+    \item Each specialist can be assigned to at most one pipe.
+
+    \item Each pipe we want to destroy must receive enough specialist hours to reach its destruction requirement $t_{ij}$.
+
+    \item The destruction of pipes must create a disconnected network (the graph becomes non-connected, preventing fuel from transporting across all bases).
 \end{itemize}
 
 \textbf{\textit{Objective}}:
 \begin{itemize}
-    \item Maximize the total sum of bids taken from the higher priority pairwise members.
+    \item Minimize the total cost of specialist assignments.
 \end{itemize}
 
 
 \section{ILP Model Formulation}
 
-The conflict resolving problem can be modeled as an Integer Linear Program. To achieve this, the following sets and parameters are defined:\\
+This problem can be modeled as an Integer Linear Program. To achieve this, the following sets and parameters are defined:\\
 \\
-\textit{Members} \hspace{2.7cm} Set of N members, index n. \\
-\textit{$m_{ij}$} \hspace{3.5cm}  Member \textit{i} places bids over member \textit{j}. \\
+\textit{B} \hspace{1.3cm} Set of n bases, index i, j. \\
+\textit{S} \hspace{1.3cm} Set of m specialists, index s. \\
+\textit{E} \hspace{1.3cm} Set of edges (pipelines) between bases. \\
+\textit{$w_s$} \hspace{1.15cm} Number of working hours of specialist s. \\
+\textit{$c_s$} \hspace{1.25cm} Cost of using specialist s. \\
+\textit{$t_{ij}$} \hspace{1.25cm} Hours required to destroy the pipeline between bases i and j. \\
 \\
 The following decision variables are also defined:\\
 \\
-\textit{$Priority_{ij}$} \hspace{2.5cm} Binary. Equal to 1 if member \textit{i} prioritizes member \textit{j}; 0 otherwise. \\
-\textit{$O_{n}$} \hspace{3.55cm} Topological sort of the directed graph formed with members as vertices and $\{<i,j> \forall i,j \in Members \quad and \quad Priority_{ij} = 1 \}$ as edges.\\ 
-\textit{Income} \hspace{2.95cm} Positive real. The total sum of money taken from a member with higher priority from each unordered pair.
-\begin{displaymath}
-    Income = \sum_{i,j \epsilon Members} Priority_{ij} \cdot m_{ij}
-\end{displaymath}
-
-Finally, the ILP model for the conflict resolving problem is as follows:
-
+\textit{$x_{se}$} \hspace{1.15cm} Binary. Equal to 1 if specialist s is assigned to edge e; 0 otherwise. \\
+\textit{$d_e$} \hspace{1.25cm} Binary. Equal to 1 if edge (pipeline) e is destroyed; 0 otherwise. \\
+\textit{$g_i$} \hspace{1.3cm} Binary. Equal to 1 if base i belongs to group 1; 0 if it belongs to group 0. \\
+\\
+Finally, the ILP model for the pipe destruction problem is as follows:
 \begin{equation}
-    \textrm{maximize} \quad Income
+    \textrm{minimize} \quad \sum_{s \in S} \sum_{e \in E} c_s \cdot x_{se}
 \end{equation}
- subject to:
+subject to:
 \begin{equation}
-     Priority_{ij} + Priority_{ji} = 1 \qquad \forall \quad i,j \in Members \quad \textrm{and} \quad m_{ij} + m_{ji} \neq 0
+    \sum_{e \in E} x_{se} \leq 1 \qquad \forall s \in S
 \end{equation}
-
 \begin{equation}
-    O_{i} + 1 \leq O_{j} + (1 - Priority_{ij}) \cdot N \qquad \forall \quad i,j \in Members \quad \textrm{and} \quad m_{ij} + m_{ji} \neq 0
+    \sum_{s \in S} w_s \cdot x_{se} \geq t_{ij} \cdot d_e \qquad \forall e = (i,j) \in E
+\end{equation}
+\begin{equation}
+    x_{se} \leq d_e \qquad \forall s \in S, \forall e \in E
+\end{equation}
+\begin{equation}
+    d_e \geq g_i - g_j \qquad \forall e = (i,j) \in E
+\end{equation}
+\begin{equation}
+    d_e \geq g_j - g_i \qquad \forall e = (i,j) \in E
+\end{equation}
+\begin{equation}
+    1 \leq \sum_{i \in B} g_i \leq n-1
 \end{equation}
 \\
-\\
-The equation (3) can be derived through the following reasoning.\\
-If the directed graph is acyclic, we can obtain a topological ordering of the vertices. This ordering is an array in which each vertex appears before all the vertices it points to. Our objective is to achieve the topological order of the directed priority graph. If we successfully obtain this order, we can ensure that no cycles are formed in the graph.\\
-$Priority_{ij}$ is used to indicate whether or not vertex $i$ is before vertex $j$.
-If $Priority_{ij} = 1$ we wish to have $O_{i} + 1 \leq O_{j}$, i.e. if $(1 - Priority_{ij}) = 0$ we wish to have $O_{i} + 1 \leq O_{j}$. This condition is imposed if $O_{i} + 1 - O_{j} \leq M(1-Priority_{ij})$ where $M$ is a sufficiently large number. In order to find how large $M$ must be we consider the case $Priority_{ij} = 0$ giving $O_{i} + 1 - O_{j} \leq M$. $M$ must be chosen to be an upper bound for the expression $O_{i} + 1 - O_{j}$, which is $M = N + 1 - 1 = N$. Then we obtain (3).\\
-We do not need to consider the reverse of (3), which states that $ O_{i} < O_{j}
- \rightarrow Priority_{ij} = 1$. This means that if $Priority_{ij} = 0$, then $O_{i} \geq O_{j}$. However, equation (2) ensures that if $Priority_{ij} = 0$, then $Priority_{ji} = 1$, which leads to the conclusion that $O_{j} < O_{i}$.
 
 
 \section{Heuristics Method}
 
-
-
-
 \subsection{Greedy Method}
 
-\subsubsection{Variable Declaration} \label{declaration}
+\subsubsection{Variable Declaration}
 
+\textbf{Phase 1: Minimum Cut Variables}
 \begin{itemize}
-    \item $Members$: Set of members.
-    \item $Bids_{ij}$: The bid member $i$ places over member $j$.
-    \item $CandidatePairs$: Set of all pairs of members $<i,j>$.
-    \item $Priority(i,j)$: Binary. Equal to 1 if member $i$ prioritizes member $j$, 0 otherwise.
-    \item $Solution$: Set of member pairs. For each pair $<i,j>$ $Priority[i][i] = 1$.
-k    \item $CoveredMembers$: Set of members covered in the $Solution$.
-    
+    \item $Bases$: Set of bases in the network.
+    \item $Pipes$: Set of all pipes connecting bases.
+    \item $Demand_p$: The demand (flow requirement) for pipe $p$.
+    \item $Partition$: Binary assignment of bases to groups $\{0, 1\}$. Equal to 0 if base $i$ belongs to group 0, 1 otherwise.
+    \item $CutPipes$: Set of pipes crossing the partition, i.e., pipes $p = \langle i,j \rangle$ where $Partition[i] \neq Partition[j]$.
 \end{itemize}
 
-\subsubsection{Greedy Cost Function} \label{greedy_function}
+\textbf{Phase 2: Specialist Assignment Variables}
+\begin{itemize}
+    \item $Specialists$: Set of available specialists.
+    \item $Capacity_s$: The capacity (work units) that specialist $s$ can provide.
+    \item $Cost_s$: The cost of hiring specialist $s$.
+    \item $CostEffectiveness_s$: Ratio $Cost_s / Capacity_s$ for specialist $s$.
+    \item $Solution$: Set of assignments $\langle s, p \rangle$. Each specialist can be assigned to at most one pipe.
+    \item $AssignedSpecialists$: Set of specialists currently assigned in the $Solution$.
+    \item $RemainingDemand_p$: Uncovered demand for pipe $p$ after current assignments.
+\end{itemize}
 
-We always consider the pair $<i,j>$ with the highest bid. If adding $<i,j>$ to the partial solution makes it infeasible, then we swap $<i,j>$ for $<j,i>$ in the solution.
-Whenever we add a pair to the partial solution, we assess its feasibility. If the pair $<i,j>$ is infeasible, we can be certain that $<j,i>$ is feasible.\\
-For example, if the pair (2,3) results in an infeasible solution, we assume that (2,3), (3,1), and (1,2) create a priority cycle. Similarly, if (3,2) leads to an infeasible solution, we assume that (3,2), (2,4), and (4,3) also form a priority cycle. In this case, (3,1), (1,2), (2,4), and (4,3) would then constitute another priority cycle. However, we've already assessed the feasibility of (3,1), (1,2), (2,4), and (4,3), which presents a contradiction.
+\subsubsection{Greedy Cost Function}
+
+Our greedy approach operates in two sequential phases:
+\\[0.2cm]
+
+\textbf{Phase 1: Minimum Cut Computation}
+\\[0.2cm]
+We found two greedy algorithms to find the minimum cut partition of the network:
+
+\begin{enumerate}
+    \item \textbf{Karger's Algorithm} (randomized): Repeatedly contracts random edges weighted by demand until two super-nodes remain. The algorithm runs multiple iterations to increase the probability of finding the true minimum cut.  This algorithm is faster for sparse graphs, probabilistic guarantee
+
+    \item \textbf{Stoer-Wagner Algorithm} (deterministic): Uses maximum adjacency ordering to systematically find the global minimum cut through a series of min-cut phases.
+    This algorithm is better for dense graphs.
+    \\[0.2cm]
+    The choice of the algorithm can be made in config.dat with minCut.
+\end{enumerate}
+
+Both algorithms minimize the total demand in terms of hours crossing the partition:
+
+\begin{equation}
+\text{MinCut} = \min_{\text{Partition}} \sum_{p \in \text{Pipes}} \text{Demand}_p \times \mathbb{1}[\text{Partition}[\text{base}_i(p)] \neq \text{Partition}[\text{base}_j(p)]]
+\end{equation}
+
+The output is a binary partition that defines which pipes must be covered by specialists (the $CutPipes$).
+\\[0.5cm]
+\textbf{Phase 2: Greedy Specialist Assignment}
+
+For the set of $CutPipes$ identified in Phase 1, we iteratively assign specialists using a greedy cost-effectiveness criterion:
 
 \begin{displaymath}
-    q(<i,j>, S) = \begin{cases}
-    -1 & if \quad G(S, <i,j>) \textrm{ is not a DAG}\\
-    Bids_{ij} & if \quad G(S, <i,j>) \textrm{ is a DAG}
+    q(\langle s, p \rangle, \text{Solution}) = \begin{cases}
+    \text{CostEffectiveness}_s & \text{if assigning } s \text{ to } p \text{ is feasible}\\
+    +\infty & \text{otherwise}
     \end{cases}
 \end{displaymath}
+
+We always select the specialist-pipe pair with the \textbf{lowest cost-effectiveness} (most efficient specialist) among those that:
+\begin{enumerate}
+    \item Have not been assigned yet
+    \item Can contribute to covering the remaining demand of pipe $p$
+\end{enumerate}
+
+The assignment continues until all pipes in $CutPipes$ are fully covered or the problem becomes infeasible.
 
 \subsubsection{Pseudocode}
 
@@ -140,34 +185,84 @@ For example, if the pair (2,3) results in an infeasible solution, we assume that
 \renewcommand{\thealgorithm}{}
 \caption{Greedy Algorithm}
 \begin{algorithmic}
-
-\Function{ValidateCandidatePair}{$partialSolution$, $<i,j>$}
-\State $topologicalOrder, residualEdges \gets TopologicalSort(partialSolution \cup \{{i,j}\})$
-\If{$residualEdges= \phi$}
-\State \Return True
+\Statex
+\Statex \textbf{PHASE 1: MINIMUM CUT}
+\Function{ComputeMinCut}{$Bases$, $Pipes$}
+\If{$minCutAlgorithm = \text{``Karger''}$}
+    \State $iterations \gets \max(10, \lfloor(|Bases|^2 \times \ln(|Bases|)) / 2\rfloor)$
+    \State $cutWeight, Partition \gets \text{Karger}(Bases, Pipes, iterations)$
+\Else \Comment{Stoer-Wagner}
+    \State $cutWeight, Partition \gets \text{StoerWagner}(Bases, Pipes)$
+\EndIf
+\State $CutPipes \gets \{p \in Pipes \mid Partition[base_i(p)] \neq Partition[base_j(p)]\}$
+\State \Return $CutPipes$
+\EndFunction
+\Statex
+\Statex \textbf{PHASE 2: GREEDY SPECIALIST ASSIGNMENT}
+\Function{ValidateAssignment}{$Solution$, $p$}
+\State $coveredCapacity \gets \sum_{s \text{ assigned to } p} Capacity_s$
+\If{$coveredCapacity \geq Demand_p$}
+    \State \Return True
 \Else
-\State \Return False
+    \State \Return False
 \EndIf
 \EndFunction
-
 \Statex
-
 \State $Solution \gets \phi$
-\State $CoveredMembers \gets \phi$
-\State $CandidatePairs \gets \{<i,j> \mid i,j \in Members \quad \textrm{and} \quad Bids_{ij} + Bids_{ji} \neq 0\}$
-\State $Priority(i,j) \gets 0 \quad \forall <i,j> \in CandidatePairs$
-\While{$CandidatePairs \neq \phi$}
-    \State Evaluate $q(<i',j'>, Solution) \quad \forall <i',j'> \in CandidatePairs$
-    \State $<i,j> \gets argmax\{q(<i', j'>, Solution)\lvert <i', j'> \in CandidatePairs \}$
-    \State $CandidatePairs \gets CandidatePairs \setminus \{<i,j>, <j,i>\}$
-    \State $CoveredMembers \gets CoveredMembers \cup \{i,j\}$
-    \State $Solution \gets Solution \cup \{<i,j>\}$
-    \State $Priority(i,j) \gets 1$
-\EndWhile
+\State $AssignedSpecialists \gets \phi$
+\State $CutPipes \gets \text{ComputeMinCut}(Bases, Pipes)$
+\Statex
+\State \Comment{Sort pipes by demand (descending) - hardest first}
+\State $SortedPipes \gets \text{Sort}(CutPipes, key=Demand, reverse=\text{True})$
+\Statex
+\State \Comment{Sort specialists by cost-effectiveness (ascending) - best first}
+\State $SortedSpecialists \gets \text{Sort}(Specialists, key=CostEffectiveness)$
+\Statex
+\For{each $p \in SortedPipes$}
+    \State $RemainingDemand_p \gets Demand_p$
+    \While{$RemainingDemand_p > 0$}
+        \State \Comment{Find best available specialist}
+        \State $s \gets \arg\min_{s' \in SortedSpecialists \land s' \notin AssignedSpecialists} CostEffectiveness_{s'}$
+        \If{$s = \text{NULL}$}
+            \State \Return \textsc{Infeasible} \Comment{No specialists available}
+        \EndIf
+        \State \Comment{Assign specialist s to pipe p}
+        \State $Solution \gets Solution \cup \{\langle s, p \rangle\}$
+        \State $AssignedSpecialists \gets AssignedSpecialists \cup \{s\}$
+        \State $RemainingDemand_p \gets RemainingDemand_p - Capacity_s$
+    \EndWhile
+    \State \Comment{Verify pipe p is covered}
+    \If{\textbf{not} \Call{ValidateAssignment}{$Solution$, $p$}}
+        \State \Return \textsc{Infeasible}
+    \EndIf
+\EndFor
 \State \Return $Solution$
-
 \end{algorithmic}
 \end{algorithm}
+
+\subsubsection{Complexity Analysis}
+
+\textbf{Phase 1 Complexity:}
+\begin{itemize}
+    \item \textbf{Karger}: $O(k \times m)$ where $k = O(n^2 \log n)$ iterations and $m = |Pipes|$
+    \begin{itemize}
+        \item Total: $O(n^2 \log n \times m)$
+    \end{itemize}
+    \item \textbf{Stoer-Wagner}: $O(n \times m + n^2 \log n)$
+    \begin{itemize}
+        \item More efficient for dense graphs
+    \end{itemize}
+\end{itemize}
+
+\textbf{Phase 2 Complexity:}
+\begin{itemize}
+    \item Sorting pipes: $O(p \log p)$ where $p = |CutPipes|$
+    \item Sorting specialists: $O(s \log s)$ where $s = |Specialists|$
+    \item Assignment loop: $O(p \times s)$ in worst case
+    \item \textbf{Total Phase 2}: $O(p \times s + s \log s)$
+\end{itemize}
+
+\textbf{Overall Complexity}: $O(n^2 \log n \times m + p \times s)$
 
 \subsection{Local Search Method}
 
@@ -374,17 +469,17 @@ The same as \ref{ls_declaration}.
 \EndFor
 \State \Return $Solution^{best}$
 
-\end{algorithmic}    
+\end{algorithmic}
 \end{algorithm}
 
-% \section{Experiment Result Analysis}
-%
-% \subsubsection{Experiment Dataset And Environment}
-%
-% 16 data files are generated in the folder \textit{src/project/testdata} with prefix \textit{project.\{39-44\}-1} and \textit{project.45-\{1-10\}}, containing 39 to 45 members for each dataset.\\
-% These experiments were conducted on an Apple MacBook Pro laptop with an Apple M2 chip and 8GB of memory. Solving times may vary slightly on other computers, particularly for the ILP model.
-%
-%
+\section{Experiment Result Analysis}
+
+\subsubsection{Experiment Dataset And Environment}
+
+16 data files are generated in the folder \textit{src/project/testdata} with prefix \textit{project.\{39-44\}-1} and \textit{project.45-\{1-10\}}, containing 39 to 45 members for each dataset.\\
+These experiments were conducted on an Apple MacBook Pro laptop with an Apple M2 chip and 8GB of memory. Solving times may vary slightly on other computers, particularly for the ILP model.
+
+
 \subsection{Parameter Tuning For GRASP}
 
 We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1
@@ -426,238 +521,238 @@ We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1
 \label{fig:fig41}
 \end{figure}
 
-% \begin{table}[H]
-% \centering
-% \begin{tabular}{||c c||}
-%  \hline
-%  Dataset & \bm{$\alpha$} for $Solution^{best}$ \\ [0.5ex]
-%  \hline\hline
-% project.45-1.dat & 0  \\
-% project.45-2.dat & 0  \\
-% project.45-3.dat & 0.3  \\
-% project.45-4.dat & 0  \\
-% project.45-5.dat & 0.1  \\
-% project.45-6.dat & 0  \\
-% project.45-7.dat & 0.1  \\
-% project.45-8.dat & 0  \\
-% project.45-9.dat & 0.4  \\
-% project.45-10.dat & 0.2  \\ [1ex]
-%  \hline
-% \end{tabular}
-% \captionsetup{labelformat=empty}
-% \caption{Table 4.1}
-% \label{table41}
-% \end{table}
-%
-% \noindent As shown in figure \nameref{fig:fig41} and table \nameref{table41}, a better solution is most likely achieved when \bm{$\alpha$} is set from 0 to 0.1. \textbf{In the following experiments, we will set \bm{$\alpha$} equal to 0.1 when conducting the GRASP method to give a good balance between quality and randomness}.
-%
-%
-% \subsection{Solving Time}
-%
-% As shown in \nameref{fig:fig42} the ILP model takes approximately 11 to 75 minutes to reach the optimal solution, while the Greedy method requires less than 200 milliseconds. This means the Greedy method is roughly 10000 times faster than the ILP model. \\
-% The Local Search method takes about 20 seconds to solve the problem.
-% Additionally, when GRASP is executed with 10 iterations and followed by the Local Search procedure, it takes about ten times longer than the Local Search method alone. \\
-% Furthermore, when GRASP is executed with 100 iterations and not followed by the Local Search procedure, it takes around 25 seconds to solve the problem.\\
-% As demonstrated in \nameref{fig:fig43}, the time required to solve the ILP model varies significantly. At times, we may be fortunate enough to obtain the optimal solution quickly. Specifically, if the number of members is small (fewer than 42), we can effectively use the ILP model to achieve the optimal solution.
-%
-% \begin{figure}[H]
-%
-% \begin{tikzpicture}[]
-% \begin{axis}[
-%     title={\textbf{Solving Time (10 datasets with 45 members)}},
-%     x tick label style={
-%         /pgf/number format/1000 sep=},
-%     ylabel=\textbf{Solving Time} ($\mathbf{s})$,
-%     xlabel=\textbf{Dataset Number},
-%     ybar interval=0.8,
-%     xtick=data,
-%     bar width = 10pt,
-%     ymode=log,
-%     ymax=10000,
-%     bar shift=0pt,
-%     log origin=infty,
-%     legend pos=outer north east,
-%     width=0.7\textwidth,
-%     legend style={nodes={scale=0.8, transform shape}}
-% ]
-%
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/45members/solving_time_greedy.dat};
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/45members/solving_time_grasp.dat};
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/45members/solving_time_ls.dat};
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/45members/solving_time_grasp_with_ls.dat};
-%
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/45members/solving_time_cplex.dat};
-%
-% \legend{Greedy,GRASP(100 Iter. w/o local search \bm{$\alpha$} = 0.1),Local Search,GRASP(10 Iter. w/ local search \bm{$\alpha$} = 0.1),ILP}
-% \end{axis}
-% \end{tikzpicture}
-% \captionsetup{labelformat=empty}
-% \caption{Figure 4.2}
-% \label{fig:fig42}
-% \end{figure}
-%
-%
-% \begin{figure}[H]
-%
-% \begin{tikzpicture}[]
-% \begin{axis}[
-%     title={\textbf{Solving Time (39 to 45 members)}},
-%     x tick label style={
-%         /pgf/number format/1000 sep=},
-%     ylabel=\textbf{Solving Time } ($\mathbf{s})$,
-%     xlabel=\textbf{Members},
-%     ybar interval=0.8,
-%     xtick=data,
-%     bar width = 10pt,
-%     ymode=log,
-%     ymax=10000,
-%     bar shift=0pt,
-%     log origin=infty,
-%     legend pos=outer north east,
-%     width=0.7\textwidth,
-%     legend style={nodes={scale=0.8, transform shape}}
-% ]
-%
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/variable_members/solving_time_greedy.dat};
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/variable_members/solving_time_grasp.dat};
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/variable_members/solving_time_ls.dat};
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/variable_members/solving_time_grasp_with_ls.dat};
-%
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/variable_members/solving_time_cplex.dat};
-%
-% \legend{Greedy,GRASP(100 Iter. w/o local search \bm{$\alpha$} = 0.1),Local Search,GRASP(10 Iter. w/ local search \bm{$\alpha$} = 0.1),ILP}
-% \end{axis}
-% \end{tikzpicture}
-% \captionsetup{labelformat=empty}
-% \caption{Figure 4.3}
-% \label{fig:fig43}
-% \end{figure}
-%
-%
-%
-%
-%
-% \subsection{Solving Quality}
-%
-%
-% \begin{figure}[H]
-% \begin{tikzpicture}
-% \begin{axis}[
-%     title={\textbf{Quality of Solutions (10 datasets with 45 members)}},
-%     xlabel=\textbf{{Dataset Number}},
-%     ylabel=\textbf{{Total Income}},
-%     xmin=1, xmax=10,
-%     ymin=4000, ymax=5300,
-%     xtick=data,
-%     ytick={4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300},
-%     ymajorgrids=true,
-%     grid style=dashed,
-%     width=0.7\textwidth,
-%     legend pos=outer north east,
-%     legend style={nodes={scale=0.8, transform shape}}
-% ]
-%
-% \addplot[green,thick,mark=triangle] table {data/45members/objective_greedy.dat};
-% \addplot[blue,thick,mark=triangle] table {data/45members/objective_grasp.dat};
-% \addplot[brown,thick,mark=triangle] table {data/45members/objective_ls.dat};
-% \addplot[black,thick,mark=triangle] table {data/45members/objective_grasp_with_ls.dat};
-% \addplot[red,thick,mark=square*] table {data/45members/objective_cplex.dat};
-%
-%
-% \legend{Greedy,GRASP(100 Iter. w/o local search  $\alpha = 0.1$),Local Search,GRASP(10 Iter. w/ local search $\alpha = 0.1$),ILP(Optimal)}
-%
-% \end{axis}
-% \end{tikzpicture}
-% \captionsetup{labelformat=empty}
-% \caption{Figure 4.4}
-% \label{fig:fig44}
-% \end{figure}
-%
-%
-% \begin{figure}[H]
-% \begin{tikzpicture}
-% \begin{axis}[
-%     title={\textbf{Quality of Solutions (39 to 45 members)}},
-%     xlabel=\textbf{{Members}},
-%     ylabel=\textbf{{Total Income}},
-%     xmin=39, xmax=45,
-%     ymin=3500, ymax=5200,
-%     xtick=data,
-%     ytick={3500,3600,3700,3800,3900,4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200},
-%     ymajorgrids=true,
-%     grid style=dashed,
-%     width=0.7\textwidth,
-%     legend pos=outer north east,
-%     legend style={nodes={scale=0.8, transform shape}}
-% ]
-%
-% \addplot[green,thick,mark=triangle] table {data/variable_members/objective_greedy.dat};
-% \addplot[blue,thick,mark=triangle] table {data/variable_members/objective_grasp.dat};
-% \addplot[brown,thick,mark=triangle] table {data/variable_members/objective_ls.dat};
-% \addplot[black,thick,mark=triangle] table {data/variable_members/objective_grasp_with_ls.dat};
-% \addplot[red,thick,mark=square*] table {data/variable_members/objective_cplex.dat};
-%
-%
-% \legend{Greedy,GRASP(100 Iter. w/o local search  $\alpha = 0.1$),Local Search,GRASP(10 Iter. w/ local search $\alpha = 0.1$),ILP(Optimal)}
-%
-% \end{axis}
-% \end{tikzpicture}
-% \captionsetup{labelformat=empty}
-% \caption{Figure 4.5}
-% \label{fig:fig45}
-% \end{figure}
-%
-% \nameref{fig:fig44} and \nameref{fig:fig45} shows that the Greedy approach yields the worst solution. In contrast, both GRASP (100 iterations without local search) and Local Search provide similar results. Among the heuristic methods, GRASP (10 iterations with local search) offers the best solution.
+\begin{table}[H]
+\centering
+\begin{tabular}{||c c||}
+ \hline
+ Dataset & \bm{$\alpha$} for $Solution^{best}$ \\ [0.5ex]
+ \hline\hline
+project.45-1.dat & 0  \\
+project.45-2.dat & 0  \\
+project.45-3.dat & 0.3  \\
+project.45-4.dat & 0  \\
+project.45-5.dat & 0.1  \\
+project.45-6.dat & 0  \\
+project.45-7.dat & 0.1  \\
+project.45-8.dat & 0  \\
+project.45-9.dat & 0.4  \\
+project.45-10.dat & 0.2  \\ [1ex]
+ \hline
+\end{tabular}
+\captionsetup{labelformat=empty}
+\caption{Table 4.1}
+\label{table41}
+\end{table}
+
+\noindent As shown in figure \nameref{fig:fig41} and table \nameref{table41}, a better solution is most likely achieved when \bm{$\alpha$} is set from 0 to 0.1. \textbf{In the following experiments, we will set \bm{$\alpha$} equal to 0.1 when conducting the GRASP method to give a good balance between quality and randomness}.
+
+
+\subsection{Solving Time}
+
+As shown in \nameref{fig:fig42} the ILP model takes approximately 11 to 75 minutes to reach the optimal solution, while the Greedy method requires less than 200 milliseconds. This means the Greedy method is roughly 10000 times faster than the ILP model. \\
+The Local Search method takes about 20 seconds to solve the problem.
+Additionally, when GRASP is executed with 10 iterations and followed by the Local Search procedure, it takes about ten times longer than the Local Search method alone. \\
+Furthermore, when GRASP is executed with 100 iterations and not followed by the Local Search procedure, it takes around 25 seconds to solve the problem.\\
+As demonstrated in \nameref{fig:fig43}, the time required to solve the ILP model varies significantly. At times, we may be fortunate enough to obtain the optimal solution quickly. Specifically, if the number of members is small (fewer than 42), we can effectively use the ILP model to achieve the optimal solution.
+
+\begin{figure}[H]
+
+\begin{tikzpicture}[]
+\begin{axis}[
+    title={\textbf{Solving Time (10 datasets with 45 members)}},
+    x tick label style={
+        /pgf/number format/1000 sep=},
+    ylabel=\textbf{Solving Time} ($\mathbf{s})$,
+    xlabel=\textbf{Dataset Number},
+    ybar interval=0.8,
+    xtick=data,
+    bar width = 10pt,
+    ymode=log,
+    ymax=10000,
+    bar shift=0pt,
+    log origin=infty,
+    legend pos=outer north east,
+    width=0.7\textwidth,
+    legend style={nodes={scale=0.8, transform shape}}
+]
+
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/45members/solving_time_greedy.dat};
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/45members/solving_time_grasp.dat};
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/45members/solving_time_ls.dat};
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/45members/solving_time_grasp_with_ls.dat};
+
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/45members/solving_time_cplex.dat};
+
+\legend{Greedy,GRASP(100 Iter. w/o local search \bm{$\alpha$} = 0.1),Local Search,GRASP(10 Iter. w/ local search \bm{$\alpha$} = 0.1),ILP}
+\end{axis}
+\end{tikzpicture}
+\captionsetup{labelformat=empty}
+\caption{Figure 4.2}
+\label{fig:fig42}
+\end{figure}
+
+
+\begin{figure}[H]
+
+\begin{tikzpicture}[]
+\begin{axis}[
+    title={\textbf{Solving Time (39 to 45 members)}},
+    x tick label style={
+        /pgf/number format/1000 sep=},
+    ylabel=\textbf{Solving Time } ($\mathbf{s})$,
+    xlabel=\textbf{Members},
+    ybar interval=0.8,
+    xtick=data,
+    bar width = 10pt,
+    ymode=log,
+    ymax=10000,
+    bar shift=0pt,
+    log origin=infty,
+    legend pos=outer north east,
+    width=0.7\textwidth,
+    legend style={nodes={scale=0.8, transform shape}}
+]
+
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/variable_members/solving_time_greedy.dat};
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/variable_members/solving_time_grasp.dat};
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/variable_members/solving_time_ls.dat};
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/variable_members/solving_time_grasp_with_ls.dat};
+
+
+\addplot table[
+    header=true,
+    x=id,
+    y=time
+] {data/variable_members/solving_time_cplex.dat};
+
+\legend{Greedy,GRASP(100 Iter. w/o local search \bm{$\alpha$} = 0.1),Local Search,GRASP(10 Iter. w/ local search \bm{$\alpha$} = 0.1),ILP}
+\end{axis}
+\end{tikzpicture}
+\captionsetup{labelformat=empty}
+\caption{Figure 4.3}
+\label{fig:fig43}
+\end{figure}
+
+
+
+
+
+\subsection{Solving Quality}
+
+
+\begin{figure}[H]
+\begin{tikzpicture}
+\begin{axis}[
+    title={\textbf{Quality of Solutions (10 datasets with 45 members)}},
+    xlabel=\textbf{{Dataset Number}},
+    ylabel=\textbf{{Total Income}},
+    xmin=1, xmax=10,
+    ymin=4000, ymax=5300,
+    xtick=data,
+    ytick={4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300},
+    ymajorgrids=true,
+    grid style=dashed,
+    width=0.7\textwidth,
+    legend pos=outer north east,
+    legend style={nodes={scale=0.8, transform shape}}
+]
+
+\addplot[green,thick,mark=triangle] table {data/45members/objective_greedy.dat};
+\addplot[blue,thick,mark=triangle] table {data/45members/objective_grasp.dat};
+\addplot[brown,thick,mark=triangle] table {data/45members/objective_ls.dat};
+\addplot[black,thick,mark=triangle] table {data/45members/objective_grasp_with_ls.dat};
+\addplot[red,thick,mark=square*] table {data/45members/objective_cplex.dat};
+
+
+\legend{Greedy,GRASP(100 Iter. w/o local search  $\alpha = 0.1$),Local Search,GRASP(10 Iter. w/ local search $\alpha = 0.1$),ILP(Optimal)}
+
+\end{axis}
+\end{tikzpicture}
+\captionsetup{labelformat=empty}
+\caption{Figure 4.4}
+\label{fig:fig44}
+\end{figure}
+
+
+\begin{figure}[H]
+\begin{tikzpicture}
+\begin{axis}[
+    title={\textbf{Quality of Solutions (39 to 45 members)}},
+    xlabel=\textbf{{Members}},
+    ylabel=\textbf{{Total Income}},
+    xmin=39, xmax=45,
+    ymin=3500, ymax=5200,
+    xtick=data,
+    ytick={3500,3600,3700,3800,3900,4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200},
+    ymajorgrids=true,
+    grid style=dashed,
+    width=0.7\textwidth,
+    legend pos=outer north east,
+    legend style={nodes={scale=0.8, transform shape}}
+]
+
+\addplot[green,thick,mark=triangle] table {data/variable_members/objective_greedy.dat};
+\addplot[blue,thick,mark=triangle] table {data/variable_members/objective_grasp.dat};
+\addplot[brown,thick,mark=triangle] table {data/variable_members/objective_ls.dat};
+\addplot[black,thick,mark=triangle] table {data/variable_members/objective_grasp_with_ls.dat};
+\addplot[red,thick,mark=square*] table {data/variable_members/objective_cplex.dat};
+
+
+\legend{Greedy,GRASP(100 Iter. w/o local search  $\alpha = 0.1$),Local Search,GRASP(10 Iter. w/ local search $\alpha = 0.1$),ILP(Optimal)}
+
+\end{axis}
+\end{tikzpicture}
+\captionsetup{labelformat=empty}
+\caption{Figure 4.5}
+\label{fig:fig45}
+\end{figure}
+
+\nameref{fig:fig44} and \nameref{fig:fig45} shows that the Greedy approach yields the worst solution. In contrast, both GRASP (100 iterations without local search) and Local Search provide similar results. Among the heuristic methods, GRASP (10 iterations with local search) offers the best solution.
 
 
 \subsection{Experiment Conclusion}
