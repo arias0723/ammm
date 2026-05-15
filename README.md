@@ -59,7 +59,12 @@ BaseExchange: NOT YET !!!
 - 10 random instances of 100 specs and 1000 pipes (~55 min to solve in CPLEX using Macbook Pro M4 32 GB ram)
 - TODO: maybe generate other test suites of different sizes
 - Alpha values with 0.1 increment, doing 50 iterations per alpha
-- Select the best objective (best mean + low SD combination) as the metric per each alpha value (line chart)
+  - Select the best objective (best mean + low SD combination) as the metric per each alpha value (line chart)
+    - To balance a low mean objective (since this is a minimization problem) with a low standard deviation (SD), you can use a Risk-Adjusted Cost formula, commonly known as an Upper Confidence Bound (UCB).
+    - The formula penalizes high variance by adding a multiple of the standard deviation to the mean:
+
+      **Score = mean_objective + (k * std_objective)**
+
 - Select the median, min, max time (using tuned alpha), plot and compare (bar and boxplot charts)
 - Plot in latex
 

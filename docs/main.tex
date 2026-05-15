@@ -487,9 +487,9 @@ We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1
 \begin{figure}[H]
 \begin{tikzpicture}
 \begin{axis}[
-    title={\textbf{Quality of Solutions (100 iter. w/o local search phase)}},
+    title={\textbf{Quality of Solutions (Risk-Adjusted: Mean + SD)}},
     xlabel=\bm{$\alpha$},
-    ylabel=\textbf{\textit{Total Income}},
+    ylabel=\textbf{\textit{Score (Mean + SD)}},
     xmin=0, xmax=1,
     ymin=2000, ymax=16000,
     xtick=data,
@@ -501,16 +501,16 @@ We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1
     legend style={nodes={scale=1, transform shape}}
 ]
 
-\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_0.csv};
-\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_1.csv};
-\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_2.csv};
-\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_3.csv};
-\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_4.csv};
-\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_5.csv};
-\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_6.csv};
-\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_7.csv};
-\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_8.csv};
-\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_9.csv};
+\addplot table[x=alpha, y expr=\thisrow{mean_objective} + \thisrow{std_objective}, col sep=comma] {grasp_s100_p1000/s100_p1000_instance_0.csv};
+\addplot table[x=alpha, y expr=\thisrow{mean_objective} + \thisrow{std_objective}, col sep=comma] {grasp_s100_p1000/s100_p1000_instance_1.csv};
+\addplot table[x=alpha, y expr=\thisrow{mean_objective} + \thisrow{std_objective}, col sep=comma] {grasp_s100_p1000/s100_p1000_instance_2.csv};
+\addplot table[x=alpha, y expr=\thisrow{mean_objective} + \thisrow{std_objective}, col sep=comma] {grasp_s100_p1000/s100_p1000_instance_3.csv};
+\addplot table[x=alpha, y expr=\thisrow{mean_objective} + \thisrow{std_objective}, col sep=comma] {grasp_s100_p1000/s100_p1000_instance_4.csv};
+\addplot table[x=alpha, y expr=\thisrow{mean_objective} + \thisrow{std_objective}, col sep=comma] {grasp_s100_p1000/s100_p1000_instance_5.csv};
+\addplot table[x=alpha, y expr=\thisrow{mean_objective} + \thisrow{std_objective}, col sep=comma] {grasp_s100_p1000/s100_p1000_instance_6.csv};
+\addplot table[x=alpha, y expr=\thisrow{mean_objective} + \thisrow{std_objective}, col sep=comma] {grasp_s100_p1000/s100_p1000_instance_7.csv};
+\addplot table[x=alpha, y expr=\thisrow{mean_objective} + \thisrow{std_objective}, col sep=comma] {grasp_s100_p1000/s100_p1000_instance_8.csv};
+\addplot table[x=alpha, y expr=\thisrow{mean_objective} + \thisrow{std_objective}, col sep=comma] {grasp_s100_p1000/s100_p1000_instance_9.csv};
 
 \legend{dataset=s100\_p1000\_instance\_0,dataset=s100\_p1000\_instance\_1,dataset=s100\_p1000\_instance\_2,dataset=s100\_p1000\_instance\_3,dataset=s100\_p1000\_instance\_4,dataset=s100\_p1000\_instance\_5,dataset=s100\_p1000\_instance\_6,dataset=s100\_p1000\_instance\_7,dataset=s100\_p1000\_instance\_8,dataset=s100\_p1000\_instance\_9}
 
@@ -556,63 +556,32 @@ Furthermore, when GRASP is executed with 100 iterations and not followed by the 
 As demonstrated in \nameref{fig:fig43}, the time required to solve the ILP model varies significantly. At times, we may be fortunate enough to obtain the optimal solution quickly. Specifically, if the number of members is small (fewer than 42), we can effectively use the ILP model to achieve the optimal solution.
 
 \begin{figure}[H]
-
-\begin{tikzpicture}[]
+\centering
+\begin{tikzpicture}
 \begin{axis}[
-    title={\textbf{Solving Time (10 datasets with 45 members)}},
-    x tick label style={
-        /pgf/number format/1000 sep=},
-    ylabel=\textbf{Solving Time} ($\mathbf{s})$,
-    xlabel=\textbf{Dataset Number},
-    ybar interval=0.8,
-    xtick=data,
-    bar width = 10pt,
-    ymode=log,
-    ymax=10000,
-    bar shift=0pt,
-    log origin=infty,
-    legend pos=outer north east,
+    title={\textbf{Solving Time ($\mathbf{S=100}, \mathbf{P=1000}$)}},
+    xlabel={$\alpha$},
+    ylabel={\textbf{Solving Time} ($\mathbf{s}$)},
+    grid=major,
     width=0.7\textwidth,
-    legend style={nodes={scale=0.8, transform shape}}
+    legend pos=north west,
+    ybar,
+    bar width=10pt,
+    enlarge x limits=0.15,
+    xtick=data,
 ]
 
+\addplot [fill=blue] table [
+    col sep=comma,
+    x=alpha,
+    y=mean_time
+] {grasp_s100_p1000/s100_p1000_results.csv};
+\addlegendentry{GRASP w/o Local Search}
 
-\addplot table[
-    header=true,
-    x=id,
-    y=time
-] {data/45members/solving_time_greedy.dat};
-
-\addplot table[
-    header=true,
-    x=id,
-    y=time
-] {data/45members/solving_time_grasp.dat};
-
-\addplot table[
-    header=true,
-    x=id,
-    y=time
-] {data/45members/solving_time_ls.dat};
-
-\addplot table[
-    header=true,
-    x=id,
-    y=time
-] {data/45members/solving_time_grasp_with_ls.dat};
-
-
-\addplot table[
-    header=true,
-    x=id,
-    y=time
-] {data/45members/solving_time_cplex.dat};
-
-\legend{Greedy,GRASP(100 Iter. w/o local search \bm{$\alpha$} = 0.1),Local Search,GRASP(10 Iter. w/ local search \bm{$\alpha$} = 0.1),ILP}
 \end{axis}
 \end{tikzpicture}
 \captionsetup{labelformat=empty}
-\caption{Figure 4.2}
+\caption{Figure 4.2: Solving Time for GRASP without Local Search across $\alpha$}
 \label{fig:fig42}
 \end{figure}
 
