@@ -385,47 +385,47 @@ The same as \ref{ls_declaration}.
 % These experiments were conducted on an Apple MacBook Pro laptop with an Apple M2 chip and 8GB of memory. Solving times may vary slightly on other computers, particularly for the ILP model.
 %
 %
-% \subsection{Parameter Tuning For GRASP}
-%
-% We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 45 members without conducting the local search procedure, and the maximum iterations for the constructive phase is set to 100.
-%
-% \begin{figure}[H]
-% \begin{tikzpicture}
-% \begin{axis}[
-%     title={\textbf{Quality of Solutions (100 iter. w/o local search phase)}},
-%     xlabel=\bm{$\alpha$},
-%     ylabel=\textbf{\textit{Total Income}},
-%     xmin=0, xmax=1,
-%     ymin=4000, ymax=5300,
-%     xtick=data,
-%     ytick={4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300},
-%     ymajorgrids=true,
-%     grid style=dashed,
-%     width=0.7\textwidth,
-%     legend pos=outer north east,
-%     legend style={nodes={scale=1, transform shape}}
-% ]
-%
-% \addplot table {data/grasp/45-1.dat};
-% \addplot table {data/grasp/45-2.dat};
-% \addplot table {data/grasp/45-3.dat};
-% \addplot table {data/grasp/45-4.dat};
-% \addplot table {data/grasp/45-5.dat};
-% \addplot table {data/grasp/45-6.dat};
-% \addplot table {data/grasp/45-7.dat};
-% \addplot table {data/grasp/45-8.dat};
-% \addplot table {data/grasp/45-9.dat};
-% \addplot table {data/grasp/45-10.dat};
-%
-% \legend{dataset=project.45-1.dat,dataset=project.45-2.dat,dataset=project.45-3.dat,dataset=project.45-4.dat,dataset=project.45-5.dat,dataset=project.45-6.dat,dataset=project.45-7.dat,dataset=project.45-8.dat,dataset=project.45-9.dat,dataset=project.45-10.dat}
-%
-% \end{axis}
-% \end{tikzpicture}
-% \captionsetup{labelformat=empty}
-% \caption{Figure 4.1}
-% \label{fig:fig41}
-% \end{figure}
-%
+\subsection{Parameter Tuning For GRASP}
+
+We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1
+
+\begin{figure}[H]
+\begin{tikzpicture}
+\begin{axis}[
+    title={\textbf{Quality of Solutions (100 iter. w/o local search phase)}},
+    xlabel=\bm{$\alpha$},
+    ylabel=\textbf{\textit{Total Income}},
+    xmin=0, xmax=1,
+    ymin=2000, ymax=16000,
+    xtick=data,
+    ytick={2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000},
+    ymajorgrids=true,
+    grid style=dashed,
+    width=0.7\textwidth,
+    legend pos=outer north east,
+    legend style={nodes={scale=1, transform shape}}
+]
+
+\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_0.csv};
+\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_1.csv};
+\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_2.csv};
+\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_3.csv};
+\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_4.csv};
+\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_5.csv};
+\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_6.csv};
+\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_7.csv};
+\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_8.csv};
+\addplot table[x=alpha, y=best_objective, col sep=comma] {../InstanceGenerator/output/tuning/s100_p1000_instance_9.csv};
+
+\legend{dataset=s100\_p1000\_instance\_0,dataset=s100\_p1000\_instance\_1,dataset=s100\_p1000\_instance\_2,dataset=s100\_p1000\_instance\_3,dataset=s100\_p1000\_instance\_4,dataset=s100\_p1000\_instance\_5,dataset=s100\_p1000\_instance\_6,dataset=s100\_p1000\_instance\_7,dataset=s100\_p1000\_instance\_8,dataset=s100\_p1000\_instance\_9}
+
+\end{axis}
+\end{tikzpicture}
+\captionsetup{labelformat=empty}
+\caption{Figure 4.1}
+\label{fig:fig41}
+\end{figure}
+
 % \begin{table}[H]
 % \centering
 % \begin{tabular}{||c c||}

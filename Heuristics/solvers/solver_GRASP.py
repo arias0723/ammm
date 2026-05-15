@@ -86,9 +86,15 @@ class Solver_GRASP(_Solver):
         solution.evaluate()
         return solution
 
-    def stopCriteria(self):
+    def stopCriteria(self, iteration):
         self.elapsedEvalTime = time.time() - self.startTime
-        return time.time() - self.startTime > self.config.maxExecTime
+        time_exceeded = self.elapsedEvalTime > self.config.maxExecTime
+        
+        if hasattr(self.config, 'maxExecIterations') and self.config.maxExecIterations > 0:
+            if iteration >= self.config.maxExecIterations:
+                return True
+                
+        return time_exceeded
 
     def solve(self, **kwargs):
         self.startTimeMeasure()
@@ -105,7 +111,7 @@ class Solver_GRASP(_Solver):
         self.writeLogLine(bestCost, 0)
 
         iteration = 0
-        while not self.stopCriteria():
+        while not self.stopCriteria(iteration):
             iteration += 1
             alpha = self.config.alpha
 

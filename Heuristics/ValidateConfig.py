@@ -69,6 +69,12 @@ class ValidateConfig(object):
             if not isinstance(maxExecTime, (int, float)) or (maxExecTime <= 0):
                 raise AMMMException('maxExecTime(%s) has to be a positive real value.' % str(maxExecTime))
 
+            # Validate maxExecIterations (optional)
+            if 'maxExecIterations' in data.__dict__:
+                maxExecIterations = data.maxExecIterations
+                if not isinstance(maxExecIterations, int) or (maxExecIterations <= 0):
+                    raise AMMMException('maxExecIterations(%s) has to be a positive integer.' % str(maxExecIterations))
+
             # Validate alpha
             alpha = data.alpha
             if not isinstance(alpha, (int, float)) or (alpha < 0) or (alpha > 1):
