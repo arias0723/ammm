@@ -16,5 +16,5 @@ alpha                = 0.9;                         # Alpha parameter for the GR
 
 # --- Local Search specific parameters ------------------------------------------------------------------------
 localSearch          = False;                    # Enable local search?
-neighborhoodStrategy = Replace;                 # Supported Neighborhoods: Remove, Replace, Both
+neighborhoodStrategy = Both;                 # Supported Neighborhoods: Remove, Replace, Both
 policy               = BestImprovement;         # Supported Policies: FirstImprovement / BestImprovement

@@ -3,9 +3,8 @@ AMMM Project Heuristics
 Local Search for the resource-allocation sub-problem (Phase 2).
 
 Neighborhoods:
-  1. Swap: swap two specialists between different pipes.
-  2. Replace: replace an assigned specialist with a cheaper unassigned one (if feasible).
-  3. Remove: remove an over-provisioned specialist (reduce excess capacity -> save cost).
+  1. Replace: replace an assigned specialist with a cheaper unassigned one (if feasible).
+  2. Remove: remove an over-provisioned specialist (reduce excess capacity -> save cost).
 """
 
 import time
@@ -156,17 +155,32 @@ class LocalSearch(_Solver):
     def exploreNeighborhood(self, solution):
         neighbor = solution
 
-        # TODO: Implement BOTH policy
-        if self.config.neighborhoodStrategy == 'Remove' :
+        if self.config.neighborhoodStrategy == 'Both':
+            improved = self._exploreRemove(neighbor)
+            if improved.getFitness() < neighbor.getFitness():
+                neighbor = improved
+                
+            improved = self._exploreReplace(neighbor)
+            if improved.getFitness() < neighbor.getFitness():
+                neighbor = improved
+        elif self.config.neighborhoodStrategy == 'Remove':
             improved = self._exploreRemove(solution)
             if improved.getFitness() < solution.getFitness():
                 neighbor = improved
         else:
             improved = self._exploreReplace(solution)
-            if (improved.getFitness() < solution.getFitness()):
+            if improved.getFitness() < solution.getFitness():
                 neighbor = improved
 
         return neighbor
+
+
+    def stopCriteria(self, iteration, endTime, endIterations):
+        if endIterations is not None and endIterations > 0:
+            if iteration >= endIterations:
+                return True
+            return False
+        return time.time() >= endTime
 
 
     def solve(self, **kwargs):
@@ -179,12 +193,13 @@ class LocalSearch(_Solver):
 
         self.startTime = kwargs.get('startTime', None)
         endTime = kwargs.get('endTime', None)
+        endIterations = kwargs.get('endIterations', None)
 
         incumbent = initialSolution
         incumbentFitness = incumbent.getFitness()
         iterations = 0
 
-        while time.time() < endTime:
+        while not self.stopCriteria(iterations, endTime, endIterations):
             iterations += 1
 
             neighbor = self.exploreNeighborhood(incumbent)

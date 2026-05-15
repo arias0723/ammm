@@ -18,7 +18,6 @@ class Solver_Greedy(_Solver):
     def _computeMinCut(self):
         pipes = self.instance.getPipes()
         nBases = self.instance.getNumBases()
-        # cut_weight, partition = StoerWagner(nBases, pipes)
         if self.config.minCut == "Karger" :
             cut_weight, partition = Karger(nBases, pipes, 1)
             if self.config.verbose:
@@ -92,7 +91,7 @@ class Solver_Greedy(_Solver):
         if self.config.localSearch and solution.isFeasible():
             ls = LocalSearch(self.config, None)
             endTime = self.startTime + self.config.maxExecTime
-            solution = ls.solve(solution=solution, startTime=self.startTime, endTime=endTime)
+            solution = ls.solve(solution=solution, startTime=self.startTime, endTime=endTime, endIterations=self.config.maxExecIterations)
 
         self.elapsedEvalTime = time.time() - self.startTime
         self.writeLogLine(solution.getFitness(), 1)

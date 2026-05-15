@@ -30,7 +30,7 @@ class Solver_GRASP(_Solver):
             cut_weight, partition = StoerWagner(nBases, pipes)
             if self.config.verbose:
                 print('Running Stoer-Wagner MinCut ...')
-        if self.config.verbose: print('MinCut: ' + str(partition))
+        # if self.config.verbose: print('MinCut: ' + str(partition))
         return partition
 
     def _getCutPipes(self, partition):
@@ -120,7 +120,7 @@ class Solver_GRASP(_Solver):
             if self.config.localSearch and solution.isFeasible():
                 ls = LocalSearch(self.config, None)
                 endTime = self.startTime + self.config.maxExecTime
-                solution = ls.solve(solution=solution, startTime=self.startTime, endTime=endTime)
+                solution = ls.solve(solution=solution, startTime=self.startTime, endTime=endTime, endIterations=self.config.maxExecIterations)
 
             if solution.isFeasible():
                 solutionCost = solution.getFitness()

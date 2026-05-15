@@ -31,9 +31,9 @@ def run_your_heuristic_with_alpha(alpha, instance_file):
             text=True
         )
         # Print the output to the same CLI as the caller
-        print(result.stdout)
-        if result.stderr:
-            print(result.stderr, file=sys.stderr)
+        # print(result.stdout)
+        # if result.stderr:
+        #     print(result.stderr, file=sys.stderr)
 
         os.remove(temp_config_path)
 
