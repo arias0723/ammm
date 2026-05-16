@@ -86,22 +86,22 @@ execute {
 
   writeln("Total cost: ", cplex.getObjValue());
   writeln();
-  for(var e in E) {
-    if(y[e] == 1) {
+  for (var e in E) {
+    if (d[e] == 1) {
       write("Destroy pipe {", e.i, ",", e.j, "} with specialists:");
-      for(var s in S) {
-        if(x[s][e] == 1) write(" ", s);
+      for (var s in S) {
+        if (x[s][e] == 1) write(" ", s);
       }
       writeln();
     }
   }
   writeln();
-  
+
   write("Partition S = {");
   var first = true;
-  for(var i in B) {
-    if(s[i] == 1) {
-      if(!first) write(",");
+  for (var i in B) {
+    if (g[i] == 1) {
+      if (!first) write(",");
       write(i);
       first = false;
     }
