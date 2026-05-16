@@ -97,7 +97,18 @@ execute {
   }
   writeln();
 
-  write("Partition S = {");
+  write("Partition S0 = {");
+  var first = true;
+  for (var i in B) {
+    if (g[i] == 0) {
+      if (!first) write(",");
+      write(i);
+      first = false;
+    }
+  }
+  writeln("}");
+    
+  write("Partition S1 = {");
   var first = true;
   for (var i in B) {
     if (g[i] == 1) {
@@ -107,6 +118,7 @@ execute {
     }
   }
   writeln("}");
+  writeln();
 
 //<<<<<<<<<<<<<<<<
 }
