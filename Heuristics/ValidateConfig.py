@@ -121,7 +121,7 @@ class ValidateConfig(object):
 
             # Validate neighborhoodStrategy
             neighborhoodStrategy = data.neighborhoodStrategy
-            if neighborhoodStrategy not in ['Remove', 'Replace']:
+            if neighborhoodStrategy not in ['Remove', 'Replace', 'Both']:
                 raise AMMMException('neighborhoodStrategy(%s) has to be one of [Remove, Replace].' % str(neighborhoodStrategy))
 
             # Validate policy
