@@ -1,0 +1,2 @@
+alpha,instance,mean_objective,best_objective,worst_objective,std_objective,min_time,max_time,median_time,mean_time,feasible_runs,total_runs,success_rate
+0.15,s100_p1000_instance_3.dat,5727.85,3191.00,13910.00,1983.31,0.050,0.097,0.071,0.073,100,100,100.0
