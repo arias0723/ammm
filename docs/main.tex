@@ -189,7 +189,8 @@ The assignment continues until all pipes in $CutPipes$ are fully covered or the 
 \Statex \textbf{PHASE 1: MINIMUM CUT}
 \Function{ComputeMinCut}{$Bases$, $Pipes$}
 \If{$minCutAlgorithm = \text{``Karger''}$}
-    \State $iterations \gets \max(10, \lfloor(|Bases|^2 \times \ln(|Bases|)) / 2\rfloor)$
+    % \State $iterations \gets \max(10, \lfloor(|Bases|^2 \times \ln(|Bases|)) / 2\rfloor)$
+    \State $iterations \gets 1$
     \State $cutWeight, Partition \gets \text{Karger}(Bases, Pipes, iterations)$
 \Else \Comment{Stoer-Wagner}
     \State $cutWeight, Partition \gets \text{StoerWagner}(Bases, Pipes)$
@@ -212,10 +213,10 @@ The assignment continues until all pipes in $CutPipes$ are fully covered or the 
 \State $AssignedSpecialists \gets \phi$
 \State $CutPipes \gets \text{ComputeMinCut}(Bases, Pipes)$
 \Statex
-\State \Comment{Sort pipes by demand (descending) - hardest first}
+% \State \Comment{Sort pipes by demand (descending) - hardest first}
 \State $SortedPipes \gets \text{Sort}(CutPipes, key=Demand, reverse=\text{True})$
 \Statex
-\State \Comment{Sort specialists by cost-effectiveness (ascending) - best first}
+% \State \Comment{Sort specialists by cost-effectiveness (ascending) - best first}
 \State $SortedSpecialists \gets \text{Sort}(Specialists, key=CostEffectiveness)$
 \Statex
 \For{each $p \in SortedPipes$}
@@ -266,164 +267,118 @@ The assignment continues until all pipes in $CutPipes$ are fully covered or the 
 
 \subsection{Local Search Method}
 
-\subsubsection{Neighborhood}
+\subsubsection{Neighborhood Definition}
+We define two complementary neighborhood moves for the Phase~2 resource-allocation sub-problem:
 
-The neighborhood of this conflict resolution problem is defined as the solution obtained by replacing the member pair $<i,j>$ currently not included in the solution (indicated by $Priority(<i,j>)$ = 0) with its flipped counterpart $<j,i>$ included in the solution (indicated by $Priority(<j,i>)$ = 1), if $Bids_{ij} > Bids_{ji} \quad \forall i,j \in Members$.
+\begin{itemize}
+    \item \textbf{Remove:} remove an assigned specialist $s$ from its assigned pipe $p$ when the remaining assigned specialists still provide capacity $\ge$ demand$_p$ (i.e., $p$ remains covered). This strictly reduces cost by $c_s$.
+    \item \textbf{Replace:} select an assigned specialist $s_{old}$ on pipe $p$ and replace it with an unassigned specialist $s_{new}$ such that the pipe remains covered after the swap. The move is admissible only if $c_{s_{new}} < c_{s_{old}}$ (otherwise it cannot reduce cost).
+\end{itemize}
 
 \subsubsection{Exploration Strategy}
 
-Based on the neighborhood mentioned above, the replacing procedure may necessitate the flipping of other pairs as a knock-on effect. If the total decrease in bids from passively flipped pairs (defined as \textbf{\textit{knock-on flipped pairs}}, represented by \bm{$edges^{flip}$}) is less than the increase from the actively flipped pair $<i,j>$, we achieve a better solution.\\
-For example, if we have $(Bids_{ij} > Bids_{ji}$ and $<j,i> \in Solution$ (which indicates that $Priority(<j,i>) = 1$), when we consider replacing $<j,i>$ with $<i,j>$ in the current solution, some priority cycles may be formed. To address this, we need to develop a strategy for identifying pairs to flip within this directed graph, ensuring that no cycles remain.\\
-First, we reverse the pair (representing the edges in the directed graph) from $<j, i>$ to $<i, j>$ in the current solution (representing the vertices in the directed graph). We then proceed to eliminate all edges with an indegree of 0 or an outdegree of 0, ensuring that all remaining edges in the graph are part of a cycle.\\
-Once we have the remaining edges $edges^{remain}$, we utilize equation $max(q(<i,j'>, edges^{flip}))$ to continuously select edge $<i',j'>$ and added to $edges^{flip}$ until no cycles are left in the graph. We prioritize edges $<i', j'>$ with higher indegree and outdegree, as we believe such edges are more capable of eliminating multiple cycles compared to others. If multiple edges are tied, we will select the edge with the lowest bid decrease ($Bids_{i',j'} - Bids_{j'i'}$).The $edges^{flip}$ cost function is defined as follows.\\
-\newpage
+The local search composes the two neighborhoods according to configuration:
 
-$q(<i',j'>, edges^{flip})$=\\
-\\
-\begin{displaymath}
-    \begin{cases}
-    -1 & \\
-    \qquad\quad\textrm{if} \quad Bids_{i'j'} - Bids_{j'i'} + \sum_{<i'',j''> \in edges^{flip}} Bids_{i''j''} - Bids{j''i''} \geq Bids_{ij} - Bids_{ji}\\
-    \qquad\quad\quad\textrm{or } edges^{remain} \mid edges^{flip} = edges^{remain} \mid edges^{flip} \cup \{<i',j'>\})\\
-    \\
-    \sum_{k' \in \{i',j'\}} indegree(k') + outdegree(k') & \\
-    \\
-    \qquad\quad\textrm{if} \quad Bids_{i'j'} - Bids_{j'i'} + \sum_{<i'',j''> \in edges^{flip}} Bids_{i''j''} - Bids{j''i''} < Bids_{ij} - Bids_{ji}\\
-    \qquad\quad\quad\textrm{and } edges^{remain} \mid edges^{flip} > edges^{remain} \mid edges^{flip} \cup \{<i',j'>\}
-    \end{cases}
-\end{displaymath}
-\\
-Finally, we check whether flipping every knock-on edge $<i',j'> \in edges^{flip}$ will create any cycle in the graph. If there are no cycles formed, we can replace the pair $<i,j>$ in the current solution. This change will yield a better solution with the objective value calculated as follows: $Objective + (Bids_{ij} - Bids_{ji}) - \sum_{<i',j'> \in edges^{flip}} Bids_{i'j'} - Bids_{j'i'}$.\\
-\\
-\textbf{\textit{We continue executing the above procedure until no improvements are reached.}}
-
-\subsubsection{Variable Declaration} \label{ls_declaration}
-
-Alongside the variables established in the Greedy Method \ref{declaration}, additional auxiliary variables for the local search procedure are defined as follows:
 \begin{itemize}
-    \item $pairsWithHigherBid$: Member pair $<i,j>$ not included in solution but having higher bid than their flipped counterpart $<j,i>$ included in solution.
-    \item $edges^{flip}$: Set of member pairs needed to be flipped if member pair in $pairsWithHigherBid$ requires flipping.
+    \item If the strategy is \texttt{Both}, apply a Remove phase first (greedy removal of expensive, redundant specialists), then a Replace phase to attempt cost-reducing swaps.
+    \item If the strategy is \texttt{Remove} or \texttt{Replace}, explore only the selected neighborhood.
 \end{itemize}
 
-\subsubsection{Pseudocode}
+Within each neighborhood we support two policies:
 
+\begin{itemize}
+    \item \textbf{FirstImprovement}: accept the first strictly improving neighbor found.
+    \item \textbf{BestImprovement}: scan the neighborhood and accept the best-improving neighbor.
+\end{itemize}
+
+The search repeats until no improving neighbor is found or a stopping criterion (time or iteration limit) is met.
+
+\subsubsection{Auxiliary Operations}
+
+% We rely on the following Solution API operations: \texttt{getAssignedSpecialists()}, \texttt{getUnassignedSpecialists()}
+% - \texttt{getAssignedPipe(specId)}, \texttt{canRemoveSpecialist(specId)}
+% - \texttt{getExcessCapacity(pipeId)} (assigned capacity minus demand)
+% - \texttt{clone()}, \texttt{assign(specId, pipeId)}, \texttt{unassign(specId)}, \texttt{evaluate()}, \texttt{getFitness()}
+
+Complexity per neighborhood exploration is dominated by iterating assigned/unassigned specialists and evaluating candidate neighbors; with $S$ specialists and $P$ cut pipes a full scan is $O(S^2 + P\cdot S)$ in the worst case, but practical pruning (sorting by cost, early acceptance under FirstImprovement) reduces the observed cost.
+
+\subsubsection{Pseudocode (Local Search)}
 \begin{algorithm}[H]
-\renewcommand{\thealgorithm}{}
-\caption{Local Search Algorithm (Part 1: Auxiliary functions)}
+\caption{Local Search}
 \begin{algorithmic}
-
-\Function{FlipPairWithImprovement}{$<i,j>$}
-    \State $bidIncrease \gets Bids_{ij} - Bids_{ji}, $
-    \State $potentialSolution \gets solution$
-    \State $potentialSolution[potentialSolution.\textrm{INDEX}(<j,i>)] \gets <i,j>$
-    \State $edges, indegree, outdegree \gets TrimGraph(potentialSolution)$
-    \If{$edges = \phi$}
-        \State \Return True, $bidIncrease, \phi$
-    \EndIf
-    \State $edges^{flip}, bidDecrease \gets GetKnockonFlippedPairs(bidIncrease, edges, indegree, outdegree)$
-    \If{$bidDecrease = -1$}
-        \State \Return False, 0, $\phi$
-    \EndIf
-    \If{$CanBeFlipped(<i,j>, edges^{flip}) = $True}
-        \State \Return True, $bidIncrease - bidDecrease, edges^{flip}$
-    \EndIf
-    \State \Return False, 0, $\phi$
-\EndFunction
-
-\algstore{local_search}
-\end{algorithmic}
-\end{algorithm}
-\newpage
-
-\begin{algorithm}[]
-%\renewcommand{\thealgorithm}{}
-%\caption{Local Search Algorithm (Part 1: Auxiliary functions)}
-\begin{algorithmic}
-\algrestore{local_search}
-
-\Function{CanBeFlipped}{$<i,j>, edges^{flip}$}
-    \State $potentialSolution \gets currentSolution$
-    \State $potentialSolution[potentialSolution.\textrm{INDEX}(<j,i>)] \gets <i,j>$
-    \For{\textbf{each} $<i',j'> \in edges^{flip}$}
-        \State $potentialSolution[potentialSolution.\textrm{INDEX}(<i',j'>)] \gets <j',i'>$
-    \EndFor
-    \State $edges \gets TrimGraph(potentailSolution)$
-    \If{$edges \neq \phi$}
-    \State \Return False
-    \EndIf
-    \State \Return True
-\EndFunction
-
-\Statex
-
-\Function{GetKnockonFlippedPairs}{$bidIncrease$, $solution$, $indegree$, $outdegree$}
-\State $totalBidDecrease, edges^{flip} \gets 0, \phi$
-\While{$edges^{remain} \neq \phi$}
-\State $edges^{candidate} \gets \{<i,j> \in edges^{remain} \mid Bids_{ij} - Bids_{ji} + totalBidDecrease < bidIncrease\}$
-\If{$edges^{candidate} = \phi$}
-    \State \Return $\phi, -1$
-\EndIf
-\State $vertices \gets GetVerticesFromEdges(edges)$
-\State $edgeDegrees(<i',j'>) \gets \sum_{k' \in {i',j'}} indegree(k') + outdegree(k') \quad \forall <i',j'> \in edges^{remain}$
-\State $sortedEdges^{candidate} \gets \textrm{SORT}$(
-\State \qquad $edges^{candidate}, (vertexDegrees(<i',j'>), Bids_{j'i'} - Bids_{i'j'}), DESC)$
-\State $foundCandidate \gets \textrm{FALSE}$
-\For{\textbf{each} $<i',j'> \in edges^{candidate}$}
-\State $edges^{remain'} \gets edges^{remain}$
-\State $edges^{remain'}[edges^{remain'}.\textrm{INDEX}(<i',j'>)] \gets <j',i'>$
-\State $edges^{remain'}, indegree, outdegree \gets TrimGraph(edges^{remain'})$
-\If{$edges^{remain'} \subset edges^{remain}$}
-\State $totalBidDecrease \gets totalBidDecrease + Bids_{i'j'} - Bids_{j'i'}$
-\State $edges^{remain} \gets edges^{remain'}$
-\State $edges^{flip} \gets edges^{flip} \cup \{{i',j'}\}$
-\State $foundCandiate \gets$ True
-\State \textbf{break}
-\EndIf
-\EndFor
-\If{$foundCandidate = \textrm{FALSE}$}
-\State \Return $\phi, -1$
-\EndIf
-\EndWhile
-\State \Return $edges^{flip}, totalBidDecrease$
-\EndFunction
-
-\end{algorithmic}
-\end{algorithm}
-
-\begin{algorithm}[H]
-\renewcommand{\thealgorithm}{}
-\caption{Local Search Algorithm (Part 2: Main Algorithm)}
-\begin{algorithmic}
-
-\State $Solution \gets GreedyConstructionPhase()$
-\State $improved \gets$ True
-\While{$improved$}
-    \State $improved \gets$ False
-    \State $pairsWithHigherBids \gets \{<i,j> \mid <j,i> \in Solution \textrm{ and } Bids_{ij} > Bids_{ji}\}$
-    \For{\textbf{each} $<i,j> \in pairsWithHigherBids$}
-        \State $canBeFlipped, bidIncrease, edges^{flip} \gets FlipPairWithImprovement(<i,j>)$
-        \If{$canBeFlipped = $ True}
-            \State $improved \gets$ True
-            \For{\textbf{each} $<i^{'}, j^{'}> \in edges^{flip} \cup \{ <j,i>\}$}
-                \State $Solution[Solution.\textrm{INDEX}(<i^{'}, j^{'}>)] \gets <j^{'}, i^{'}>$
-                \State $Priority(<i',j'>) \gets 0$
-                \State $Priority(<j',i'>) \gets 1$
-            \EndFor
+\Function{LocalSearch}{solution, policy, neighborhoodStrategy, endTime, maxIterations}
+    \State incumbent $\gets$ solution
+    \State incumbentCost $\gets$ incumbent.getFitness()
+    \State iter $\gets$ 0
+    \While{time $<$ endTime \textbf{and} iter $<$ maxIterations}
+        \State iter $\gets$ iter + 1
+        \If{neighborhoodStrategy == 'Both'}
+            \State neighbor $\gets$ ExploreRemove(incumbent, policy)
+            \If{neighbor.getFitness() < incumbentCost}
+                \State incumbent $\gets$ neighbor; incumbentCost $\gets$ neighbor.getFitness();
+            \EndIf
+            \State neighbor $\gets$ ExploreReplace(incumbent, policy)
+            \If{neighbor.getFitness() < incumbentCost}
+                \State incumbent $\gets$ neighbor; incumbentCost $\gets$ neighbor.getFitness();
+            \EndIf
+        \ElsIf{neighborhoodStrategy == 'Remove'}
+            \State neighbor $\gets$ ExploreRemove(incumbent, policy)
+            \If{neighbor.getFitness() < incumbentCost}
+                \State incumbent $\gets$ neighbor; incumbentCost $\gets$ neighbor.getFitness();
+            \EndIf
+        \Else
+            \State neighbor $\gets$ ExploreReplace(incumbent, policy)
+            \If{neighbor.getFitness() < incumbentCost}
+                \State incumbent $\gets$ neighbor; incumbentCost $\gets$ neighbor.getFitness();
+            \EndIf
         \EndIf
-    \EndFor
-\EndWhile
-\State \Return $Solution$
-
+        \State \textbf{break} \Comment{FIX...local optimum reached}
+    \EndWhile
+    \State \Return incumbent
+\EndFunction
 \end{algorithmic}
 \end{algorithm}
 
-%\newpage
+% \subsubsection{ExploreRemove}
+% - Iterate assigned specialists in descending cost order.
+% - For each specialist $s$: if \texttt{canRemoveSpecialist(s)} is true, create neighbor = clone, unassign $s$, evaluate; if cost decreases then accept per policy (First/Best).
+
+% \subsubsection{ExploreReplace}
+% - Let \texttt{assigned} be assigned specialists sorted by cost descending; \texttt{unassigned} be unassigned specialists sorted by cost ascending.
+% - For each $s_{old}$ in \texttt{assigned}:
+%   - Let $p \gets$ assigned pipe of $s_{old}$ and $excess \gets$ excess capacity at $p$.
+%   - For each $s_{new}$ in \texttt{unassigned} with $c_{s_{new}} < c_{s_{old}}$:
+%     - Compute $newExcess = excess - cap(s_{old}) + cap(s_{new})$.
+%     - If $newExcess \ge 0$ then neighbor = clone, unassign $s_{old}$, assign $s_{new}$ to $p$, evaluate; accept per policy if cost improves.
+
+% \subsubsection{Stopping Criteria}
+% The search stops when one of:
+% - Elapsed time $\ge$ configured time limit.
+% - Iterations $\ge$ configured iteration limit.
+% - No improving neighbor found.
 
 \subsection{GRASP Method}
-\subsubsection{Variable Declaration}
-The same as \ref{ls_declaration}.
 
-\subsubsection{Pseudocode}
+\subsubsection{High-level description}
+GRASP (Greedy Randomized Adaptive Search Procedure) performs repeated constructive phases followed by local search. Each constructive phase builds a feasible solution by iteratively assigning specialists to cut pipes using a restricted candidate list (RCL) controlled by parameter $\alpha \in [0,1]$: $\alpha = 0$ $\Rightarrow$ purely greedy, $\alpha = 1$ $\Rightarrow$ pure random (within admissible candidates).
+
+After construction, the candidate solution is improved using the Local Search described above. The best solution over all GRASP iterations is returned.
+
+\subsubsection{Construction phase}
+Per pipe (processed in order of decreasing remaining demand), we:
+
+\begin{itemize}
+    \item Compute the list of available specialists that can contribute to the pipe.
+    \item Sort available specialists by cost-effectiveness $ce(s) = c_s / cap_s$ (lower = better).
+    \item Let $ce_{best}$ and $ce_{worst}$ be the best and worst cost-effectiveness in the available list.
+    \item Define threshold $T = ce_{best} + \alpha \cdot (ce_{worst} - ce_{best})$.
+    \item Build RCL = $\{ s \mid ce(s) \le T \}$ (if empty, use the best specialist).
+    \item Randomly pick $s$ from RCL and assign to the pipe; repeat until the pipe is covered or no specialists remain.
+\end{itemize}
+
+This adaptive RCL balances greediness and diversification.
+
+\subsubsection{Pseudocode FIXX}
 
 \begin{algorithm}[H]
 \renewcommand{\thealgorithm}{}
@@ -451,26 +406,245 @@ The same as \ref{ls_declaration}.
 \end{algorithmic}
 \end{algorithm}
 
-
 \begin{algorithm}[H]
-\renewcommand{\thealgorithm}{}
-\caption{GRASP Procedure}
+\caption{GRASP Main Loop}
 \begin{algorithmic}
-
-\State $Object^{best}, Solution^{best} \gets 0, \phi$
-\For{$retry = \textrm{1 to MaxIterations}$}
-\State $Obejctive, Solution \gets 0, \phi$
-\State $Solution \gets doConstructionPhase()$
-\State $Solution \gets doLocalSearchPhase(Solution)$
-\If{$Obejctive > Objective^{best}$}
-\State $Objective^{best} \gets Obejctive$
-\State $Solution^{best} \gets Solution$
-\EndIf
-\EndFor
-\State \Return $Solution^{best}$
-
+\Function{GRASP}{maxIterations, $\alpha$, localSearchConfig}
+    \State best $\gets$ infeasible-solution (sentinel with cost $+\infty$)
+    \For{iter = 1 \textbf{to} maxIterations}
+        \State partition $\gets$ ComputeMinCut()
+        \State cutPipes $\gets$ pipes crossing partition
+        \State solution $\gets$ ConstructSolution($\alpha$, partition, cutPipes)
+        \If{solution.isFeasible() \textbf{and} localSearchConfig.enabled}
+            \State solution $\gets$ LocalSearch(solution, localSearchConfig)
+        \EndIf
+        \If{solution.isFeasible() \textbf{and} solution.getFitness() < best.getFitness()}
+            \State best $\gets$ solution
+        \EndIf
+        \If{time limit reached} \textbf{break}
+    \EndFor
+    \State \Return best
+\EndFunction
 \end{algorithmic}
 \end{algorithm}
+
+\subsubsection{Parameter tuning and practical notes}
+- Choose $\alpha$ by tuning; typical values are in $[0.0,0.3]$ for problems where greedy guidance is strong.
+- Number of GRASP iterations trades time for solution quality; stop early when time budget is exhausted.
+- Always compute the min-cut once per GRASP iteration (the partition affects which pipes must be covered).
+- Use Local Search after each constructive phase when computational budget allows; Local Search provides substantial improvements.
+
+\subsubsection{Complexity}
+Each GRASP iteration performs one constructive pass (roughly $O(p\cdot s + s\log s)$) and an optional local search whose cost depends on the configured neighborhood policy and limits. Overall runtime is linear in the number of iterations and dominated by Local Search when enabled.
+
+
+% \subsection{Local Search Method}
+
+% \subsubsection{Neighborhood}
+
+% The neighborhood of this conflict resolution problem is defined as the solution obtained by replacing the member pair $<i,j>$ currently not included in the solution (indicated by $Priority(<i,j>)$ = 0) with its flipped counterpart $<j,i>$ included in the solution (indicated by $Priority(<j,i>)$ = 1), if $Bids_{ij} > Bids_{ji} \quad \forall i,j \in Members$.
+
+% \subsubsection{Exploration Strategy}
+
+% Based on the neighborhood mentioned above, the replacing procedure may necessitate the flipping of other pairs as a knock-on effect. If the total decrease in bids from passively flipped pairs (defined as \textbf{\textit{knock-on flipped pairs}}, represented by \bm{$edges^{flip}$}) is less than the increase from the actively flipped pair $<i,j>$, we achieve a better solution.\\
+% For example, if we have $(Bids_{ij} > Bids_{ji}$ and $<j,i> \in Solution$ (which indicates that $Priority(<j,i>) = 1$), when we consider replacing $<j,i>$ with $<i,j>$ in the current solution, some priority cycles may be formed. To address this, we need to develop a strategy for identifying pairs to flip within this directed graph, ensuring that no cycles remain.\\
+% First, we reverse the pair (representing the edges in the directed graph) from $<j, i>$ to $<i, j>$ in the current solution (representing the vertices in the directed graph). We then proceed to eliminate all edges with an indegree of 0 or an outdegree of 0, ensuring that all remaining edges in the graph are part of a cycle.\\
+% Once we have the remaining edges $edges^{remain}$, we utilize equation $max(q(<i,j'>, edges^{flip}))$ to continuously select edge $<i',j'>$ and added to $edges^{flip}$ until no cycles are left in the graph. We prioritize edges $<i', j'>$ with higher indegree and outdegree, as we believe such edges are more capable of eliminating multiple cycles compared to others. If multiple edges are tied, we will select the edge with the lowest bid decrease ($Bids_{i',j'} - Bids_{j'i'}$).The $edges^{flip}$ cost function is defined as follows.\\
+% \newpage
+
+% $q(<i',j'>, edges^{flip})$=\\
+% \\
+% \begin{displaymath}
+%     \begin{cases}
+%     -1 & \\
+%     \qquad\quad\textrm{if} \quad Bids_{i'j'} - Bids_{j'i'} + \sum_{<i'',j''> \in edges^{flip}} Bids_{i''j''} - Bids{j''i''} \geq Bids_{ij} - Bids_{ji}\\
+%     \qquad\quad\quad\textrm{or } edges^{remain} \mid edges^{flip} = edges^{remain} \mid edges^{flip} \cup \{<i',j'>\})\\
+%     \\
+%     \sum_{k' \in \{i',j'\}} indegree(k') + outdegree(k') & \\
+%     \\
+%     \qquad\quad\textrm{if} \quad Bids_{i'j'} - Bids_{j'i'} + \sum_{<i'',j''> \in edges^{flip}} Bids_{i''j''} - Bids{j''i''} < Bids_{ij} - Bids_{ji}\\
+%     \qquad\quad\quad\textrm{and } edges^{remain} \mid edges^{flip} > edges^{remain} \mid edges^{flip} \cup \{<i',j'>\}
+%     \end{cases}
+% \end{displaymath}
+% \\
+% Finally, we check whether flipping every knock-on edge $<i',j'> \in edges^{flip}$ will create any cycle in the graph. If there are no cycles formed, we can replace the pair $<i,j>$ in the current solution. This change will yield a better solution with the objective value calculated as follows: $Objective + (Bids_{ij} - Bids_{ji}) - \sum_{<i',j'> \in edges^{flip}} Bids_{i'j'} - Bids_{j'i'}$.\\
+% \\
+% \textbf{\textit{We continue executing the above procedure until no improvements are reached.}}
+
+% \subsubsection{Variable Declaration} \label{ls_declaration}
+
+% Alongside the variables established in the Greedy Method \ref{declaration}, additional auxiliary variables for the local search procedure are defined as follows:
+% \begin{itemize}
+%     \item $pairsWithHigherBid$: Member pair $<i,j>$ not included in solution but having higher bid than their flipped counterpart $<j,i>$ included in solution.
+%     \item $edges^{flip}$: Set of member pairs needed to be flipped if member pair in $pairsWithHigherBid$ requires flipping.
+% \end{itemize}
+
+% \subsubsection{Pseudocode}
+
+% \begin{algorithm}[H]
+% \renewcommand{\thealgorithm}{}
+% \caption{Local Search Algorithm (Part 1: Auxiliary functions)}
+% \begin{algorithmic}
+
+% \Function{FlipPairWithImprovement}{$<i,j>$}
+%     \State $bidIncrease \gets Bids_{ij} - Bids_{ji}, $
+%     \State $potentialSolution \gets solution$
+%     \State $potentialSolution[potentialSolution.\textrm{INDEX}(<j,i>)] \gets <i,j>$
+%     \State $edges, indegree, outdegree \gets TrimGraph(potentialSolution)$
+%     \If{$edges = \phi$}
+%         \State \Return True, $bidIncrease, \phi$
+%     \EndIf
+%     \State $edges^{flip}, bidDecrease \gets GetKnockonFlippedPairs(bidIncrease, edges, indegree, outdegree)$
+%     \If{$bidDecrease = -1$}
+%         \State \Return False, 0, $\phi$
+%     \EndIf
+%     \If{$CanBeFlipped(<i,j>, edges^{flip}) = $True}
+%         \State \Return True, $bidIncrease - bidDecrease, edges^{flip}$
+%     \EndIf
+%     \State \Return False, 0, $\phi$
+% \EndFunction
+
+% \algstore{local_search}
+% \end{algorithmic}
+% \end{algorithm}
+% \newpage
+
+% \begin{algorithm}[]
+% %\renewcommand{\thealgorithm}{}
+% %\caption{Local Search Algorithm (Part 1: Auxiliary functions)}
+% \begin{algorithmic}
+% \algrestore{local_search}
+
+% \Function{CanBeFlipped}{$<i,j>, edges^{flip}$}
+%     \State $potentialSolution \gets currentSolution$
+%     \State $potentialSolution[potentialSolution.\textrm{INDEX}(<j,i>)] \gets <i,j>$
+%     \For{\textbf{each} $<i',j'> \in edges^{flip}$}
+%         \State $potentialSolution[potentialSolution.\textrm{INDEX}(<i',j'>)] \gets <j',i'>$
+%     \EndFor
+%     \State $edges \gets TrimGraph(potentailSolution)$
+%     \If{$edges \neq \phi$}
+%     \State \Return False
+%     \EndIf
+%     \State \Return True
+% \EndFunction
+
+% \Statex
+
+% \Function{GetKnockonFlippedPairs}{$bidIncrease$, $solution$, $indegree$, $outdegree$}
+% \State $totalBidDecrease, edges^{flip} \gets 0, \phi$
+% \While{$edges^{remain} \neq \phi$}
+% \State $edges^{candidate} \gets \{<i,j> \in edges^{remain} \mid Bids_{ij} - Bids_{ji} + totalBidDecrease < bidIncrease\}$
+% \If{$edges^{candidate} = \phi$}
+%     \State \Return $\phi, -1$
+% \EndIf
+% \State $vertices \gets GetVerticesFromEdges(edges)$
+% \State $edgeDegrees(<i',j'>) \gets \sum_{k' \in {i',j'}} indegree(k') + outdegree(k') \quad \forall <i',j'> \in edges^{remain}$
+% \State $sortedEdges^{candidate} \gets \textrm{SORT}$(
+% \State \qquad $edges^{candidate}, (vertexDegrees(<i',j'>), Bids_{j'i'} - Bids_{i'j'}), DESC)$
+% \State $foundCandidate \gets \textrm{FALSE}$
+% \For{\textbf{each} $<i',j'> \in edges^{candidate}$}
+% \State $edges^{remain'} \gets edges^{remain}$
+% \State $edges^{remain'}[edges^{remain'}.\textrm{INDEX}(<i',j'>)] \gets <j',i'>$
+% \State $edges^{remain'}, indegree, outdegree \gets TrimGraph(edges^{remain'})$
+% \If{$edges^{remain'} \subset edges^{remain}$}
+% \State $totalBidDecrease \gets totalBidDecrease + Bids_{i'j'} - Bids_{j'i'}$
+% \State $edges^{remain} \gets edges^{remain'}$
+% \State $edges^{flip} \gets edges^{flip} \cup \{{i',j'}\}$
+% \State $foundCandiate \gets$ True
+% \State \textbf{break}
+% \EndIf
+% \EndFor
+% \If{$foundCandidate = \textrm{FALSE}$}
+% \State \Return $\phi, -1$
+% \EndIf
+% \EndWhile
+% \State \Return $edges^{flip}, totalBidDecrease$
+% \EndFunction
+
+% \end{algorithmic}
+% \end{algorithm}
+
+% \begin{algorithm}[H]
+% \renewcommand{\thealgorithm}{}
+% \caption{Local Search Algorithm (Part 2: Main Algorithm)}
+% \begin{algorithmic}
+
+% \State $Solution \gets GreedyConstructionPhase()$
+% \State $improved \gets$ True
+% \While{$improved$}
+%     \State $improved \gets$ False
+%     \State $pairsWithHigherBids \gets \{<i,j> \mid <j,i> \in Solution \textrm{ and } Bids_{ij} > Bids_{ji}\}$
+%     \For{\textbf{each} $<i,j> \in pairsWithHigherBids$}
+%         \State $canBeFlipped, bidIncrease, edges^{flip} \gets FlipPairWithImprovement(<i,j>)$
+%         \If{$canBeFlipped = $ True}
+%             \State $improved \gets$ True
+%             \For{\textbf{each} $<i^{'}, j^{'}> \in edges^{flip} \cup \{ <j,i>\}$}
+%                 \State $Solution[Solution.\textrm{INDEX}(<i^{'}, j^{'}>)] \gets <j^{'}, i^{'}>$
+%                 \State $Priority(<i',j'>) \gets 0$
+%                 \State $Priority(<j',i'>) \gets 1$
+%             \EndFor
+%         \EndIf
+%     \EndFor
+% \EndWhile
+% \State \Return $Solution$
+
+% \end{algorithmic}
+% \end{algorithm}
+
+% %\newpage
+
+% \subsection{GRASP Method}
+% \subsubsection{Variable Declaration}
+% The same as \ref{ls_declaration}.
+
+% \subsubsection{Pseudocode}
+
+% \begin{algorithm}[H]
+% \renewcommand{\thealgorithm}{}
+% \caption{GRASP Construction Phase}
+% \begin{algorithmic}
+
+% \State $Solution \gets \phi$
+% \State $CoveredMembers \gets \phi$
+% \State $CandidatePairs \gets \{<i,j> \mid i,j \in Members \quad \textrm{and} \quad Bids_{ij} + Bids_{ji} \neq 0\}$
+% \State $Priority(i,j) \gets 0 \quad \forall <i,j> \in CandidatePairs$
+% \While{$CandidatePairs \neq \phi$}
+%     \State Evaluate $q(<i',j'>, Solution) \quad \forall <i',j'> \in CandidatePairs$
+%     \State $CandidatePairs \gets \{<i',j'> \in CandidatePairs \mid q(<i',j'>,S) > 0\}$
+%     \State \textcolor{red}{$q^{min} \gets \textrm{min}\{q(<i',j'>,Solution) \mid <i',j'> \in CandidatePairs\}$} \Comment{RCL Procedure}
+%     \State \textcolor{red}{$q^{max} \gets \textrm{max}\{q(<i',j'>,Solution) \mid <i',j'> \in CandidatePairs\}$}
+%     \State \textcolor{red}{$\textrm{RCL}_{max} \gets \{<i',j'> \in CandidatePairs \mid q(<i',j'>, Solution) \geq q^{max} - \alpha(q^{max} - q^{min}) \}$}
+%     \State \textcolor{red}{$<i,j> \gets \textrm{ select} <i',j'> \in \textrm{RCL}$ at random}
+%     \State $CandidatePairs \gets CandidatePairs \setminus \{<i,j>, <j,i>\}$
+%     \State $CoveredMembers \gets CoveredMembers \cup \{i,j\}$
+%     \State $Solution \gets Solution \cup \{<i,j>\}$
+%     \State $Priority(<i,j>) \gets 1$
+% \EndWhile
+% \State \Return $Solution$
+
+% \end{algorithmic}
+% \end{algorithm}
+
+
+% \begin{algorithm}[H]
+% \renewcommand{\thealgorithm}{}
+% \caption{GRASP Procedure}
+% \begin{algorithmic}
+
+% \State $Object^{best}, Solution^{best} \gets 0, \phi$
+% \For{$retry = \textrm{1 to MaxIterations}$}
+% \State $Obejctive, Solution \gets 0, \phi$
+% \State $Solution \gets doConstructionPhase()$
+% \State $Solution \gets doLocalSearchPhase(Solution)$
+% \If{$Obejctive > Objective^{best}$}
+% \State $Objective^{best} \gets Obejctive$
+% \State $Solution^{best} \gets Solution$
+% \EndIf
+% \EndFor
+% \State \Return $Solution^{best}$
+
+% \end{algorithmic}
+% \end{algorithm}
 
 \section{Experiment Result Analysis}
 
@@ -739,72 +913,72 @@ As demonstrated in \nameref{fig:fig43}, the time required to solve the ILP model
 \label{fig:fig43}
 \end{figure}
 
-\begin{figure}[H]
-\begin{tikzpicture}
-\begin{axis}[
-    title={\textbf{Quality of Solutions (10 datasets with 45 members)}},
-    xlabel=\textbf{{Dataset Number}},
-    ylabel=\textbf{{Total Income}},
-    xmin=1, xmax=10,
-    ymin=4000, ymax=5300,
-    xtick=data,
-    ytick={4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300},
-    ymajorgrids=true,
-    grid style=dashed,
-    width=0.7\textwidth,
-    legend pos=outer north east,
-    legend style={nodes={scale=0.8, transform shape}}
-]
+% \begin{figure}[H]
+% \begin{tikzpicture}
+% \begin{axis}[
+%     title={\textbf{Quality of Solutions (10 datasets with 45 members)}},
+%     xlabel=\textbf{{Dataset Number}},
+%     ylabel=\textbf{{Total Income}},
+%     xmin=1, xmax=10,
+%     ymin=4000, ymax=5300,
+%     xtick=data,
+%     ytick={4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300},
+%     ymajorgrids=true,
+%     grid style=dashed,
+%     width=0.7\textwidth,
+%     legend pos=outer north east,
+%     legend style={nodes={scale=0.8, transform shape}}
+% ]
 
-\addplot[green,thick,mark=triangle] table {data/45members/objective_greedy.dat};
-\addplot[blue,thick,mark=triangle] table {data/45members/objective_grasp.dat};
-\addplot[brown,thick,mark=triangle] table {data/45members/objective_ls.dat};
-\addplot[black,thick,mark=triangle] table {data/45members/objective_grasp_with_ls.dat};
-\addplot[red,thick,mark=square*] table {data/45members/objective_cplex.dat};
-
-
-\legend{Greedy,GRASP(100 Iter. w/o local search  $\alpha = 0.1$),Local Search,GRASP(10 Iter. w/ local search $\alpha = 0.1$),ILP(Optimal)}
-
-\end{axis}
-\end{tikzpicture}
-\captionsetup{labelformat=empty}
-\caption{Figure 4.4}
-\label{fig:fig44}
-\end{figure}
+% \addplot[green,thick,mark=triangle] table {data/45members/objective_greedy.dat};
+% \addplot[blue,thick,mark=triangle] table {data/45members/objective_grasp.dat};
+% \addplot[brown,thick,mark=triangle] table {data/45members/objective_ls.dat};
+% \addplot[black,thick,mark=triangle] table {data/45members/objective_grasp_with_ls.dat};
+% \addplot[red,thick,mark=square*] table {data/45members/objective_cplex.dat};
 
 
-\begin{figure}[H]
-\begin{tikzpicture}
-\begin{axis}[
-    title={\textbf{Quality of Solutions (39 to 45 members)}},
-    xlabel=\textbf{{Members}},
-    ylabel=\textbf{{Total Income}},
-    xmin=39, xmax=45,
-    ymin=3500, ymax=5200,
-    xtick=data,
-    ytick={3500,3600,3700,3800,3900,4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200},
-    ymajorgrids=true,
-    grid style=dashed,
-    width=0.7\textwidth,
-    legend pos=outer north east,
-    legend style={nodes={scale=0.8, transform shape}}
-]
+% \legend{Greedy,GRASP(100 Iter. w/o local search  $\alpha = 0.1$),Local Search,GRASP(10 Iter. w/ local search $\alpha = 0.1$),ILP(Optimal)}
 
-\addplot[green,thick,mark=triangle] table {data/variable_members/objective_greedy.dat};
-\addplot[blue,thick,mark=triangle] table {data/variable_members/objective_grasp.dat};
-\addplot[brown,thick,mark=triangle] table {data/variable_members/objective_ls.dat};
-\addplot[black,thick,mark=triangle] table {data/variable_members/objective_grasp_with_ls.dat};
-\addplot[red,thick,mark=square*] table {data/variable_members/objective_cplex.dat};
+% \end{axis}
+% \end{tikzpicture}
+% \captionsetup{labelformat=empty}
+% \caption{Figure 4.4}
+% \label{fig:fig44}
+% \end{figure}
 
 
-\legend{Greedy,GRASP(100 Iter. w/o local search  $\alpha = 0.1$),Local Search,GRASP(10 Iter. w/ local search $\alpha = 0.1$),ILP(Optimal)}
+% \begin{figure}[H]
+% \begin{tikzpicture}
+% \begin{axis}[
+%     title={\textbf{Quality of Solutions (39 to 45 members)}},
+%     xlabel=\textbf{{Members}},
+%     ylabel=\textbf{{Total Income}},
+%     xmin=39, xmax=45,
+%     ymin=3500, ymax=5200,
+%     xtick=data,
+%     ytick={3500,3600,3700,3800,3900,4000, 4100, 4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200},
+%     ymajorgrids=true,
+%     grid style=dashed,
+%     width=0.7\textwidth,
+%     legend pos=outer north east,
+%     legend style={nodes={scale=0.8, transform shape}}
+% ]
 
-\end{axis}
-\end{tikzpicture}
-\captionsetup{labelformat=empty}
-\caption{Figure 4.5}
-\label{fig:fig45}
-\end{figure}
+% \addplot[green,thick,mark=triangle] table {data/variable_members/objective_greedy.dat};
+% \addplot[blue,thick,mark=triangle] table {data/variable_members/objective_grasp.dat};
+% \addplot[brown,thick,mark=triangle] table {data/variable_members/objective_ls.dat};
+% \addplot[black,thick,mark=triangle] table {data/variable_members/objective_grasp_with_ls.dat};
+% \addplot[red,thick,mark=square*] table {data/variable_members/objective_cplex.dat};
+
+
+% \legend{Greedy,GRASP(100 Iter. w/o local search  $\alpha = 0.1$),Local Search,GRASP(10 Iter. w/ local search $\alpha = 0.1$),ILP(Optimal)}
+
+% \end{axis}
+% \end{tikzpicture}
+% \captionsetup{labelformat=empty}
+% \caption{Figure 4.5}
+% \label{fig:fig45}
+% \end{figure}
 
 \nameref{fig:fig44} and \nameref{fig:fig45} shows that the Greedy approach yields the worst solution. In contrast, both GRASP (100 iterations without local search) and Local Search provide similar results. Among the heuristic methods, GRASP (10 iterations with local search) offers the best solution.
 
