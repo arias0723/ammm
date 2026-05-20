@@ -303,38 +303,49 @@ The search repeats until no improving neighbor is found or a stopping criterion 
 
 Complexity per neighborhood exploration is dominated by iterating assigned/unassigned specialists and evaluating candidate neighbors; with $S$ specialists and $P$ cut pipes a full scan is $O(S^2 + P\cdot S)$ in the worst case, but practical pruning (sorting by cost, early acceptance under FirstImprovement) reduces the observed cost.
 
-\subsubsection{Pseudocode (Local Search)}
+\subsubsection{Pseudocode}
+
 \begin{algorithm}[H]
+\renewcommand{\thealgorithm}{}
 \caption{Local Search}
 \begin{algorithmic}
-\Function{LocalSearch}{solution, policy, neighborhoodStrategy, endTime, maxIterations}
-    \State incumbent $\gets$ solution
-    \State incumbentCost $\gets$ incumbent.getFitness()
-    \State iter $\gets$ 0
-    \While{time $<$ endTime \textbf{and} iter $<$ maxIterations}
-        \State iter $\gets$ iter + 1
-        \If{neighborhoodStrategy == 'Both'}
-            \State neighbor $\gets$ ExploreRemove(incumbent, policy)
-            \If{neighbor.getFitness() < incumbentCost}
-                \State incumbent $\gets$ neighbor; incumbentCost $\gets$ neighbor.getFitness();
+\Function{LocalSearch}{$solution, policy, neighborhoodStrategy, endTime, maxIterations$}
+\State $incumbent \gets solution$
+    \State $incumbentCost \gets incumbent.getFitness()$
+    \State $iter \gets 0$
+    \While{$time < endTime$ \textbf{and} $iter < maxIterations$}
+        \State $iter \gets iter + 1$
+        \If{$neighborhoodStrategy == "Both"$}
+            \State $neighbor \gets ExploreRemove(incumbent, policy)$
+            \If{$neighbor.getFitness() < incumbentCost$}
+                \State $incumbent \gets neighbor;$
+                \State $incumbentCost \gets neighbor.getFitness();$
             \EndIf
-            \State neighbor $\gets$ ExploreReplace(incumbent, policy)
-            \If{neighbor.getFitness() < incumbentCost}
-                \State incumbent $\gets$ neighbor; incumbentCost $\gets$ neighbor.getFitness();
+            \Statex
+            \State $neighbor \gets ExploreReplace(incumbent, policy)$
+            \If{$neighbor.getFitness() < incumbentCost$}
+                \State $incumbent \gets neighbor;$
+                \State $incumbentCost \gets neighbor.getFitness();$
             \EndIf
-        \ElsIf{neighborhoodStrategy == 'Remove'}
-            \State neighbor $\gets$ ExploreRemove(incumbent, policy)
-            \If{neighbor.getFitness() < incumbentCost}
-                \State incumbent $\gets$ neighbor; incumbentCost $\gets$ neighbor.getFitness();
+        \Statex
+        \ElsIf{$neighborhoodStrategy == "Remove"$}
+            \State $neighbor \gets ExploreRemove(incumbent, policy)$
+            \If{$neighbor.getFitness() < incumbentCost$}
+                \State $incumbent \gets neighbor;$
+                \State $incumbentCost \gets neighbor.getFitness();$
             \EndIf
         \Else
-            \State neighbor $\gets$ ExploreReplace(incumbent, policy)
-            \If{neighbor.getFitness() < incumbentCost}
-                \State incumbent $\gets$ neighbor; incumbentCost $\gets$ neighbor.getFitness();
+            \State $neighbor \gets ExploreReplace(incumbent, policy)$
+            \If{$neighbor.getFitness() < incumbentCost$}
+                \State $incumbent \gets neighbor;$
+                \State $incumbentCost \gets neighbor.getFitness();$
             \EndIf
         \EndIf
-        \State \textbf{break} \Comment{FIX...local optimum reached}
+        \Statex
+        \If{$neighbor.getFitness() > incumbentCost$} \textbf{break} \Comment{Local optimum reached}
+        \EndIf
     \EndWhile
+    \Statex
     \State \Return incumbent
 \EndFunction
 \end{algorithmic}
