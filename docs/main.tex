@@ -237,7 +237,8 @@ The assignment continues until all pipes in $CutPipes$ are fully covered or the 
         \State \Return \textsc{Infeasible}
     \EndIf
 \EndFor
-\State \Return $Solution$
+\State
+\Return $Solution$
 \end{algorithmic}
 \end{algorithm}
 
@@ -650,13 +651,13 @@ Each GRASP iteration performs one constructive pass (roughly $O(p\cdot s + s\log
 
 \subsubsection{Experiment Dataset And Environment}
 
-16 data files are generated in the folder \textit{src/project/testdata} with prefix \textit{project.\{39-44\}-1} and \textit{project.45-\{1-10\}}, containing 39 to 45 members for each dataset.\\
-These experiments were conducted on an Apple MacBook Pro laptop with an Apple M2 chip and 8GB of memory. Solving times may vary slightly on other computers, particularly for the ILP model.
+We generated several datasets of different sizes. datasets are prefixed by sXXXX\_pXXXX; e.g s100\_p100 means 100 specialists and 100 pipes.
+These experiments were conducted on an Apple MacBook Pro laptop with an Apple M4 chip and 32GB of memory. Solving times may vary slightly on other computers, particularly for the ILP model.
 
 
 \subsection{Parameter Tuning For GRASP}
 
-We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1
+We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 100 specialist and 1000 pipes without conducting the local search procedure, and the maximum iterations for the constructive phase is set to 100.  For the results, we selected the best mean objective with the least standard deviation (risk-adjusted formula) over 100 runs per alpha value.
 
 \begin{figure}[H]
 \begin{tikzpicture}
@@ -695,12 +696,12 @@ We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1
 \label{fig:fig41}
 \end{figure}
 
-\noindent As shown in figure \nameref{fig:fig41} and table \nameref{table41}, a better solution is most likely achieved when \bm{$\alpha$} is set from 0 to 0.1. \textbf{In the following experiments, we will set \bm{$\alpha$} equal to 0.1 when conducting the GRASP method to give a good balance between quality and randomness}.
+\noindent As shown in figure \nameref{fig:fig41}, a better solution is most likely achieved when \bm{$\alpha$} is set from 0.1 to 0.2. \textbf{In the following experiments, we will set \bm{$\alpha$} equal to 0.15 when conducting the GRASP method to give a good balance between quality and randomness}.
 
 
 \subsection{Solving Time}
 
-As shown in \nameref{fig:fig42} the ILP model takes approximately 11 to 75 minutes to reach the optimal solution, while the Greedy method requires less than 200 milliseconds. This means the Greedy method is roughly 10000 times faster than the ILP model. \\
+As shown in \nameref{fig:fig42} the ILP model takes approximately X to Y minutes to reach the optimal solution, while the Greedy method requires less than 200 milliseconds. This means the Greedy method is roughly 10000 times faster than the ILP model. \\
 The Local Search method takes about 20 seconds to solve the problem.
 Additionally, when GRASP is executed with 10 iterations and followed by the Local Search procedure, it takes about ten times longer than the Local Search method alone. \\
 Furthermore, when GRASP is executed with 100 iterations and not followed by the Local Search procedure, it takes around 25 seconds to solve the problem.\\
