@@ -160,8 +160,12 @@ Both algorithms minimize the total demand in terms of hours crossing the partiti
 
 The output is a binary partition that defines which pipes must be covered by specialists (the $CutPipes$).
 \\[0.5cm]
-\textbf{Phase 2: Greedy Specialist Assignment}
 
+We decided to select Karger's algorithm because sometimes the min-cut can be unfeasible while another cut with larger cost can give a feasible output...
+\\[0.5cm]
+
+\textbf{Phase 2: Greedy Specialist Assignment}
+\\[0.2cm]
 For the set of $CutPipes$ identified in Phase 1, we iteratively assign specialists using a greedy cost-effectiveness criterion:
 
 \begin{displaymath}
@@ -188,7 +192,7 @@ The assignment continues until all pipes in $CutPipes$ are fully covered or the 
 \Statex
 \Statex \textbf{PHASE 1: MINIMUM CUT}
 \Function{ComputeMinCut}{$Bases$, $Pipes$}
-\If{$minCutAlgorithm = \text{``Karger''}$}
+\If{$minCutAlgorithm = \text{"Karger"}$} \Comment{Karger}
     % \State $iterations \gets \max(10, \lfloor(|Bases|^2 \times \ln(|Bases|)) / 2\rfloor)$
     \State $iterations \gets 1$
     \State $cutWeight, Partition \gets \text{Karger}(Bases, Pipes, iterations)$
@@ -233,7 +237,7 @@ The assignment continues until all pipes in $CutPipes$ are fully covered or the 
         \State $RemainingDemand_p \gets RemainingDemand_p - Capacity_s$
     \EndWhile
     \State \Comment{Verify pipe p is covered}
-    \If{\textbf{not} \Call{ValidateAssignment}{$Solution$, $p$}}
+    \If{\textbf{not} \Call{ValidateAssignment}{$Solution, p$}}
         \State \Return \textsc{Infeasible}
     \EndIf
 \EndFor
@@ -266,6 +270,8 @@ The assignment continues until all pipes in $CutPipes$ are fully covered or the 
 
 \textbf{Overall Complexity}: $O(n^2 \log n \times m + p \times s)$
 
+% ---------------------------------------------------------------------------------
+
 \subsection{Local Search Method}
 
 \subsubsection{Neighborhood Definition}
@@ -293,15 +299,6 @@ Within each neighborhood we support two policies:
 \end{itemize}
 
 The search repeats until no improving neighbor is found or a stopping criterion (time or iteration limit) is met.
-
-\subsubsection{Auxiliary Operations}
-
-% We rely on the following Solution API operations: \texttt{getAssignedSpecialists()}, \texttt{getUnassignedSpecialists()}
-% - \texttt{getAssignedPipe(specId)}, \texttt{canRemoveSpecialist(specId)}
-% - \texttt{getExcessCapacity(pipeId)} (assigned capacity minus demand)
-% - \texttt{clone()}, \texttt{assign(specId, pipeId)}, \texttt{unassign(specId)}, \texttt{evaluate()}, \texttt{getFitness()}
-
-Complexity per neighborhood exploration is dominated by iterating assigned/unassigned specialists and evaluating candidate neighbors; with $S$ specialists and $P$ cut pipes a full scan is $O(S^2 + P\cdot S)$ in the worst case, but practical pruning (sorting by cost, early acceptance under FirstImprovement) reduces the observed cost.
 
 \subsubsection{Pseudocode}
 
@@ -368,6 +365,17 @@ Complexity per neighborhood exploration is dominated by iterating assigned/unass
 % - Elapsed time $\ge$ configured time limit.
 % - Iterations $\ge$ configured iteration limit.
 % - No improving neighbor found.
+
+\subsubsection{Complexity Analysis}
+
+% We rely on the following Solution API operations: \texttt{getAssignedSpecialists()}, \texttt{getUnassignedSpecialists()}
+% - \texttt{getAssignedPipe(specId)}, \texttt{canRemoveSpecialist(specId)}
+% - \texttt{getExcessCapacity(pipeId)} (assigned capacity minus demand)
+% - \texttt{clone()}, \texttt{assign(specId, pipeId)}, \texttt{unassign(specId)}, \texttt{evaluate()}, \texttt{getFitness()}
+
+Complexity per neighborhood exploration is dominated by iterating assigned/unassigned specialists and evaluating candidate neighbors; with $S$ specialists and $P$ cut pipes a full scan is $O(S^2 + P\cdot S)$ in the worst case, but practical pruning (sorting by cost, early acceptance under FirstImprovement) reduces the observed cost.
+
+% ---------------------------------------------------------------------------------
 
 \subsection{GRASP Method}
 
@@ -660,7 +668,7 @@ Each GRASP iteration performs one constructive pass (roughly $O(p\cdot s + s\log
 
 \section{Experiment Result Analysis}
 
-\subsubsection{Experiment Dataset And Environment}
+\subsection{Experiment Dataset And Environment}
 
 We generated several datasets of different sizes. datasets are prefixed by sXXXX\_pXXXX; e.g s100\_p100 means 100 specialists and 100 pipes.
 These experiments were conducted on an Apple MacBook Pro laptop with an Apple M4 chip and 32GB of memory. Solving times may vary slightly on other computers, particularly for the ILP model.
