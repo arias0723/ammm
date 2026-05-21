@@ -726,6 +726,26 @@ Additionally, when GRASP is executed with 10 iterations and followed by the Loca
 Furthermore, when GRASP is executed with 100 iterations and not followed by the Local Search procedure, it takes around 25 seconds to solve the problem.\\
 As demonstrated in \nameref{fig:fig43}, the time required to solve the ILP model varies significantly. At times, we may be fortunate enough to obtain the optimal solution quickly. Specifically, if the number of members is small (fewer than 42), we can effectively use the ILP model to achieve the optimal solution.
 
+% Build time coordinates from individual CSV files
+\newcommand{\buildtimecoords}[2]{%
+    \gdef#1{}%
+    \pgfplotsforeachungrouped \i in {0,...,9} {%
+        \pgfplotstableread[col sep=comma]{data/#2/s100_p1000_instance_\i.csv}\temptable
+        \pgfplotstablegetelem{0}{mean_time}\of\temptable
+        \ifx#1\empty
+            \xdef#1{(\i,\pgfplotsretval)}%
+        \else
+            \xdef#1{#1 (\i,\pgfplotsretval)}%
+        \fi
+    }%
+}
+
+\buildtimecoords{\greedytimedata}{s100_p1000_greedy}
+\buildtimecoords{\grasptimedata}{s100_p1000_grasp}
+\buildtimecoords{\greedylstimedata}{s100_p1000_greedy_ls}
+\buildtimecoords{\grasplstimedata}{s100_p1000_grasp_ls}
+\buildtimecoords{\cplextimedata}{s100_p1000_cplex}
+
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}
@@ -734,7 +754,6 @@ As demonstrated in \nameref{fig:fig43}, the time required to solve the ILP model
     xlabel={Instance},
     ylabel={\textbf{Solving Time} ($\mathbf{s}$)},
     grid=major,
-    width=\textwidth,
     legend pos=outer north east,
     ybar,
     bar width=5pt,
@@ -745,65 +764,11 @@ As demonstrated in \nameref{fig:fig43}, the time required to solve the ILP model
     width=0.9\textwidth,
 ]
 
-\addplot[fill=green, bar shift=-10pt] table[col sep=comma, x expr=0, y=mean_time] {data/s100_p1000_greedy/s100_p1000_instance_0.csv};
-\addplot[fill=yellow, bar shift=-5pt] table[col sep=comma, x expr=0, y=mean_time] {data/s100_p1000_grasp/s100_p1000_instance_0.csv};
-\addplot[fill=blue, bar shift=0pt] table[col sep=comma, x expr=0, y=mean_time] {data/s100_p1000_greedy_ls/s100_p1000_instance_0.csv};
-\addplot[fill=red, bar shift=5pt] table[col sep=comma, x expr=0, y=mean_time] {data/s100_p1000_grasp_ls/s100_p1000_instance_0.csv};
-\addplot[fill=brown, bar shift=10pt] table[col sep=comma, x expr=0, y=mean_time] {data/s100_p1000_cplex/s100_p1000_instance_0.csv};
-
-\addplot[fill=green, forget plot, bar shift=-10pt] table[col sep=comma, x expr=1, y=mean_time] {data/s100_p1000_greedy/s100_p1000_instance_1.csv};
-\addplot[fill=yellow, forget plot, bar shift=-5pt] table[col sep=comma, x expr=1, y=mean_time] {data/s100_p1000_grasp/s100_p1000_instance_1.csv};
-\addplot[fill=blue, forget plot, bar shift=0pt] table[col sep=comma, x expr=1, y=mean_time] {data/s100_p1000_greedy_ls/s100_p1000_instance_1.csv};
-\addplot[fill=red, forget plot, bar shift=5pt] table[col sep=comma, x expr=1, y=mean_time] {data/s100_p1000_grasp_ls/s100_p1000_instance_1.csv};
-\addplot[fill=brown, forget plot, bar shift=10pt] table[col sep=comma, x expr=1, y=mean_time] {data/s100_p1000_cplex/s100_p1000_instance_1.csv};
-
-\addplot[fill=green, forget plot, bar shift=-10pt] table[col sep=comma, x expr=2, y=mean_time] {data/s100_p1000_greedy/s100_p1000_instance_2.csv};
-\addplot[fill=yellow, forget plot, bar shift=-5pt] table[col sep=comma, x expr=2, y=mean_time] {data/s100_p1000_grasp/s100_p1000_instance_2.csv};
-\addplot[fill=blue, forget plot, bar shift=0pt] table[col sep=comma, x expr=2, y=mean_time] {data/s100_p1000_greedy_ls/s100_p1000_instance_2.csv};
-\addplot[fill=red, forget plot, bar shift=5pt] table[col sep=comma, x expr=2, y=mean_time] {data/s100_p1000_grasp_ls/s100_p1000_instance_2.csv};
-\addplot[fill=brown, forget plot, bar shift=10pt] table[col sep=comma, x expr=2, y=mean_time] {data/s100_p1000_cplex/s100_p1000_instance_2.csv};
-
-\addplot[fill=green, forget plot, bar shift=-10pt] table[col sep=comma, x expr=3, y=mean_time] {data/s100_p1000_greedy/s100_p1000_instance_3.csv};
-\addplot[fill=yellow, forget plot, bar shift=-5pt] table[col sep=comma, x expr=3, y=mean_time] {data/s100_p1000_grasp/s100_p1000_instance_3.csv};
-\addplot[fill=blue, forget plot, bar shift=0pt] table[col sep=comma, x expr=3, y=mean_time] {data/s100_p1000_greedy_ls/s100_p1000_instance_3.csv};
-\addplot[fill=red, forget plot, bar shift=5pt] table[col sep=comma, x expr=3, y=mean_time] {data/s100_p1000_grasp_ls/s100_p1000_instance_3.csv};
-\addplot[fill=brown, forget plot, bar shift=10pt] table[col sep=comma, x expr=3, y=mean_time] {data/s100_p1000_cplex/s100_p1000_instance_3.csv};
-
-\addplot[fill=green, forget plot, bar shift=-10pt] table[col sep=comma, x expr=4, y=mean_time] {data/s100_p1000_greedy/s100_p1000_instance_4.csv};
-\addplot[fill=yellow, forget plot, bar shift=-5pt] table[col sep=comma, x expr=4, y=mean_time] {data/s100_p1000_grasp/s100_p1000_instance_4.csv};
-\addplot[fill=blue, forget plot, bar shift=0pt] table[col sep=comma, x expr=4, y=mean_time] {data/s100_p1000_greedy_ls/s100_p1000_instance_4.csv};
-\addplot[fill=red, forget plot, bar shift=5pt] table[col sep=comma, x expr=4, y=mean_time] {data/s100_p1000_grasp_ls/s100_p1000_instance_4.csv};
-\addplot[fill=brown, forget plot, bar shift=10pt] table[col sep=comma, x expr=4, y=mean_time] {data/s100_p1000_cplex/s100_p1000_instance_4.csv};
-
-\addplot[fill=green, forget plot, bar shift=-10pt] table[col sep=comma, x expr=5, y=mean_time] {data/s100_p1000_greedy/s100_p1000_instance_5.csv};
-\addplot[fill=yellow, forget plot, bar shift=-5pt] table[col sep=comma, x expr=5, y=mean_time] {data/s100_p1000_grasp/s100_p1000_instance_5.csv};
-\addplot[fill=blue, forget plot, bar shift=0pt] table[col sep=comma, x expr=5, y=mean_time] {data/s100_p1000_greedy_ls/s100_p1000_instance_5.csv};
-\addplot[fill=red, forget plot, bar shift=5pt] table[col sep=comma, x expr=5, y=mean_time] {data/s100_p1000_grasp_ls/s100_p1000_instance_5.csv};
-\addplot[fill=brown, forget plot, bar shift=10pt] table[col sep=comma, x expr=5, y=mean_time] {data/s100_p1000_cplex/s100_p1000_instance_5.csv};
-
-\addplot[fill=green, forget plot, bar shift=-10pt] table[col sep=comma, x expr=6, y=mean_time] {data/s100_p1000_greedy/s100_p1000_instance_6.csv};
-\addplot[fill=yellow, forget plot, bar shift=-5pt] table[col sep=comma, x expr=6, y=mean_time] {data/s100_p1000_grasp/s100_p1000_instance_6.csv};
-\addplot[fill=blue, forget plot, bar shift=0pt] table[col sep=comma, x expr=6, y=mean_time] {data/s100_p1000_greedy_ls/s100_p1000_instance_6.csv};
-\addplot[fill=red, forget plot, bar shift=5pt] table[col sep=comma, x expr=6, y=mean_time] {data/s100_p1000_grasp_ls/s100_p1000_instance_6.csv};
-\addplot[fill=brown, forget plot, bar shift=10pt] table[col sep=comma, x expr=6, y=mean_time] {data/s100_p1000_cplex/s100_p1000_instance_6.csv};
-
-\addplot[fill=green, forget plot, bar shift=-10pt] table[col sep=comma, x expr=7, y=mean_time] {data/s100_p1000_greedy/s100_p1000_instance_7.csv};
-\addplot[fill=yellow, forget plot, bar shift=-5pt] table[col sep=comma, x expr=7, y=mean_time] {data/s100_p1000_grasp/s100_p1000_instance_7.csv};
-\addplot[fill=blue, forget plot, bar shift=0pt] table[col sep=comma, x expr=7, y=mean_time] {data/s100_p1000_greedy_ls/s100_p1000_instance_7.csv};
-\addplot[fill=red, forget plot, bar shift=5pt] table[col sep=comma, x expr=7, y=mean_time] {data/s100_p1000_grasp_ls/s100_p1000_instance_7.csv};
-\addplot[fill=brown, forget plot, bar shift=10pt] table[col sep=comma, x expr=7, y=mean_time] {data/s100_p1000_cplex/s100_p1000_instance_7.csv};
-
-\addplot[fill=green, forget plot, bar shift=-10pt] table[col sep=comma, x expr=8, y=mean_time] {data/s100_p1000_greedy/s100_p1000_instance_8.csv};
-\addplot[fill=yellow, forget plot, bar shift=-5pt] table[col sep=comma, x expr=8, y=mean_time] {data/s100_p1000_grasp/s100_p1000_instance_8.csv};
-\addplot[fill=blue, forget plot, bar shift=0pt] table[col sep=comma, x expr=8, y=mean_time] {data/s100_p1000_greedy_ls/s100_p1000_instance_8.csv};
-\addplot[fill=red, forget plot, bar shift=5pt] table[col sep=comma, x expr=8, y=mean_time] {data/s100_p1000_grasp_ls/s100_p1000_instance_8.csv};
-\addplot[fill=brown, forget plot, bar shift=10pt] table[col sep=comma, x expr=8, y=mean_time] {data/s100_p1000_cplex/s100_p1000_instance_8.csv};
-
-\addplot[fill=green, forget plot, bar shift=-10pt] table[col sep=comma, x expr=9, y=mean_time] {data/s100_p1000_greedy/s100_p1000_instance_9.csv};
-\addplot[fill=yellow, forget plot, bar shift=-5pt] table[col sep=comma, x expr=9, y=mean_time] {data/s100_p1000_grasp/s100_p1000_instance_9.csv};
-\addplot[fill=blue, forget plot, bar shift=0pt] table[col sep=comma, x expr=9, y=mean_time] {data/s100_p1000_greedy_ls/s100_p1000_instance_9.csv};
-\addplot[fill=red, forget plot, bar shift=5pt] table[col sep=comma, x expr=9, y=mean_time] {data/s100_p1000_grasp_ls/s100_p1000_instance_9.csv};
-\addplot[fill=brown, forget plot, bar shift=10pt] table[col sep=comma, x expr=9, y=mean_time] {data/s100_p1000_cplex/s100_p1000_instance_9.csv};
+\addplot[fill=green, bar shift=-10pt] coordinates {\greedytimedata};
+\addplot[fill=yellow, bar shift=-5pt] coordinates {\grasptimedata};
+\addplot[fill=blue, bar shift=0pt] coordinates {\greedylstimedata};
+\addplot[fill=red, bar shift=5pt] coordinates {\grasplstimedata};
+\addplot[fill=brown, bar shift=10pt] coordinates {\cplextimedata};
 
 \legend{Greedy, GRASP, Greedy + LS, GRASP + LS, ILP}
 
