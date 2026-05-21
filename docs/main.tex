@@ -718,13 +718,29 @@ We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 10
 \noindent As shown in figure \nameref{fig:fig41}, a better solution is most likely achieved when \bm{$\alpha$} is set from 0.1 to 0.2. \textbf{In the following experiments, we will set \bm{$\alpha$} equal to 0.15 when conducting the GRASP method to give a good balance between quality and randomness}.
 
 
-\subsection{Solving Time}
+% \subsection{Solving Time}
 
-As shown in \nameref{fig:fig42} the ILP model takes approximately X to Y minutes to reach the optimal solution, while the Greedy method requires less than 200 milliseconds. This means the Greedy method is roughly 10000 times faster than the ILP model. \\
-The Local Search method takes about 20 seconds to solve the problem.
-Additionally, when GRASP is executed with 10 iterations and followed by the Local Search procedure, it takes about ten times longer than the Local Search method alone. \\
-Furthermore, when GRASP is executed with 100 iterations and not followed by the Local Search procedure, it takes around 25 seconds to solve the problem.\\
-As demonstrated in \nameref{fig:fig43}, the time required to solve the ILP model varies significantly. At times, we may be fortunate enough to obtain the optimal solution quickly. Specifically, if the number of members is small (fewer than 42), we can effectively use the ILP model to achieve the optimal solution.
+% As shown in \nameref{fig:fig42} the ILP model takes approximately 60 to 120 minutes to reach the optimal solution, while the Greedy method requires less than 500 milliseconds. This means that the Greedy method is roughly 10000 times faster than the ILP model. \\
+% Using GRASP plus the Local Search method takes a mean between 1 to 5 seconds to return a good solution using 100 iterations in total.
+% % Additionally, when GRASP is executed with 10 iterations and followed by the Local Search procedure, it takes about ten times longer than the Local Search method alone. \\
+% Furthermore, when GRASP is executed with 100 iterations and not followed by the Local Search procedure, it takes around 25 seconds to solve the problem.\\
+% As demonstrated in \nameref{fig:fig43}, the time required to solve the ILP model varies significantly. At times, we may be fortunate enough to obtain the optimal solution quickly. Specifically, if the number of pipes is small (fewer than 100), we can effectively use the ILP model to achieve the optimal solution.
+
+\subsection{Solving Time Performance}
+
+To evaluate computational efficiency, the execution times of the proposed algorithms were evaluated across ten problem instances. \nameref{fig:fig42} illustrates the solving time (in seconds) on a logarithmic scale for the configuration where $S = 100$ and $P = 1000$.
+\\
+The empirical results show a large difference in computational complexity between the exact Integer Linear Programming (ILP) model and the heuristic approaches:
+\begin{itemize}
+    \item \textbf{ILP Baseline:} The ILP model exhibits the highest computational burden, consistently requiring between $10^3$ and $10^4$ seconds (approximately 16 to 166 minutes) to determine the global optimum. A notable peak occurs in Instance 3, where the execution time approaches nearly 10,000 seconds. However, the text notes that the ILP model's efficiency is highly sensitive to problem scale; for smaller instances (e.g., fewer than 100 pipes), it can solve to optimality within a practical timeframe.
+    \item \textbf{Greedy and GRASP Heuristics:} In stark contrast, both the pure Greedy algorithm and the standalone GRASP execution operate below the $10^{-1}$ second threshold, completing in less than 500 milliseconds. This represents an acceleration factor of roughly four orders of magnitude ($\approx 10,000\times$) relative to the ILP model.
+    \item \textbf{Local Search (LS) Overhead:} Incorporating the Local Search procedure marginally increases execution times but yields distinct performance profiles for the hybrid variants:
+    \begin{itemize}
+        \item \textbf{Greedy + LS:} Consistently converges within a narrow band between $0.4$ and $1.0$ seconds across all instances.
+        \item \textbf{GRASP + LS:} Demands higher computational effort, fluctuating between 2 and 8 seconds per instance. This increased overhead is attributable to the 100 iterations prescribed by the GRASP metaheuristic before invoking the neighborhood search.
+    \end{itemize}
+\end{itemize}
+
 
 % Build time coordinates from individual CSV files
 \newcommand{\buildtimecoords}[2]{%
@@ -965,7 +981,17 @@ As demonstrated in \nameref{fig:fig43}, the time required to solve the ILP model
 % \label{fig:fig45}
 % \end{figure}
 
-\nameref{fig:fig44} and \nameref{fig:fig45} shows that the Greedy approach yields the worst solution. In contrast, both GRASP (100 iterations without local search) and Local Search provide similar results. Among the heuristic methods, GRASP (10 iterations with local search) offers the best solution.
+% \nameref{fig:fig44} and \nameref{fig:fig45} shows that the Greedy approach yields the worst solution. In contrast, both GRASP (100 iterations without local search) and Local Search provide similar results. Among the heuristic methods, GRASP (10 iterations with local search) offers the best solution.
+
+\nameref{fig:fig43} evaluates the solution quality by comparing the mean objective cost obtained by each algorithm across ten problem instances ($S = 100, P = 1000$). As this is a minimization problem, lower objective values represent superior performance.
+\\
+The results demonstrate a clear stratification in the quality of the solution among the tested approaches:
+\begin{itemize}
+    \item \textbf{Optimal Baseline:}  The exact ILP model establishes the true lower bound, consistently outperforming all heuristic methods with objective values spanning roughly 2,800 to 4,200.
+    \item \textbf{Heuristic Trajectory:} The pure Greedy approach yields the worst solution quality, frequently generating the highest cost curve across the instances (peaking near 7,600 in Instance 7).
+    \item \textbf{Impact of Local Search (LS):} Incorporating neighborhood search drastically minimizes the optimality gap. Standalone GRASP (executed for 100 iterations) and the hybrid Greedy + LS variant exhibit highly competitive, intermediate performance.
+    \item \textbf{Top Metaheuristic:} Ultimately, the GRASP + LS hybrid consistently achieves the lowest objective costs among all approximate methods, proving to be the most effective heuristic configuration for minimizing total cost.
+\end{itemize}
 
 
 \subsection{Experiment Conclusion}
@@ -983,129 +1009,129 @@ We will continue to refine this project by optimizing the heuristic methods, whi
 
 We want to give a big thank you to Prof. Enric Rodriguez and Prof. Luis Velasco for all their guidance and support throughout this report and during the whole course. Your help has truly meant a lot to us!
 
-\newpage
+% \newpage
 \appendix
 
-\section{Pseudocode of Auxiliary Functions for Directed Graph}
+% \section{Pseudocode of Auxiliary Functions for Directed Graph}
 
 
-Some auxiliary functions are utilized to process directed graphs for the \textit{Greedy}, \textit{Local Search}, and \textit{GRASP} methods.
-\begin{itemize}
-    \item The function $TopologicalSort$ implements \textbf{\textit{Kahn's algorithm}} to obtain the topological sort of a directed graph, which has $CoveredMembers$ as vertices and $Solution$ (in Greedy method, it is the partial solution) as edges. If there are edges remaining, this indicates that a cycle exists in the graph.
-    \item The function $TrimGraph$ continues to eliminate all vertices with zero indegree or zero outdegree until every remaining edge is part of a cycle.
-\end{itemize}
+% Some auxiliary functions are utilized to process directed graphs for the \textit{Greedy}, \textit{Local Search}, and \textit{GRASP} methods.
+% \begin{itemize}
+%     \item The function $TopologicalSort$ implements \textbf{\textit{Kahn's algorithm}} to obtain the topological sort of a directed graph, which has $CoveredMembers$ as vertices and $Solution$ (in Greedy method, it is the partial solution) as edges. If there are edges remaining, this indicates that a cycle exists in the graph.
+%     \item The function $TrimGraph$ continues to eliminate all vertices with zero indegree or zero outdegree until every remaining edge is part of a cycle.
+% \end{itemize}
 
-\begin{algorithm}[H]
-\renewcommand{\thealgorithm}{}
-\caption{Auxiliary functions For Directed Graph}
-\begin{algorithmic}
+% \begin{algorithm}[H]
+% \renewcommand{\thealgorithm}{}
+% \caption{Auxiliary functions For Directed Graph}
+% \begin{algorithmic}
 
-\Function{GetVerticesFromEdges}{$edges$}
-\State $vertices \gets \phi$
-\For{\textbf{each} $<i,j> \in edges$}
-\State $vertices \gets vertices \cup {i, j}$
-\EndFor
-\State \Return $vertices$
-\EndFunction
+% \Function{GetVerticesFromEdges}{$edges$}
+% \State $vertices \gets \phi$
+% \For{\textbf{each} $<i,j> \in edges$}
+% \State $vertices \gets vertices \cup {i, j}$
+% \EndFor
+% \State \Return $vertices$
+% \EndFunction
 
-\Statex
+% \Statex
 
-\Function{ConstructNeighbors}{$vertices$, $eges$}
-\State $neighbors \gets \phi$
-\For{\textbf{each} $<i,j> \in edges$}
-\State $neighbors(i) \gets neighbors(i) \cup {j}$
-\EndFor
-\State \Return $neighbors$
-\EndFunction
+% \Function{ConstructNeighbors}{$vertices$, $eges$}
+% \State $neighbors \gets \phi$
+% \For{\textbf{each} $<i,j> \in edges$}
+% \State $neighbors(i) \gets neighbors(i) \cup {j}$
+% \EndFor
+% \State \Return $neighbors$
+% \EndFunction
 
-\Statex
+% \Statex
 
-\Function{TopologicalSort}{$edges$}
-\State $topologicalOrder, indegree \gets \phi, \phi$
-\State $neighbors \gets ConstructNeighbors(vertices, edges)$
-\For{\textbf{each} $vertex \in vertices$}
-    \For{\textbf{each} $neighbor \in neighbors(vetex)$}
-        \State $indegree(neighbor) \gets indegree(neighbor) + 1$
-    \EndFor
-\EndFor
-\State $nodesWithZeroIndegree \gets \{vertex \in vertices| indegree(vertex) = 0\}$
-\While{$nodesWithZeroIndegree \neq \phi$}
-    \State $node \gets nodesWithZeroIndegree.\textrm{POP}()$
-    \State $topologicalOrder \gets topologicalOrder \cup \{node\}$
-    \For{\textbf{each} $neighbor \in neighbors(node)$}
-        \State $indegree(node) \gets indegree(node) - 1$
-        \If{$indegree(neighbor) = 0$}
-            \State $nodesWithZeroIndegree \gets nodesWithZeroIndegree \cup \{neighbor\}$
-        \EndIf
-    \EndFor
-\EndWhile
-\State \Return $topologicalOrder$
-\EndFunction
+% \Function{TopologicalSort}{$edges$}
+% \State $topologicalOrder, indegree \gets \phi, \phi$
+% \State $neighbors \gets ConstructNeighbors(vertices, edges)$
+% \For{\textbf{each} $vertex \in vertices$}
+%     \For{\textbf{each} $neighbor \in neighbors(vetex)$}
+%         \State $indegree(neighbor) \gets indegree(neighbor) + 1$
+%     \EndFor
+% \EndFor
+% \State $nodesWithZeroIndegree \gets \{vertex \in vertices| indegree(vertex) = 0\}$
+% \While{$nodesWithZeroIndegree \neq \phi$}
+%     \State $node \gets nodesWithZeroIndegree.\textrm{POP}()$
+%     \State $topologicalOrder \gets topologicalOrder \cup \{node\}$
+%     \For{\textbf{each} $neighbor \in neighbors(node)$}
+%         \State $indegree(node) \gets indegree(node) - 1$
+%         \If{$indegree(neighbor) = 0$}
+%             \State $nodesWithZeroIndegree \gets nodesWithZeroIndegree \cup \{neighbor\}$
+%         \EndIf
+%     \EndFor
+% \EndWhile
+% \State \Return $topologicalOrder$
+% \EndFunction
 
-\algstore{graph}
-\end{algorithmic}
-\end{algorithm}
+% \algstore{graph}
+% \end{algorithmic}
+% \end{algorithm}
 
-\newpage
+% \newpage
 
-\begin{algorithm}
-\begin{algorithmic}
-\algrestore{graph}
+% \begin{algorithm}
+% \begin{algorithmic}
+% \algrestore{graph}
 
-\Function{TrimGraph}{$edges$}
-\State $indegree, outdegree, previousEdges \gets \phi, \phi, \phi$
-\State $vertices \gets GetVerticesFromEdges(edges)$
-\State $neighbors \gets ConstructNeighbors(vertices, edges)$
-\For{\textbf{each} $vertex \in vertices$}
-    \State $outdegree(vertex) \gets \lvert neighbors(vertex) \rvert$
-    \For{\textbf{each} $neighbor \in neighbors(vetex)$}
-        \State $indegree(neighbor) \gets indegree(neighbor) + 1$
-    \EndFor
-\EndFor
-\State $nodesWithZeroIndegree \gets \{vertex \in vertices| indegree(vertex) = 0\}$
-\State $nodesWithZeroOutdegree \gets \{vertex \in vertices| outdegree(vertex) = 0\}$
-\While{$edges \subset previousEdges $}
-\State $previousEdges \gets edges$
-\While{$nodesWithZeroIndegree \neq \phi$}
-    \State $node \gets nodesWithZeroIndegree.\textrm{POP}()$
-    \For{\textbf{each} $neighbor \in neighbors(node)$}
-        \State $indegree(node) \gets indegree(node) - 1$
-        \State $outdegree(node) \gets outdegree(node) - 1$
-        \If{$<node, neighbor>$}
-             \State $edges.\textrm{REMOVE}(<node, neighbor>)$
-        \EndIf
-        \If{$indegree(neighbor) = 0$}
-            \State $nodesWithZeroIndegree \gets nodesWithZeroIndegree \cup \{neighbor\}$
-        \EndIf
-        \If{$outdegree(node) = 0$}
-            \State $nodesWithZeroOutdegree \gets nodesWithZeroOutdegree \cup \{node\}$
-        \EndIf
-    \EndFor
-\EndWhile
-\While{$nodesWithZeroOutdegree \neq \phi$}
-    \State $node \gets nodesWithZeroOutdegree.\textrm{POP}()$
-    \For{\textbf{each} $node' \in neighbors$}
-    \If{$outdegree(node')> 0$ AND $node \in neighbors(node')$ }
-    \State $outdegree(node') \gets outdegree(node') - 1$
-    \State $indegree(node) \gets indegree(node) - 1$
-    \If{$<node', node> \in edges$}
-        \State $edges.\textrm{REMOVE}(<node', node>)$
-    \EndIf
-    \If{$outdegree(node') = 0$}
-        \State $nodesWithZeroOutdegree \gets nodesWithZeroOutdegree \cup \{node'\}$
-    \EndIf
-    \If{$indegree(node) = 0$}
-        \State $nodesWithZeroIndegree \gets nodesWithZeroIndegree \cup \{node\}$
-    \EndIf
-    \EndIf
-    \EndFor
-\EndWhile
-\EndWhile
-\State \Return $edges, indegree, outdegree$
-\EndFunction
+% \Function{TrimGraph}{$edges$}
+% \State $indegree, outdegree, previousEdges \gets \phi, \phi, \phi$
+% \State $vertices \gets GetVerticesFromEdges(edges)$
+% \State $neighbors \gets ConstructNeighbors(vertices, edges)$
+% \For{\textbf{each} $vertex \in vertices$}
+%     \State $outdegree(vertex) \gets \lvert neighbors(vertex) \rvert$
+%     \For{\textbf{each} $neighbor \in neighbors(vetex)$}
+%         \State $indegree(neighbor) \gets indegree(neighbor) + 1$
+%     \EndFor
+% \EndFor
+% \State $nodesWithZeroIndegree \gets \{vertex \in vertices| indegree(vertex) = 0\}$
+% \State $nodesWithZeroOutdegree \gets \{vertex \in vertices| outdegree(vertex) = 0\}$
+% \While{$edges \subset previousEdges $}
+% \State $previousEdges \gets edges$
+% \While{$nodesWithZeroIndegree \neq \phi$}
+%     \State $node \gets nodesWithZeroIndegree.\textrm{POP}()$
+%     \For{\textbf{each} $neighbor \in neighbors(node)$}
+%         \State $indegree(node) \gets indegree(node) - 1$
+%         \State $outdegree(node) \gets outdegree(node) - 1$
+%         \If{$<node, neighbor>$}
+%              \State $edges.\textrm{REMOVE}(<node, neighbor>)$
+%         \EndIf
+%         \If{$indegree(neighbor) = 0$}
+%             \State $nodesWithZeroIndegree \gets nodesWithZeroIndegree \cup \{neighbor\}$
+%         \EndIf
+%         \If{$outdegree(node) = 0$}
+%             \State $nodesWithZeroOutdegree \gets nodesWithZeroOutdegree \cup \{node\}$
+%         \EndIf
+%     \EndFor
+% \EndWhile
+% \While{$nodesWithZeroOutdegree \neq \phi$}
+%     \State $node \gets nodesWithZeroOutdegree.\textrm{POP}()$
+%     \For{\textbf{each} $node' \in neighbors$}
+%     \If{$outdegree(node')> 0$ AND $node \in neighbors(node')$ }
+%     \State $outdegree(node') \gets outdegree(node') - 1$
+%     \State $indegree(node) \gets indegree(node) - 1$
+%     \If{$<node', node> \in edges$}
+%         \State $edges.\textrm{REMOVE}(<node', node>)$
+%     \EndIf
+%     \If{$outdegree(node') = 0$}
+%         \State $nodesWithZeroOutdegree \gets nodesWithZeroOutdegree \cup \{node'\}$
+%     \EndIf
+%     \If{$indegree(node) = 0$}
+%         \State $nodesWithZeroIndegree \gets nodesWithZeroIndegree \cup \{node\}$
+%     \EndIf
+%     \EndIf
+%     \EndFor
+% \EndWhile
+% \EndWhile
+% \State \Return $edges, indegree, outdegree$
+% \EndFunction
 
-\end{algorithmic}
-\end{algorithm}
+% \end{algorithmic}
+% \end{algorithm}
 
 \section{Source Code}
 
