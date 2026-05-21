@@ -155,7 +155,7 @@ We found two greedy algorithms to find the minimum cut partition of the network:
 Both algorithms minimize the total demand in terms of hours crossing the partition:
 
 \begin{equation}
-\text{MinCut} = \min_{\text{Partition}} \sum_{p \in \text{Pipes}} \text{Demand}_p \times \mathbb{1}[\text{Partition}[\text{base}_i(p)] \neq \text{Partition}[\text{base}_j(p)]]
+\text{MinCut} = \min_{\text{Partition}} \sum_{p \in \text{Pipes}} \text{Demand}_p \times \mathbf{1}[\text{Partition}[\text{base}_i(p)] \neq \text{Partition}[\text{base}_j(p)]]
 \end{equation}
 
 The output is a binary partition that defines which pipes must be covered by specialists (the $CutPipes$).
@@ -398,61 +398,73 @@ Per pipe (processed in order of decreasing remaining demand), we:
 
 This adaptive RCL balances greediness and diversification.
 
-\subsubsection{Pseudocode FIXX}
+\subsubsection{Pseudocode}
 
 \begin{algorithm}[H]
 \renewcommand{\thealgorithm}{}
 \caption{GRASP Construction Phase}
 \begin{algorithmic}
-
+\Function{ConstructSolution}{$\alpha, CutPipes, Specialists$}
 \State $Solution \gets \phi$
-\State $CoveredMembers \gets \phi$
-\State $CandidatePairs \gets \{<i,j> \mid i,j \in Members \quad \textrm{and} \quad Bids_{ij} + Bids_{ji} \neq 0\}$
-\State $Priority(i,j) \gets 0 \quad \forall <i,j> \in CandidatePairs$
-\While{$CandidatePairs \neq \phi$}
-    \State Evaluate $q(<i',j'>, Solution) \quad \forall <i',j'> \in CandidatePairs$
-    \State $CandidatePairs \gets \{<i',j'> \in CandidatePairs \mid q(<i',j'>,S) > 0\}$
-    \State \textcolor{red}{$q^{min} \gets \textrm{min}\{q(<i',j'>,Solution) \mid <i',j'> \in CandidatePairs\}$} \Comment{RCL Procedure}
-    \State \textcolor{red}{$q^{max} \gets \textrm{max}\{q(<i',j'>,Solution) \mid <i',j'> \in CandidatePairs\}$}
-    \State \textcolor{red}{$\textrm{RCL}_{max} \gets \{<i',j'> \in CandidatePairs \mid q(<i',j'>, Solution) \geq q^{max} - \alpha(q^{max} - q^{min}) \}$}
-    \State \textcolor{red}{$<i,j> \gets \textrm{ select} <i',j'> \in \textrm{RCL}$ at random}
-    \State $CandidatePairs \gets CandidatePairs \setminus \{<i,j>, <j,i>\}$
-    \State $CoveredMembers \gets CoveredMembers \cup \{i,j\}$
-    \State $Solution \gets Solution \cup \{<i,j>\}$
-    \State $Priority(<i,j>) \gets 1$
-\EndWhile
+\State $SortedPipes \gets \text{Sort}(CutPipes, key=Demand, reverse=\text{True})$
+\State $SortedSpecialists \gets \text{Sort}(Specialists, key=CostEffectiveness)$
+\Statex
+\For{\textbf{each} $p \in SortedPipes$}
+    \State $RemainingDemand_p \gets Demand_p$
+    \While{$RemainingDemand_p > 0$}
+        \State $Available \gets \{s \in SortedSpecialists \mid s \text{ is not assigned in } Solution\}$
+        \If{$Available = \phi$}
+            \State \Return \textsc{Infeasible}
+        \EndIf
+
+        \State \textcolor{red}{$ce_{best} \gets \min(\{CostEffectiveness_s \mid s \in Available\})$}
+        \State \textcolor{red}{$ce_{worst} \gets \max(\{CostEffectiveness_s \mid s \in Available\})$}
+        \State \textcolor{red}{$threshold \gets ce_{best} + \alpha \cdot (ce_{worst} - ce_{best})$}
+
+        \State \textcolor{red}{$RCL \gets \{s \in Available \mid CostEffectiveness_s \leq threshold\}$}
+        \If{$RCL = \phi$}
+            \State $RCL \gets \{\text{first element of } Available\}$
+        \EndIf
+
+        \State $s^* \gets \text{select at random from } RCL$
+        \State $\text{Assign } s^* \text{ to } p \text{ in } Solution$
+        \State $RemainingDemand_p \gets RemainingDemand_p - Capacity_{s^*}$
+    \EndWhile
+\EndFor
 \State \Return $Solution$
-
-\end{algorithmic}
-\end{algorithm}
-
-\begin{algorithm}[H]
-\caption{GRASP Main Loop}
-\begin{algorithmic}
-\Function{GRASP}{maxIterations, $\alpha$, localSearchConfig}
-    \State best $\gets$ infeasible-solution (sentinel with cost $+\infty$)
-    \For{iter = 1 \textbf{to} maxIterations}
-        \State partition $\gets$ ComputeMinCut()
-        \State cutPipes $\gets$ pipes crossing partition
-        \State solution $\gets$ ConstructSolution($\alpha$, partition, cutPipes)
-        \If{solution.isFeasible() \textbf{and} localSearchConfig.enabled}
-            \State solution $\gets$ LocalSearch(solution, localSearchConfig)
-        \EndIf
-        \If{solution.isFeasible() \textbf{and} solution.getFitness() < best.getFitness()}
-            \State best $\gets$ solution
-        \EndIf
-        \If{time limit reached} \textbf{break}
-    \EndFor
-    \State \Return best
 \EndFunction
 \end{algorithmic}
 \end{algorithm}
 
-\subsubsection{Parameter tuning and practical notes}
-- Choose $\alpha$ by tuning; typical values are in $[0.0,0.3]$ for problems where greedy guidance is strong.
-- Number of GRASP iterations trades time for solution quality; stop early when time budget is exhausted.
-- Always compute the min-cut once per GRASP iteration (the partition affects which pipes must be covered).
-- Use Local Search after each constructive phase when computational budget allows; Local Search provides substantial improvements.
+\begin{algorithm}[H]
+\renewcommand{\thealgorithm}{}
+\caption{GRASP Main Loop}
+\begin{algorithmic}
+\Function{GRASP}{maxIterations, $\alpha$, localSearchConfig}
+    \State $best \gets \text{infeasible-solution (cost } +\infty)$
+    \For{$iter = 1$ \textbf{to} $maxIterations$}
+        \State $Partition \gets \text{ComputeMinCut}()$
+        \State $CutPipes \gets \{p \in Pipes \mid Partition[base_i(p)] \neq Partition[base_j(p)]\}$
+        \State $solution \gets \text{ConstructSolution}(\alpha, CutPipes, Specialists)$
+        \If{$solution.isFeasible()$ \textbf{and} $localSearchConfig.enabled$}
+            \State $solution \gets \text{LocalSearch}(solution, localSearchConfig)$
+        \EndIf
+        \If{$solution.isFeasible()$ \textbf{and} $solution.getFitness() < best.getFitness()$}
+            \State $best \gets solution$
+        \EndIf
+        \If{time limit reached} \textbf{break}
+        \EndIf
+    \EndFor
+    \State \Return $best$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+% \subsubsection{Parameter tuning and practical notes}
+% - Choose $\alpha$ by tuning; typical values are in $[0.0,0.3]$ for problems where greedy guidance is strong.
+% - Number of GRASP iterations trades time for solution quality; stop early when time budget is exhausted.
+% - Always compute the min-cut once per GRASP iteration (the partition affects which pipes must be covered).
+% - Use Local Search after each constructive phase when computational budget allows; Local Search provides substantial improvements.
 
 \subsubsection{Complexity}
 Each GRASP iteration performs one constructive pass (roughly $O(p\cdot s + s\log s)$) and an optional local search whose cost depends on the configured neighborhood policy and limits. Overall runtime is linear in the number of iterations and dominated by Local Search when enabled.
@@ -996,18 +1008,20 @@ The results demonstrate a clear stratification in the quality of the solution am
 
 \subsection{Experiment Conclusion}
 
-If the number of members is small (fewer than 42), we should always use the ILP model to achieve the optimal solution. If the number of members is large (more than 42) and we need a reasonably good solution within a short timeframe, we should apply the GRASP with 10 iterations, followed by a local search procedure. This approach will yield the best solution among the heuristic methods we tested.
+If the problem scale is small (e.g., fewer than 100 pipes), we should use the exact ILP model whenever possible, as it guarantees finding the absolute optimal solution within a rational timeframe. However, for larger networks (more than 100 pipes) where the combinatorial explosion makes the ILP unfeasible, we need effective approximations to deliver reasonably good solutions quickly.
+
+Among the heuristic strategies tested, the pure Greedy method is extremely fast but provides poor solution quality. Employing GRASP with local search (GRASP + LS) strikes the best balance: it significantly reduces the optimality gap and robustly achieves the lowest objective costs among our approximate methods. Therefore, for large-scale Martian network destruction scenarios, the GRASP + LS configuration stands out as the most pragmatic approach.
 
 \section{Personal Reflections}
 
-Initially, we had limited knowledge of graph theory and were unfamiliar with concepts like topological sorting or directed acyclic graphs. We approached the subject incorrectly at first, but after receiving guidance from our professors and exploring graph theory in more depth, a new world opened up for us. We were amazed by the efficiency of graph algorithms.\\
-For us, the optimization methods used in linear programming represent a significant shift in thinking. These methods can be elegant, and we always strive to pursue optimal solutions in theory. However, in practice, solving problems can sometimes be quite costly. Therefore, for these problems we should employ heuristic methods as a tradeoff. It is essential to experiment and iterate in order to discover better solutions.\\
-We will continue to refine this project by optimizing the heuristic methods, which we believe will reduce solving time and improve solution quality.
+Initially, we had limited knowledge of advanced graph theory and were unfamiliar with concepts like minimum cuts, graph partitions, and network connectivity algorithms. We approached the algorithmic design hesitantly at first, but after receiving guidance from our professors and exploring algorithms like Stoer-Wagner and Karger's in more depth, a new mathematical world opened up for us. We were amazed by the efficiency and power of specialized graph algorithms.\\
+Moreover, the optimization methods used in integer linear programming represent a significant shift in thinking. These declarative methods are incredibly elegant, and we inherently strive to pursue optimal solutions in theory. However, in practice, solving these large-scale combinatorial problems to optimality can be prohibitively costly. Consequently, we must employ heuristic and metaheuristic methods as a necessary tradeoff for scalability. It is essential to formulate, experiment, and iterate in order to discover practical solutions.\\
+We will continue to refine our algorithm engineering skills, as we now firmly believe that understanding the balance between exact mathematical models and fast approximations is key to solving real-world computer science problems.
 
 
 \section{Acknowledgements}
 
-We want to give a big thank you to Prof. Enric Rodriguez and Prof. Luis Velasco for all their guidance and support throughout this report and during the whole course. Your help has truly meant a lot to us!
+We want to give a big thank you to Prof. Enric Rodriguez and Prof. Luis Velasco for all their guidance and support throughout this report and during the whole course.
 
 % \newpage
 \appendix
