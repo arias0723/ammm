@@ -1,0 +1,105 @@
+Resultat run cplx
+
+s30_p80 :
+
+Total cost: 624
+Destroy pipe {6,13} with specialists: 20
+Destroy pipe {6,16} with specialists: 21
+Destroy pipe {6,22} with specialists: 26
+Partition S0 = {6}
+Partition S1 = {1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30}
+Time: 366 ms
+
+s45_p150 :
+
+Total cost: 611
+Destroy pipe {14,22} with specialists: 3 45
+Destroy pipe {14,41} with specialists: 16
+Partition S0 = {1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45}
+Partition S1 = {14}
+Time: 2823 ms
+
+s70_p300
+
+Total cost: 811
+Destroy pipe {1,37} with specialists: 55
+Destroy pipe {32,37} with specialists: 21
+Destroy pipe {37,38} with specialists: 15
+Destroy pipe {37,40} with specialists: 6
+Partition S0 = {37}
+Partition S1 = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70}
+Time: 21169 ms
+
+s110_p500
+
+Total cost: 811
+Destroy pipe {53,73} with specialists: 107
+Destroy pipe {73,96} with specialists: 41
+Destroy pipe {73,107} with specialists: 45 104
+Partition S0 = {73}
+Partition S1 = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110}
+Time: 52262 ms
+
+
+
+s70_p400
+
+Total cost: 1221
+
+Destroy pipe {1,8} with specialists: 40
+Destroy pipe {8,11} with specialists: 43 53
+Destroy pipe {8,28} with specialists: 15
+Destroy pipe {8,31} with specialists: 18
+Destroy pipe {8,70} with specialists: 48
+
+Partition S0 = {1,2,3,4,5,6,7,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70}
+Partition S1 = {8}
+
+Time: 100356 ms
+
+
+s80_p500
+
+Destroy pipe {26,47} with specialists: 74
+Destroy pipe {26,56} with specialists: 43
+Destroy pipe {26,57} with specialists: 70
+Destroy pipe {26,61} with specialists: 15 39
+Destroy pipe {26,65} with specialists: 27 51
+Destroy pipe {26,70} with specialists: 18
+Destroy pipe {26,79} with specialists: 33
+
+Partition S0 = {26}
+Partition S1 = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80}
+
+Time: 791793 ms
+
+s85_p550
+
+Total cost: 1879
+
+Destroy pipe {13,27} with specialists: 73
+Destroy pipe {13,29} with specialists: 40 72
+Destroy pipe {13,38} with specialists: 17 69
+Destroy pipe {13,73} with specialists: 51 85
+Destroy pipe {13,84} with specialists: 19 36
+
+Partition S0 = {13}
+Partition S1 = {1,2,3,4,5,6,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85}
+
+Time: 1022430 ms
+
+s100_p750
+
+Total cost: 1686
+
+Destroy pipe {15,76} with specialists: 77
+Destroy pipe {22,76} with specialists: 21
+Destroy pipe {45,76} with specialists: 18
+Destroy pipe {65,76} with specialists: 74 86
+Destroy pipe {76,84} with specialists: 29 92
+Destroy pipe {76,91} with specialists: 15
+
+Partition S0 = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100}
+Partition S1 = {76}
+
+Time: 1600768 ms
