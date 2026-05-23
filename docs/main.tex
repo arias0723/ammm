@@ -24,8 +24,8 @@
 
 %\author{123(\href{mailto:@estudiantat.upc.edu}{Email})
 %\and 123(\href{mailto:@estudiantat.upc.edu}{Email})}
-\author[1]{Elly}
-\author[2]{Jose}
+\author[1]{Elly Attal}
+\author[2]{Jose Arias}
 
 \affil[1]{MIRI \href{mailto:@estudiantat.upc.edu}{elly.attal@estudiantat.upc.edu}}
 \affil[2]{MIRI \href{mailto:@estudiantat.upc.edu}{jose.ricardo.arias@estudiantat.upc.edu}}
@@ -45,23 +45,23 @@ The Martian Network Destruction problem can be formally stated as follows:\\
 \\
 \textbf{\textit{Given}}:
 \begin{itemize}
-    \item The set $B = \{1, 2, \ldots, n\}$ of Martian military bases. For each pair of bases $i, j \in B$, the number of specialist hours $t_{ij}$ required to destroy the pipe between them is specified (where $t_{ij} = 0$ or $t_{ij} = -1$ indicates that no pipe exists between the two bases $i$ and $j$).
+    \item The set $B = \{1, 2, \ldots, n\}$ of Martian military bases. For each pair of bases $i, j \in B$, the number of specialist hours $t_{ij}$ required to destroy the pipe between them is specified (where $t_{ij} < 0$ indicates that no pipe exists between the two bases $i$ and $j$).
 
     \item The set $S = \{1, 2, \ldots, m\}$ of specialists. For each specialist $k \in S$, the available working hours $w_k$ and the cost per assignment $c_k$ are specified.
 \end{itemize}
 
 \textbf{\textit{Find:}}
 \begin{itemize}
+    \item The destruction of pipes must create a disconnected network (the graph becomes non-connected, preventing fuel from transporting across all bases).
+
     \item Each specialist can be assigned to at most one pipe.
 
     \item Each pipe we want to destroy must receive enough specialist hours to reach its destruction requirement $t_{ij}$.
-
-    \item The destruction of pipes must create a disconnected network (the graph becomes non-connected, preventing fuel from transporting across all bases).
 \end{itemize}
 
 \textbf{\textit{Objective}}:
 \begin{itemize}
-    \item Minimize the total cost of specialist assignments.
+    \item Minimize the total cost of specialist assignments to disconnect the network.
 \end{itemize}
 
 
@@ -161,7 +161,7 @@ Both algorithms minimize the total demand in terms of hours crossing the partiti
 The output is a binary partition that defines which pipes must be covered by specialists (the $CutPipes$).
 \\[0.5cm]
 
-We decided to select Karger's algorithm with only one run per greedy exploration because sometimes the min-cut can be unfeasible while another cut with larger cost can give a feasible output.
+We decided to select Karger's algorithm with \textbf{only one} iteration per Greedy exploration, so we obtain a randomized cut that introduces diversification, which is particularly valuable when the true minimum cut is infeasible.
 \\[0.5cm]
 
 \textbf{Phase 2: Greedy Specialist Assignment}
