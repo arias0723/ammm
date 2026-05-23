@@ -1,0 +1,2 @@
+solver,mean_objective,best_objective,worst_objective,min_time,max_time,median_time,mean_time,success_rate,num_instances,feasible_runs,total_runs
+greedy_ls,6553.60,3520.00,8647.00,1.200,4.431,2.490,2.709,100.0,1,10,10

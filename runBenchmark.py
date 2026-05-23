@@ -23,14 +23,7 @@ from statistics import mean, median, stdev
 
 # Paths relative to ammm-main/
 INSTANCES = [
-    "InstanceGenerator/output/instances/s30_p80_instance_0.dat",
-    "InstanceGenerator/output/instances/s45_p150_instance_0.dat",
-    "InstanceGenerator/output/instances/s70_p300_instance_0.dat",
-    "InstanceGenerator/output/instances/s70_p400_instance_0.dat",
-    "InstanceGenerator/output/instances/s80_p500_instance_0.dat",
-    "InstanceGenerator/output/instances/s85_p550_instance_0.dat",
-    "InstanceGenerator/output/instances/s110_p500_instance_0.dat",
-    "InstanceGenerator/output/instances/s100_p750_instance_0.dat",
+    "InstanceGenerator/output/s100_p1000_instances/s100_p1000_instance_0.dat",
 ]
 
 NUM_RUNS             = 10
@@ -40,7 +33,7 @@ GRASP_MAX_ITERATIONS = 100
 MIN_CUT              = "Karger"
 LS_NEIGHBORHOOD      = "Both"
 LS_POLICY            = "BestImprovement"
-OUTPUT_DIR           = "benchmark_output"
+OUTPUT_DIR           = "benchmark_p1000_output"
 
 # ============================================================
 #  SOLVER CONFIGURATIONS

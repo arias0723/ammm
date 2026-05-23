@@ -1,0 +1,2 @@
+instance,mean_objective,best_objective,worst_objective,std_objective,min_time,max_time,median_time,mean_time,feasible_runs,total_runs,success_rate
+s100_p1000_instance_0.dat,6506.20,3704.00,10078.00,2111.67,0.787,0.972,0.837,0.856,10,10,100.0

@@ -1,0 +1,2 @@
+solver,mean_objective,best_objective,worst_objective,min_time,max_time,median_time,mean_time,success_rate,num_instances,feasible_runs,total_runs
+grasp,5937.30,4310.00,7279.00,0.500,0.615,0.550,0.557,100.0,1,10,10
