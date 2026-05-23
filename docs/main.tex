@@ -27,8 +27,8 @@
 \author[1]{Elly}
 \author[2]{Jose}
 
-\affil[1]{MIRI \href{mailto:@estudiantat.upc.edu}{@estudiantat.upc.edu}}
-\affil[2]{MIRI \href{mailto:@estudiantat.upc.edu}{@estudiantat.upc.edu}}
+\affil[1]{MIRI \href{mailto:@estudiantat.upc.edu}{elly.attal@estudiantat.upc.edu}}
+\affil[2]{MIRI \href{mailto:@estudiantat.upc.edu}{jose.ricardo.arias@estudiantat.upc.edu}}
 
 
 \begin{document}
@@ -144,7 +144,7 @@ Our greedy approach operates in two sequential phases:
 We found two greedy algorithms to find the minimum cut partition of the network:
 
 \begin{enumerate}
-    \item \textbf{Karger's Algorithm} (randomized): Repeatedly contracts random edges weighted by demand until two super-nodes remain. The algorithm runs multiple iterations to increase the probability of finding the true minimum cut.  This algorithm is faster for sparse graphs, probabilistic guarantee
+    \item \textbf{Karger's Algorithm} (randomized): Repeatedly contracts random edges weighted by demand until two super-nodes remain. The original algorithm runs multiple iterations to increase the probability of finding the true minimum cut.
 
     \item \textbf{Stoer-Wagner Algorithm} (deterministic): Uses maximum adjacency ordering to systematically find the global minimum cut through a series of min-cut phases.
     This algorithm is better for dense graphs.
@@ -161,12 +161,12 @@ Both algorithms minimize the total demand in terms of hours crossing the partiti
 The output is a binary partition that defines which pipes must be covered by specialists (the $CutPipes$).
 \\[0.5cm]
 
-We decided to select Karger's algorithm because sometimes the min-cut can be unfeasible while another cut with larger cost can give a feasible output...
+We decided to select Karger's algorithm with only one run per greedy exploration because sometimes the min-cut can be unfeasible while another cut with larger cost can give a feasible output.
 \\[0.5cm]
 
 \textbf{Phase 2: Greedy Specialist Assignment}
 \\[0.2cm]
-For the set of $CutPipes$ identified in Phase 1, we iteratively assign specialists using a greedy cost-effectiveness criterion:
+For the set of $CutPipes$ identified in \textbf{Phase 1}, we iteratively assign specialists using a greedy cost-effectiveness criterion:
 
 \begin{displaymath}
     q(\langle s, p \rangle, \text{Solution}) = \begin{cases}
@@ -199,20 +199,12 @@ The assignment continues until all pipes in $CutPipes$ are fully covered or the 
 \Else \Comment{Stoer-Wagner}
     \State $cutWeight, Partition \gets \text{StoerWagner}(Bases, Pipes)$
 \EndIf
-\State $CutPipes \gets \{p \in Pipes \mid Partition[base_i(p)] \neq Partition[base_j(p)]\}$
+\State \textcolor{red}{$CutPipes \gets \{p \in Pipes \mid Partition[base_i(p)] \neq Partition[base_j(p)]\}$}
 \State \Return $CutPipes$
 \EndFunction
 \Statex
 \Statex \textbf{PHASE 2: GREEDY SPECIALIST ASSIGNMENT}
-\Function{ValidateAssignment}{$Solution$, $p$}
-\State $coveredCapacity \gets \sum_{s \text{ assigned to } p} Capacity_s$
-\If{$coveredCapacity \geq Demand_p$}
-    \State \Return True
-\Else
-    \State \Return False
-\EndIf
-\EndFunction
-\Statex
+\Function{GreedyConstruction}{ }
 \State $Solution \gets \phi$
 \State $AssignedSpecialists \gets \phi$
 \State $CutPipes \gets \text{ComputeMinCut}(Bases, Pipes)$
@@ -227,7 +219,7 @@ The assignment continues until all pipes in $CutPipes$ are fully covered or the 
     \State $RemainingDemand_p \gets Demand_p$
     \While{$RemainingDemand_p > 0$}
         \State \Comment{Find best available specialist}
-        \State $s \gets \arg\min_{s' \in SortedSpecialists \land s' \notin AssignedSpecialists} CostEffectiveness_{s'}$
+        \State \textcolor{red}{$s \gets \arg\min_{s' \in SortedSpecialists \land s' \notin AssignedSpecialists} CostEffectiveness_{s'}$}
         \If{$s = \text{NULL}$}
             \State \Return \textsc{Infeasible} \Comment{No specialists available}
         \EndIf
@@ -241,41 +233,53 @@ The assignment continues until all pipes in $CutPipes$ are fully covered or the 
         \State \Return \textsc{Infeasible}
     \EndIf
 \EndFor
+\Statex
 \State
 \Return $Solution$
+\EndFunction
+\Statex
+\Function{ValidateAssignment}{$p$}
+\State $coveredCapacity \gets \sum_{s \text{ assigned to } p} Capacity_s$
+\If{$coveredCapacity \geq Demand_p$}
+    \State \Return True
+\Else
+    \State \Return False
+\EndIf
+\EndFunction
 \end{algorithmic}
 \end{algorithm}
 
-\subsubsection{Complexity Analysis}
+% \subsubsection{Complexity Analysis}
 
-\textbf{Phase 1 Complexity:}
-\begin{itemize}
-    \item \textbf{Karger}: $O(k \times m)$ where $k = O(n^2 \log n)$ iterations and $m = |Pipes|$
-    \begin{itemize}
-        \item Total: $O(n^2 \log n \times m)$
-    \end{itemize}
-    \item \textbf{Stoer-Wagner}: $O(n \times m + n^2 \log n)$
-    \begin{itemize}
-        \item More efficient for dense graphs
-    \end{itemize}
-\end{itemize}
+% \textbf{Phase 1 Complexity:}
+% \begin{itemize}
+%     \item \textbf{Karger}: $O(k \times m)$ where $k = O(n^2 \log n)$ iterations and $m = |Pipes|$
+%     \begin{itemize}
+%         \item Total: $O(n^2 \log n \times m)$
+%     \end{itemize}
+%     \item \textbf{Stoer-Wagner}: $O(n \times m + n^2 \log n)$
+%     \begin{itemize}
+%         \item More efficient for dense graphs
+%     \end{itemize}
+% \end{itemize}
 
-\textbf{Phase 2 Complexity:}
-\begin{itemize}
-    \item Sorting pipes: $O(p \log p)$ where $p = |CutPipes|$
-    \item Sorting specialists: $O(s \log s)$ where $s = |Specialists|$
-    \item Assignment loop: $O(p \times s)$ in worst case
-    \item \textbf{Total Phase 2}: $O(p \times s + s \log s)$
-\end{itemize}
+% \textbf{Phase 2 Complexity:}
+% \begin{itemize}
+%     \item Sorting pipes: $O(p \log p)$ where $p = |CutPipes|$
+%     \item Sorting specialists: $O(s \log s)$ where $s = |Specialists|$
+%     \item Assignment loop: $O(p \times s)$ in worst case
+%     \item \textbf{Total Phase 2}: $O(p \times s + s \log s)$
+% \end{itemize}
 
-\textbf{Overall Complexity}: $O(n^2 \log n \times m + p \times s)$
+% \textbf{Overall Complexity}: $O(n^2 \log n \times m + p \times s)$
 
 % ---------------------------------------------------------------------------------
 
 \subsection{Local Search Method}
+\label{sec:localsearch}
 
 \subsubsection{Neighborhood Definition}
-We define two complementary neighborhood moves for the Phase~2 resource-allocation sub-problem:
+We define two complementary neighborhood moves for the \textbf{Phase~2} resource-allocation sub-problem:
 
 \begin{itemize}
     \item \textbf{Remove:} remove an assigned specialist $s$ from its assigned pipe $p$ when the remaining assigned specialists still provide capacity $\ge$ demand$_p$ (i.e., $p$ remains covered). This strictly reduces cost by $c_s$.
@@ -287,8 +291,8 @@ We define two complementary neighborhood moves for the Phase~2 resource-allocati
 The local search composes the two neighborhoods according to configuration:
 
 \begin{itemize}
-    \item If the strategy is \texttt{Both}, apply a Remove phase first (greedy removal of expensive, redundant specialists), then a Replace phase to attempt cost-reducing swaps.
-    \item If the strategy is \texttt{Remove} or \texttt{Replace}, explore only the selected neighborhood.
+    \item If the strategy is \textbf{Both}, apply a \textbf{Remove} phase first (greedy removal of expensive, redundant specialists), then a \textbf{Replace} phase to attempt cost-reducing swaps.
+    \item If the strategy is \textbf{Remove} or \textbf{Replace}, explore only the selected neighborhood.
 \end{itemize}
 
 Within each neighborhood we support two policies:
@@ -313,26 +317,26 @@ The search repeats until no improving neighbor is found or a stopping criterion 
     \While{$time < endTime$ \textbf{and} $iter < maxIterations$}
         \State $iter \gets iter + 1$
         \If{$neighborhoodStrategy == "Both"$}
-            \State $neighbor \gets ExploreRemove(incumbent, policy)$
+            \State \textcolor{red}{$neighbor \gets ExploreRemove(incumbent, policy)$}
             \If{$neighbor.getFitness() < incumbentCost$}
                 \State $incumbent \gets neighbor;$
                 \State $incumbentCost \gets neighbor.getFitness();$
             \EndIf
             \Statex
-            \State $neighbor \gets ExploreReplace(incumbent, policy)$
+            \State \textcolor{red}{$neighbor \gets ExploreReplace(incumbent, policy)$}
             \If{$neighbor.getFitness() < incumbentCost$}
                 \State $incumbent \gets neighbor;$
                 \State $incumbentCost \gets neighbor.getFitness();$
             \EndIf
         \Statex
         \ElsIf{$neighborhoodStrategy == "Remove"$}
-            \State $neighbor \gets ExploreRemove(incumbent, policy)$
+            \State \textcolor{red}{$neighbor \gets ExploreRemove(incumbent, policy)$}
             \If{$neighbor.getFitness() < incumbentCost$}
                 \State $incumbent \gets neighbor;$
                 \State $incumbentCost \gets neighbor.getFitness();$
             \EndIf
         \Else
-            \State $neighbor \gets ExploreReplace(incumbent, policy)$
+            \State \textcolor{red}{$neighbor \gets ExploreReplace(incumbent, policy)$}
             \If{$neighbor.getFitness() < incumbentCost$}
                 \State $incumbent \gets neighbor;$
                 \State $incumbentCost \gets neighbor.getFitness();$
@@ -366,14 +370,14 @@ The search repeats until no improving neighbor is found or a stopping criterion 
 % - Iterations $\ge$ configured iteration limit.
 % - No improving neighbor found.
 
-\subsubsection{Complexity Analysis}
+% \subsubsection{Complexity Analysis}
 
 % We rely on the following Solution API operations: \texttt{getAssignedSpecialists()}, \texttt{getUnassignedSpecialists()}
 % - \texttt{getAssignedPipe(specId)}, \texttt{canRemoveSpecialist(specId)}
 % - \texttt{getExcessCapacity(pipeId)} (assigned capacity minus demand)
 % - \texttt{clone()}, \texttt{assign(specId, pipeId)}, \texttt{unassign(specId)}, \texttt{evaluate()}, \texttt{getFitness()}
 
-Complexity per neighborhood exploration is dominated by iterating assigned/unassigned specialists and evaluating candidate neighbors; with $S$ specialists and $P$ cut pipes a full scan is $O(S^2 + P\cdot S)$ in the worst case, but practical pruning (sorting by cost, early acceptance under FirstImprovement) reduces the observed cost.
+% Complexity per neighborhood exploration is dominated by iterating assigned/unassigned specialists and evaluating candidate neighbors; with $S$ specialists and $P$ cut pipes a full scan is $O(S^2 + P\cdot S)$ in the worst case, but practical pruning (sorting by cost, early acceptance under FirstImprovement) reduces the observed cost.
 
 % ---------------------------------------------------------------------------------
 
@@ -382,7 +386,7 @@ Complexity per neighborhood exploration is dominated by iterating assigned/unass
 \subsubsection{High-level description}
 GRASP (Greedy Randomized Adaptive Search Procedure) performs repeated constructive phases followed by local search. Each constructive phase builds a feasible solution by iteratively assigning specialists to cut pipes using a restricted candidate list (RCL) controlled by parameter $\alpha \in [0,1]$: $\alpha = 0$ $\Rightarrow$ purely greedy, $\alpha = 1$ $\Rightarrow$ pure random (within admissible candidates).
 
-After construction, the candidate solution is improved using the Local Search described above. The best solution over all GRASP iterations is returned.
+After construction, the candidate solution is improved using the Local Search ~\ref{sec:localsearch} described earlier. The best solution over all GRASP iterations is returned.
 
 \subsubsection{Construction phase}
 Per pipe (processed in order of decreasing remaining demand), we:
@@ -404,7 +408,7 @@ This adaptive RCL balances greediness and diversification.
 \renewcommand{\thealgorithm}{}
 \caption{GRASP Construction Phase}
 \begin{algorithmic}
-\Function{ConstructSolution}{$\alpha, CutPipes, Specialists$}
+\Function{GraspConstruction}{$\alpha, CutPipes, Specialists$}
 \State $Solution \gets \phi$
 \State $SortedPipes \gets \text{Sort}(CutPipes, key=Demand, reverse=\text{True})$
 \State $SortedSpecialists \gets \text{Sort}(Specialists, key=CostEffectiveness)$
@@ -416,12 +420,12 @@ This adaptive RCL balances greediness and diversification.
         \If{$Available = \phi$}
             \State \Return \textsc{Infeasible}
         \EndIf
-
-        \State \textcolor{red}{$ce_{best} \gets \min(\{CostEffectiveness_s \mid s \in Available\})$}
-        \State \textcolor{red}{$ce_{worst} \gets \max(\{CostEffectiveness_s \mid s \in Available\})$}
+        \Statex
+        \State \textcolor{red}{$ce_{best} \gets \arg\min(\{CostEffectiveness_s \mid s \in Available\})$}
+        \State \textcolor{red}{$ce_{worst} \gets \arg\max(\{CostEffectiveness_s \mid s \in Available\})$}
         \State \textcolor{red}{$threshold \gets ce_{best} + \alpha \cdot (ce_{worst} - ce_{best})$}
-
         \State \textcolor{red}{$RCL \gets \{s \in Available \mid CostEffectiveness_s \leq threshold\}$}
+        \Statex
         \If{$RCL = \phi$}
             \State $RCL \gets \{\text{first element of } Available\}$
         \EndIf
@@ -431,6 +435,7 @@ This adaptive RCL balances greediness and diversification.
         \State $RemainingDemand_p \gets RemainingDemand_p - Capacity_{s^*}$
     \EndWhile
 \EndFor
+\Statex
 \State \Return $Solution$
 \EndFunction
 \end{algorithmic}
@@ -440,76 +445,33 @@ This adaptive RCL balances greediness and diversification.
 \renewcommand{\thealgorithm}{}
 \caption{GRASP Main Loop}
 \begin{algorithmic}
-\Function{GRASP}{maxIterations, $\alpha$, localSearchConfig}
+\Function{GRASP}{$maxIterations, \alpha, localSearchConfig$}
     \State $best \gets \text{infeasible-solution (cost } +\infty)$
     \For{$iter = 1$ \textbf{to} $maxIterations$}
         \State $Partition \gets \text{ComputeMinCut}()$
         \State $CutPipes \gets \{p \in Pipes \mid Partition[base_i(p)] \neq Partition[base_j(p)]\}$
+        \Statex
         \State $solution \gets \text{ConstructSolution}(\alpha, CutPipes, Specialists)$
+        \Statex
         \If{$solution.isFeasible()$ \textbf{and} $localSearchConfig.enabled$}
             \State $solution \gets \text{LocalSearch}(solution, localSearchConfig)$
         \EndIf
         \If{$solution.isFeasible()$ \textbf{and} $solution.getFitness() < best.getFitness()$}
             \State $best \gets solution$
         \EndIf
+        \Statex
         \If{time limit reached} \textbf{break}
         \EndIf
     \EndFor
+    \Statex
     \State \Return $best$
 \EndFunction
 \end{algorithmic}
 \end{algorithm}
 
-% \subsubsection{Parameter tuning and practical notes}
-% - Choose $\alpha$ by tuning; typical values are in $[0.0,0.3]$ for problems where greedy guidance is strong.
-% - Number of GRASP iterations trades time for solution quality; stop early when time budget is exhausted.
-% - Always compute the min-cut once per GRASP iteration (the partition affects which pipes must be covered).
-% - Use Local Search after each constructive phase when computational budget allows; Local Search provides substantial improvements.
+% \subsubsection{Complexity}
+% Each GRASP iteration performs one constructive pass (roughly $O(p\cdot s + s\log s)$) and an optional local search whose cost depends on the configured neighborhood policy and limits. Overall runtime is linear in the number of iterations and dominated by Local Search when enabled.
 
-\subsubsection{Complexity}
-Each GRASP iteration performs one constructive pass (roughly $O(p\cdot s + s\log s)$) and an optional local search whose cost depends on the configured neighborhood policy and limits. Overall runtime is linear in the number of iterations and dominated by Local Search when enabled.
-
-
-% \subsection{Local Search Method}
-
-% \subsubsection{Neighborhood}
-
-% The neighborhood of this conflict resolution problem is defined as the solution obtained by replacing the member pair $<i,j>$ currently not included in the solution (indicated by $Priority(<i,j>)$ = 0) with its flipped counterpart $<j,i>$ included in the solution (indicated by $Priority(<j,i>)$ = 1), if $Bids_{ij} > Bids_{ji} \quad \forall i,j \in Members$.
-
-% \subsubsection{Exploration Strategy}
-
-% Based on the neighborhood mentioned above, the replacing procedure may necessitate the flipping of other pairs as a knock-on effect. If the total decrease in bids from passively flipped pairs (defined as \textbf{\textit{knock-on flipped pairs}}, represented by \bm{$edges^{flip}$}) is less than the increase from the actively flipped pair $<i,j>$, we achieve a better solution.\\
-% For example, if we have $(Bids_{ij} > Bids_{ji}$ and $<j,i> \in Solution$ (which indicates that $Priority(<j,i>) = 1$), when we consider replacing $<j,i>$ with $<i,j>$ in the current solution, some priority cycles may be formed. To address this, we need to develop a strategy for identifying pairs to flip within this directed graph, ensuring that no cycles remain.\\
-% First, we reverse the pair (representing the edges in the directed graph) from $<j, i>$ to $<i, j>$ in the current solution (representing the vertices in the directed graph). We then proceed to eliminate all edges with an indegree of 0 or an outdegree of 0, ensuring that all remaining edges in the graph are part of a cycle.\\
-% Once we have the remaining edges $edges^{remain}$, we utilize equation $max(q(<i,j'>, edges^{flip}))$ to continuously select edge $<i',j'>$ and added to $edges^{flip}$ until no cycles are left in the graph. We prioritize edges $<i', j'>$ with higher indegree and outdegree, as we believe such edges are more capable of eliminating multiple cycles compared to others. If multiple edges are tied, we will select the edge with the lowest bid decrease ($Bids_{i',j'} - Bids_{j'i'}$).The $edges^{flip}$ cost function is defined as follows.\\
-% \newpage
-
-% $q(<i',j'>, edges^{flip})$=\\
-% \\
-% \begin{displaymath}
-%     \begin{cases}
-%     -1 & \\
-%     \qquad\quad\textrm{if} \quad Bids_{i'j'} - Bids_{j'i'} + \sum_{<i'',j''> \in edges^{flip}} Bids_{i''j''} - Bids{j''i''} \geq Bids_{ij} - Bids_{ji}\\
-%     \qquad\quad\quad\textrm{or } edges^{remain} \mid edges^{flip} = edges^{remain} \mid edges^{flip} \cup \{<i',j'>\})\\
-%     \\
-%     \sum_{k' \in \{i',j'\}} indegree(k') + outdegree(k') & \\
-%     \\
-%     \qquad\quad\textrm{if} \quad Bids_{i'j'} - Bids_{j'i'} + \sum_{<i'',j''> \in edges^{flip}} Bids_{i''j''} - Bids{j''i''} < Bids_{ij} - Bids_{ji}\\
-%     \qquad\quad\quad\textrm{and } edges^{remain} \mid edges^{flip} > edges^{remain} \mid edges^{flip} \cup \{<i',j'>\}
-%     \end{cases}
-% \end{displaymath}
-% \\
-% Finally, we check whether flipping every knock-on edge $<i',j'> \in edges^{flip}$ will create any cycle in the graph. If there are no cycles formed, we can replace the pair $<i,j>$ in the current solution. This change will yield a better solution with the objective value calculated as follows: $Objective + (Bids_{ij} - Bids_{ji}) - \sum_{<i',j'> \in edges^{flip}} Bids_{i'j'} - Bids_{j'i'}$.\\
-% \\
-% \textbf{\textit{We continue executing the above procedure until no improvements are reached.}}
-
-% \subsubsection{Variable Declaration} \label{ls_declaration}
-
-% Alongside the variables established in the Greedy Method \ref{declaration}, additional auxiliary variables for the local search procedure are defined as follows:
-% \begin{itemize}
-%     \item $pairsWithHigherBid$: Member pair $<i,j>$ not included in solution but having higher bid than their flipped counterpart $<j,i>$ included in solution.
-%     \item $edges^{flip}$: Set of member pairs needed to be flipped if member pair in $pairsWithHigherBid$ requires flipping.
-% \end{itemize}
 
 % \subsubsection{Pseudocode}
 
@@ -682,13 +644,13 @@ Each GRASP iteration performs one constructive pass (roughly $O(p\cdot s + s\log
 
 \subsection{Experiment Dataset And Environment}
 
-We generated several datasets of different sizes. datasets are prefixed by sXXXX\_pXXXX; e.g s100\_p100 means 100 specialists and 100 pipes.
-These experiments were conducted on an Apple MacBook Pro laptop with an Apple M4 chip and 32GB of memory. Solving times may vary slightly on other computers, particularly for the ILP model.
+We generated several datasets of different sizes. The datasets are prefixed by \texttt{sXXXX\_pXXXX}; e.g \texttt{s100\_p1000} means 100 specialists, 100 bases and 1000 pipes.
+These experiments were conducted on a MacBook Pro laptop with an Apple M4 chip and 32GB of memory. Solving times may vary slightly on other computers, particularly for the ILP model.
 
 
 \subsection{Parameter Tuning For GRASP}
 
-We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 100 specialist and 1000 pipes without conducting the local search procedure, and the maximum iterations for the constructive phase is set to 100.  For the results, we selected the best mean objective with the least standard deviation (risk-adjusted formula) over 100 runs per alpha value.
+We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 100 specialist, 100 bases and 1000 pipes without conducting the local search procedure, and the maximum iterations for the constructive phase is set to 100.  For the results, we selected the best mean objective with the least standard deviation (risk-adjusted formula) over 100 runs per alpha value.
 
 \begin{figure}[H]
 \begin{tikzpicture}
@@ -738,193 +700,253 @@ We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 10
 % Furthermore, when GRASP is executed with 100 iterations and not followed by the Local Search procedure, it takes around 25 seconds to solve the problem.\\
 % As demonstrated in \nameref{fig:fig43}, the time required to solve the ILP model varies significantly. At times, we may be fortunate enough to obtain the optimal solution quickly. Specifically, if the number of pipes is small (fewer than 100), we can effectively use the ILP model to achieve the optimal solution.
 
-\subsection{Solving Time Performance}
+\subsection{Experiments dataset for the performances}
 
-To evaluate computational efficiency, the execution times of the proposed algorithms were evaluated across ten problem instances. \nameref{fig:fig42} illustrates the solving time (in seconds) on a logarithmic scale for the configuration where $S = 100$ and $P = 1000$.
+To assess the performance of the proposed heuristic approaches, a series of experiments were conducted across eight instances of increasing sizes. Each instance is characterized by fixed parameters $minHours = 100$, $maxHours = 500$, $minCapacity = 100$, $maxCapacity = 300$, $minFee = 200$, $maxFee = 300$, while the number of specialists, bases and pipes vary. The instances are ordered by increasing ILP solving time, which also reflects the overall problem difficulty.
+Each of the four heuristic configurations: Greedy, GRASP, Greedy + LS, and GRASP + LS, was run 10 times per instance, with a time limit of 60 seconds enforced per run. The results are compared with the optimal solution obtained by the ILP model solved with CPLEX.
+
+\subsubsection{Solving Time Performance}
+
+To evaluate computational efficiency, the execution times of the proposed algorithms were evaluated by calculating the mean time to solve the instances. \nameref{fig:fig42} illustrates the solving time (in seconds) on a logarithmic scale.
 \\
 The empirical results show a large difference in computational complexity between the exact Integer Linear Programming (ILP) model and the heuristic approaches:
 \begin{itemize}
-    \item \textbf{ILP Baseline:} The ILP model exhibits the highest computational burden, consistently requiring between $10^3$ and $10^4$ seconds (approximately 16 to 166 minutes) to determine the global optimum. A notable peak occurs in Instance 3, where the execution time approaches nearly 10,000 seconds. However, the text notes that the ILP model's efficiency is highly sensitive to problem scale; for smaller instances (e.g., fewer than 100 pipes), it can solve to optimality within a practical timeframe.
-    \item \textbf{Greedy and GRASP Heuristics:} In stark contrast, both the pure Greedy algorithm and the standalone GRASP execution operate below the $10^{-1}$ second threshold, completing in less than 500 milliseconds. This represents an acceleration factor of roughly four orders of magnitude ($\approx 10,000\times$) relative to the ILP model.
+    \item \textbf{ILP Baseline:} The ILP model exhibits the highest computational burden, consistently requiring 28 minutes to determine the global optimum for the last instances. However, the ILP model's efficiency is highly sensitive to problem scale; for smaller instances (e.g., fewer than 100 pipes), it can solve to optimality within a practical timeframe, even outperforming heuristic approaches.
+    \item \textbf{Greedy and GRASP Heuristics:} In contrast, both the pure Greedy algorithm and the standalone GRASP execution operate below the 1 second threshold. This represents an acceleration factor of roughly three orders of magnitude ($\approx 1000\times$) relative to the ILP model for the highest instance.
     \item \textbf{Local Search (LS) Overhead:} Incorporating the Local Search procedure marginally increases execution times but yields distinct performance profiles for the hybrid variants:
     \begin{itemize}
-        \item \textbf{Greedy + LS:} Consistently converges within a narrow band between $0.4$ and $1.0$ seconds across all instances.
-        \item \textbf{GRASP + LS:} Demands higher computational effort, fluctuating between 2 and 8 seconds per instance. This increased overhead is attributable to the 100 iterations prescribed by the GRASP metaheuristic before invoking the neighborhood search.
+        \item \textbf{Greedy + LS:} Consistently converges within a narrow band between $0.4$ and $1.0$ seconds in all instances.
+        \item \textbf{GRASP + LS:} Demands higher computational effort, fluctuating between 3 and 60 seconds per instance (noting that a time limit of 60 seconds was enforced per run). This increased overhead is attributable to the 100 constructive iterations of the GRASP metaheuristic combined with the local search applied at each iteration.
     \end{itemize}
 \end{itemize}
 
-
-% Build time coordinates from individual CSV files
-\newcommand{\buildtimecoords}[2]{%
-    \gdef#1{}%
-    \pgfplotsforeachungrouped \i in {0,...,9} {%
-        \pgfplotstableread[col sep=comma]{data/#2/s100_p1000_instance_\i.csv}\temptable
-        \pgfplotstablegetelem{0}{mean_time}\of\temptable
-        \ifx#1\empty
-            \xdef#1{(\i,\pgfplotsretval)}%
-        \else
-            \xdef#1{#1 (\i,\pgfplotsretval)}%
-        \fi
-    }%
-}
-
-\buildtimecoords{\greedytimedata}{s100_p1000_greedy}
-\buildtimecoords{\grasptimedata}{s100_p1000_grasp}
-\buildtimecoords{\greedylstimedata}{s100_p1000_greedy_ls}
-\buildtimecoords{\grasplstimedata}{s100_p1000_grasp_ls}
-\buildtimecoords{\cplextimedata}{s100_p1000_cplex}
+% ============================================================
+%  Figure : Solving Time (logarithmic scale)
+% ============================================================
+%
+% Instance order (x = 0..7) by increasing ILP solving time:
+%   0 = s30_p80      1 = s45_p150     2 = s70_p300     3 = s110_p500
+%   4 = s70_p400     5 = s80_p500     6 = s85_p550     7 = s100_p750
 
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    title={\textbf{Solving Time ($\mathbf{S=100}, \mathbf{P=1000}$)}},
+    title={\textbf{Solving Time per Instance}},
     xlabel={Instance},
-    ylabel={\textbf{Solving Time} ($\mathbf{s}$)},
+    ylabel={\textbf{Solving Time (s)}},
     grid=major,
     legend pos=outer north east,
     ybar,
     bar width=5pt,
-    % enlarge x limits=0.15,
-    xtick={0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+    enlarge x limits=0.08,
+    xtick={0,1,2,3,4,5,6,7},
+    xticklabels={
+        \tiny s30p80,
+        \tiny s45p150,
+        \tiny s70p300,
+        \tiny s110p500,
+        \tiny s70p400,
+        \tiny s80p500,
+        \tiny s85p550,
+        \tiny s100p750
+    },
+    x tick label style={rotate=30, anchor=east},
     ymode=log,
     log origin=infty,
-    width=0.9\textwidth,
+    width=0.92\textwidth,
+    height=7cm,
 ]
 
-\addplot[fill=green, bar shift=-10pt] coordinates {\greedytimedata};
-\addplot[fill=yellow, bar shift=-5pt] coordinates {\grasptimedata};
-\addplot[fill=blue, bar shift=0pt] coordinates {\greedylstimedata};
-\addplot[fill=red, bar shift=5pt] coordinates {\grasplstimedata};
-\addplot[fill=brown, bar shift=10pt] coordinates {\cplextimedata};
+% Greedy (mean_time)
+\addplot[fill=green!70!black, bar shift=-10pt] coordinates {
+    (0, 0.606)
+    (1, 0.610)
+    (2, 0.630)
+    (3, 0.674)
+    (4, 0.626)
+    (5, 0.639)
+    (6, 0.702)
+    (7, 0.659)
+};
+
+% GRASP (mean_time)
+\addplot[fill=yellow!80!black, bar shift=-5pt] coordinates {
+    (0, 0.615)
+    (1, 0.621)
+    (2, 0.670)
+    (3, 0.853)
+    (4, 0.703)
+    (5, 0.715)
+    (6, 0.710)
+    (7, 1.090)
+};
+
+% Greedy + LS (mean_time)
+\addplot[fill=blue!70, bar shift=0pt] coordinates {
+    (0, 0.630)
+    (1, 0.635)
+    (2, 0.821)
+    (3, 0.839)
+    (4, 0.841)
+    (5, 0.914)
+    (6, 1.351)
+    (7, 1.948)
+};
+
+% GRASP + LS (mean_time)
+\addplot[fill=red!70, bar shift=5pt] coordinates {
+    (0, 19.453)
+    (1,  3.923)
+    (2, 19.094)
+    (3, 30.865)
+    (4, 51.376)
+    (5, 70.183)
+    (6, 60.897)
+    (7, 47.683)
+};
+
+% ILP / CPLEX (time in seconds)
+\addplot[fill=brown!80, bar shift=10pt] coordinates {
+    (0,    0.366)
+    (1,    2.823)
+    (2,   21.169)
+    (3,   52.262)
+    (4,  100.356)
+    (5,  791.793)
+    (6, 1022.430)
+    (7, 1600.768)
+};
 
 \legend{Greedy, GRASP, Greedy + LS, GRASP + LS, ILP}
-
 \end{axis}
 \end{tikzpicture}
 \captionsetup{labelformat=empty}
-\caption{Figure 4.2: Solving Time for each algorithm}
+\caption{Figure 4.2: Solving time for each algorithm across all instances (log scale).}
 \label{fig:fig42}
 \end{figure}
 
 
-% \begin{figure}[H]
-%
-% \begin{tikzpicture}[]
-% \begin{axis}[
-%     title={\textbf{Solving Time (39 to 45 members)}},
-%     x tick label style={
-%         /pgf/number format/1000 sep=},
-%     ylabel=\textbf{Solving Time } ($\mathbf{s})$,
-%     xlabel=\textbf{Members},
-%     ybar interval=0.8,
-%     xtick=data,
-%     bar width = 10pt,
-%     ymode=log,
-%     ymax=10000,
-%     bar shift=0pt,
-%     log origin=infty,
-%     legend pos=outer north east,
-%     width=0.7\textwidth,
-%     legend style={nodes={scale=0.8, transform shape}}
-% ]
-%
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/variable_members/solving_time_greedy.dat};
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/variable_members/solving_time_grasp.dat};
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/variable_members/solving_time_ls.dat};
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/variable_members/solving_time_grasp_with_ls.dat};
-%
-%
-% \addplot table[
-%     header=true,
-%     x=id,
-%     y=time
-% ] {data/variable_members/solving_time_cplex.dat};
-%
-% \legend{Greedy,GRASP(100 Iter. w/o local search \bm{$\alpha$} = 0.1),Local Search,GRASP(10 Iter. w/ local search \bm{$\alpha$} = 0.1),ILP}
-% \end{axis}
-% \end{tikzpicture}
-% \captionsetup{labelformat=empty}
-% \caption{Figure 4.3}
-% \label{fig:fig43}
-% \end{figure}
-
-
-\subsection{Solving Quality}
+\subsubsection{Solution Quality}
 
 \begin{figure}[H]
 \centering
 
-% Build coordinates from individual CSV files
-\newcommand{\buildcoords}[2]{%
-    \gdef#1{}%
-    \pgfplotsforeachungrouped \i in {0,...,9} {%
-        \pgfplotstableread[col sep=comma]{data/#2/s100_p1000_instance_\i.csv}\temptable
-        \pgfplotstablegetelem{0}{mean_objective}\of\temptable
-        \ifx#1\empty
-            \xdef#1{(\i,\pgfplotsretval)}%
-        \else
-            \xdef#1{#1 (\i,\pgfplotsretval)}%
-        \fi
-    }%
-}
-
-\buildcoords{\greedydata}{s100_p1000_greedy}
-\buildcoords{\graspdata}{s100_p1000_grasp}
-\buildcoords{\greedylsdata}{s100_p1000_greedy_ls}
-\buildcoords{\grasplsdata}{s100_p1000_grasp_ls}
-\buildcoords{\cplexdata}{s100_p1000_cplex}
+% % Build coordinates from individual CSV files
+% \newcommand{\buildcoords}[2]{%
+%     \gdef#1{}%
+%     \pgfplotsforeachungrouped \i in {0,...,9} {%
+%         \pgfplotstableread[col sep=comma]{data/#2/s100_p1000_instance_\i.csv}\temptable
+%         \pgfplotstablegetelem{0}{mean_objective}\of\temptable
+%         \ifx#1\empty
+%             \xdef#1{(\i,\pgfplotsretval)}%
+%         \else
+%             \xdef#1{#1 (\i,\pgfplotsretval)}%
+%         \fi
+%     }%
+% }
+%
+% \buildcoords{\greedydata}{s100_p1000_greedy}
+% \buildcoords{\graspdata}{s100_p1000_grasp}
+% \buildcoords{\greedylsdata}{s100_p1000_greedy_ls}
+% \buildcoords{\grasplsdata}{s100_p1000_grasp_ls}
+% \buildcoords{\cplexdata}{s100_p1000_cplex}
 
 \begin{tikzpicture}
 \begin{axis}[
-    title={\textbf{Quality of Solutions ($\mathbf{S=100}, \mathbf{P=1000}$)}},
+    title={\textbf{Quality of Solutions}},
     xlabel={\textbf{Instance}},
     ylabel={\textbf{Mean Objective (Cost)}},
-    xmin=0, xmax=9,
-    ymin=2500, ymax=8000,
-    xtick={0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
-    ytick={3000, 4000, 5000, 6000, 7000, 8000},
+    xmin=-0.5, xmax=7.5,
+    xtick={0,1,2,3,4,5,6,7},
+    xticklabels={
+        \tiny s30p80,
+        \tiny s45p150,
+        \tiny s70p300,
+        \tiny s110p500,
+        \tiny s70p400,
+        \tiny s80p500,
+        \tiny s85p550,
+        \tiny s100p750
+    },
+    x tick label style={rotate=30, anchor=east},
     ymajorgrids=true,
     grid style=dashed,
     width=0.9\textwidth,
+    height=7cm,
     legend pos=outer north east,
     legend style={nodes={scale=0.8, transform shape}}
 ]
 
-\addplot[green, thick, mark=triangle] coordinates {\greedydata};
-\addplot[yellow!80!black, thick, mark=square] coordinates {\graspdata};
-\addplot[blue, thick, mark=diamond] coordinates {\greedylsdata};
-\addplot[red, thick, mark=o] coordinates {\grasplsdata};
-\addplot[brown, thick, mark=star] coordinates {\cplexdata};
+% Greedy
+\addplot[green!70!black, thick, mark=triangle] coordinates {
+    (0, 1266.50)
+    (1,  796.00)
+    (2, 1392.20)
+    (3, 1767.40)
+    (4, 3107.60)
+    (5, 3009.20)
+    (6, 3892.80)
+    (7, 4816.20)
+};
+
+% GRASP
+\addplot[yellow!80!black, thick, mark=square] coordinates {
+    (0, 1288.80)
+    (1, 1062.50)
+    (2, 1462.90)
+    (3, 1711.90)
+    (4, 3026.90)
+    (5, 3202.80)
+    (6, 2995.70)
+    (7, 3586.10)
+};
+
+% Greedy + LS
+\addplot[blue, thick, mark=diamond] coordinates {
+    (0, 1285.70)
+    (1,  845.00)
+    (2, 1979.10)
+    (3, 1664.70)
+    (4, 2303.30)
+    (5, 2384.78)
+    (6, 3360.90)
+    (7, 3196.80)
+};
+
+% GRASP + LS
+\addplot[red, thick, mark=o] coordinates {
+    (0, 1095.20)
+    (1,  811.80)
+    (2, 1493.70)
+    (3, 1498.50)
+    (4, 2466.70)
+    (5, 2496.50)
+    (6, 2949.40)
+    (7, 3345.20)
+};
+
+% ILP (optimal)
+\addplot[brown, thick, mark=star] coordinates {
+    (0,  624)
+    (1,  611)
+    (2,  811)
+    (3,  811)
+    (4, 1221)
+    (5, 1856)
+    (6, 1879)
+    (7, 1686)
+};
 
 \legend{Greedy, GRASP, Greedy + LS, GRASP + LS, ILP (Optimal)}
-
 \end{axis}
 \end{tikzpicture}
 \captionsetup{labelformat=empty}
 \caption{Figure 4.3: Solution Quality for each algorithm}
 \label{fig:fig43}
 \end{figure}
+
+
 
 % \begin{figure}[H]
 % \begin{tikzpicture}
@@ -995,20 +1017,20 @@ The empirical results show a large difference in computational complexity betwee
 
 % \nameref{fig:fig44} and \nameref{fig:fig45} shows that the Greedy approach yields the worst solution. In contrast, both GRASP (100 iterations without local search) and Local Search provide similar results. Among the heuristic methods, GRASP (10 iterations with local search) offers the best solution.
 
-\nameref{fig:fig43} evaluates the solution quality by comparing the mean objective cost obtained by each algorithm across ten problem instances ($S = 100, P = 1000$). As this is a minimization problem, lower objective values represent superior performance.
+\nameref{fig:fig43} evaluates the solution quality by comparing the mean objective cost obtained by each algorithm across the instances. As this is a minimization problem, lower objective values represent superior performance.
 \\
 The results demonstrate a clear stratification in the quality of the solution among the tested approaches:
 \begin{itemize}
-    \item \textbf{Optimal Baseline:}  The exact ILP model establishes the true lower bound, consistently outperforming all heuristic methods with objective values spanning roughly 2,800 to 4,200.
-    \item \textbf{Heuristic Trajectory:} The pure Greedy approach yields the worst solution quality, frequently generating the highest cost curve across the instances (peaking near 7,600 in Instance 7).
-    \item \textbf{Impact of Local Search (LS):} Incorporating neighborhood search drastically minimizes the optimality gap. Standalone GRASP (executed for 100 iterations) and the hybrid Greedy + LS variant exhibit highly competitive, intermediate performance.
-    \item \textbf{Top Metaheuristic:} Ultimately, the GRASP + LS hybrid consistently achieves the lowest objective costs among all approximate methods, proving to be the most effective heuristic configuration for minimizing total cost.
+    \item \textbf{Optimal Baseline:}  The exact ILP model establishes the true lower bound, consistently outperforming all heuristic methods with a mean of objective values of 1187.
+    \item \textbf{Heuristic Trajectory:} The pure Greedy approach yields the worst solution quality, generating the highest cost curve across the highest instances (peaking near 4816 in Instance s100p750).Standalone GRASP seems to be a little more effective in average.
+    \item \textbf{Impact of Local Search (LS):} Incorporating neighborhood search minimizes the optimality gap. GRASP + LS and the Greedy + LS variant exhibit highly competitive, intermediate performance.
+    \item \textbf{Top Metaheuristic:} Ultimately, the GRASP + LS hybrid achieves the lowest average objective costs among all approximate methods (of 2016), proving to be the most effective heuristic configuration for minimizing total cost.
 \end{itemize}
 
 
 \subsection{Experiment Conclusion}
 
-If the problem scale is small (e.g., fewer than 100 pipes), we should use the exact ILP model whenever possible, as it guarantees finding the absolute optimal solution within a rational timeframe. However, for larger networks (more than 100 pipes) where the combinatorial explosion makes the ILP unfeasible, we need effective approximations to deliver reasonably good solutions quickly.
+If the problem scale is small, we should use the exact ILP model whenever possible, as it guarantees finding the absolute optimal solution within a rational timeframe. However, for larger networks where the combinatorial explosion makes the ILP unfeasible, we need effective approximations to deliver reasonably good solutions quickly.
 
 Among the heuristic strategies tested, the pure Greedy method is extremely fast but provides poor solution quality. Employing GRASP with local search (GRASP + LS) strikes the best balance: it significantly reduces the optimality gap and robustly achieves the lowest objective costs among our approximate methods. Therefore, for large-scale Martian network destruction scenarios, the GRASP + LS configuration stands out as the most pragmatic approach.
 
