@@ -1,0 +1,2 @@
+instance,mean_objective,best_objective,worst_objective,std_objective,min_time,max_time,median_time,mean_time,feasible_runs,total_runs,success_rate
+s110_p500_instance_0.dat,1664.70,1226.00,2268.00,343.92,0.718,0.944,0.835,0.839,10,10,100.0

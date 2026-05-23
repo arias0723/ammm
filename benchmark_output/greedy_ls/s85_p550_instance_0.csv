@@ -1,0 +1,2 @@
+instance,mean_objective,best_objective,worst_objective,std_objective,min_time,max_time,median_time,mean_time,feasible_runs,total_runs,success_rate
+s85_p550_instance_0.dat,3360.90,2070.00,5650.00,1216.92,0.856,2.377,1.196,1.351,10,10,100.0

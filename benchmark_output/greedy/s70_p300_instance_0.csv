@@ -1,0 +1,2 @@
+instance,mean_objective,best_objective,worst_objective,std_objective,min_time,max_time,median_time,mean_time,feasible_runs,total_runs,success_rate
+s70_p300_instance_0.dat,1392.20,842.00,2176.00,631.95,0.594,0.684,0.628,0.630,10,10,100.0

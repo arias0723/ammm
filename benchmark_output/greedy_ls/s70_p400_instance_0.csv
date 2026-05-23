@@ -1,0 +1,2 @@
+instance,mean_objective,best_objective,worst_objective,std_objective,min_time,max_time,median_time,mean_time,feasible_runs,total_runs,success_rate
+s70_p400_instance_0.dat,2303.30,1426.00,4043.00,810.79,0.718,1.201,0.804,0.841,10,10,100.0

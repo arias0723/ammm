@@ -1,0 +1,2 @@
+instance,mean_objective,best_objective,worst_objective,std_objective,min_time,max_time,median_time,mean_time,feasible_runs,total_runs,success_rate
+s45_p150_instance_0.dat,796.00,650.00,1387.00,236.70,0.591,0.618,0.612,0.610,10,10,100.0

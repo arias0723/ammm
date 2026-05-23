@@ -1,0 +1,13 @@
+# Instances parameters
+instancesDirectory = output/instances;
+fileNamePrefix = s100_p1000_instance;
+fileNameExtension = dat;
+numInstances = 10;
+
+# Alpha tuning parameters
+alphaValues = [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0];
+numRunsPerAlpha = 50;
+
+# Output parameters
+outputFile = output/tuning/s100_p1000_results.csv;
+verbose = True;

@@ -1,0 +1,17 @@
+# file name: ../AMMMLabHeuristics/data/instance_XX.dat
+instancesDirectory = output/instances;
+fileNamePrefix = s70_p400_instance;
+fileNameExtension = dat;
+numInstances = 1;
+
+numBases = 70;
+minHours = 100;
+maxHours = 500;
+
+numPipes = 400;
+
+numSpecialists = 70;
+minCapacity= 100;
+maxCapacity = 300;
+minFee = 200;
+maxFee = 300;

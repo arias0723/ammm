@@ -1,0 +1,2 @@
+alpha,mean_objective,best_objective,worst_objective,min_time,max_time,median_time,mean_time,success_rate,num_instances,feasible_runs,total_runs
+0.15,6625.06,3078.00,7628.99,0.066,0.152,0.084,0.085,99.7,10,997,1000

@@ -1,0 +1,2 @@
+solver,mean_objective,best_objective,worst_objective,min_time,max_time,median_time,mean_time,success_rate,num_instances,feasible_runs,total_runs
+grasp_ls,2019.62,611.00,5451.00,1.297,311.077,34.357,37.934,100.0,8,80,80
