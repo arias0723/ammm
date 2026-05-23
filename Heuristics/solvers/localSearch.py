@@ -5,6 +5,7 @@ Local Search for the resource-allocation sub-problem (Phase 2).
 Neighborhoods:
   1. Replace: replace an assigned specialist with a cheaper unassigned one (if feasible).
   2. Remove: remove an over-provisioned specialist (reduce excess capacity -> save cost).
+  3. Both: Try to execute a Remove and then a Replace strategies
 """
 
 import time
@@ -102,56 +103,6 @@ class LocalSearch(_Solver):
         return bestNeighbor
 
 
-    # def _exploreSwap(self, solution):
-    #     """
-    #     Try swapping a specialist from one pipe with a specialist from another pipe,
-    #     if it results in lower cost (both pipes remain feasible).
-    #     """
-    #     curCost = solution.getFitness()
-    #     bestNeighbor = solution
-    #
-    #     cutPipes = solution.cutPipes
-    #     if len(cutPipes) < 2:
-    #         return bestNeighbor
-    #
-    #     for i, pipeA in enumerate(cutPipes):
-    #         pipeAId = pipeA.getId()
-    #         specsA = solution.getSpecialistsOnPipe(pipeAId)
-    #
-    #         for j in range(i + 1, len(cutPipes)):
-    #             pipeB = cutPipes[j]
-    #             pipeBId = pipeB.getId()
-    #             specsB = solution.getSpecialistsOnPipe(pipeBId)
-    #
-    #             for sIdA in specsA:
-    #                 for sIdB in specsB:
-    #                     specA = solution.specialists[sIdA]
-    #                     specB = solution.specialists[sIdB]
-    #
-    #                     # Check feasibility after swap:
-    #                     # PipeA loses specA, gains specB
-    #                     excessA = solution.getExcessCapacity(pipeAId)
-    #                     newExcessA = excessA - specA.getCapacity() + specB.getCapacity()
-    #                     if newExcessA < 0:
-    #                         continue
-    #
-    #                     # PipeB loses specB, gains specA
-    #                     excessB = solution.getExcessCapacity(pipeBId)
-    #                     newExcessB = excessB - specB.getCapacity() + specA.getCapacity()
-    #                     if newExcessB < 0:
-    #                         continue
-    #
-    #                     # Cost doesn't change in a swap (same specialists used)
-    #                     # But it can enable future Remove/Replace moves
-    #                     # Skip if no cost improvement possible
-    #                     # Actually, swap is useful if combined with remove,
-    #                     # but alone doesn't reduce cost. Skip pure swaps.
-    #                     # Instead: swap assigned with unassigned handled by Replace.
-    #                     pass
-    #
-    #     return bestNeighbor
-
-
     def exploreNeighborhood(self, solution):
         neighbor = solution
 
@@ -208,15 +159,9 @@ class LocalSearch(_Solver):
             neighborFitness = neighbor.getFitness()
 
             if incumbentFitness <= neighborFitness:
-                # if self.config.verbose:
-                #     print(f" Local optimum reached after {iterations} iterations")
                 break
 
             incumbent = neighbor
             incumbentFitness = neighborFitness
-
-        # if self.config.verbose:
-        #     print(f" Final cost: {incumbentFitness:.2f} "
-        #           f"(improvement: {initialSolution.getFitness() - incumbentFitness:.2f})")
 
         return incumbent
