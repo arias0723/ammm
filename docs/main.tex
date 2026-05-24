@@ -472,7 +472,9 @@ These experiments were conducted on a MacBook Pro laptop with an Apple M4 chip a
 
 \subsection{Parameter Tuning For GRASP}
 
-We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 100 specialists, 100 bases, and 1000 pipes without conducting the local search procedure, and the maximum number of iterations for the constructive phase was set to 100.  For the results, we selected the best mean objective with the least standard deviation (risk-adjusted formula) over 100 runs per alpha value, thereby penalizing high variance and preferring consistent solutions.
+We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 100 specialists, 100 bases, and 1000 pipes without conducting the local search procedure, and the maximum number of iterations for the constructive phase was set to 100.  For the results, we selected the best mean objective with the least standard deviation (risk-adjusted formula) over 100 runs per alpha value, thereby penalizing high variance and preferring consistent solutions. \\
+\\
+\noindent As shown in figure \nameref{fig:fig41}, a better solution is most likely achieved when \bm{$\alpha$} is set from 0.1 to 0.2. \textbf{In the following experiments, we will set \bm{$\alpha$} equal to 0.15 when conducting the GRASP method to give a good balance between quality and randomness}.
 
 \begin{figure}[H]
 \begin{tikzpicture}
@@ -563,7 +565,6 @@ We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 10
 \label{fig:fig41}
 \end{figure}
 
-\noindent As shown in figure \nameref{fig:fig41}, a better solution is most likely achieved when \bm{$\alpha$} is set from 0.1 to 0.2. \textbf{In the following experiments, we will set \bm{$\alpha$} equal to 0.15 when conducting the GRASP method to give a good balance between quality and randomness}.
 
 
 % \subsection{Solving Time}
@@ -923,8 +924,10 @@ Among the heuristic strategies tested, the pure Greedy method is extremely fast 
 \section{Personal Reflections}
 
 Initially, we had limited knowledge of advanced graph theory and were unfamiliar with concepts like minimum cuts, graph partitions, and network connectivity algorithms. We approached the algorithmic design hesitantly at first, but after receiving guidance from our professors and exploring algorithms like Stoer-Wagner and Karger's in more depth, a new mathematical perspective opened up for us. We were impressed by the efficiency and power of specialized graph algorithms.\\
-Moreover, the optimization methods used in integer linear programming represent a significant shift in thinking. These declarative methods are incredibly elegant, and we naturally strive to pursue optimal solutions in theory. However, in practice, solving these large-scale combinatorial problems to optimality can be prohibitively costly. Consequently, we must employ heuristic and metaheuristic methods as a necessary tradeoff for scalability. It is essential to formulate, experiment, and iterate in order to discover practical solutions.\\
-We will continue to refine our algorithm engineering skills, as we now firmly believe that understanding the balance between exact mathematical models and fast approximations is key to solving real-world computer science problems.
+Moreover, the optimization methods used in integer linear programming represent a significant shift in thinking. These declarative methods are incredibly elegant, and we naturally strive to pursue optimal solutions in theory. However, in practice, solving these large-scale combinatorial problems to optimality can be prohibitively costly.
+Consequently, we must employ heuristic and metaheuristic methods as a necessary tradeoff for scalability. It is essential to formulate, experiment, and iterate in order to discover practical solutions.\\
+
+% We will continue to refine our algorithm engineering skills, as we now firmly believe that understanding the balance between exact mathematical models and fast approximations is key to solving real-world computer science problems.
 
 
 \section{Acknowledgements}
