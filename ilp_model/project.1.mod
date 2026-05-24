@@ -72,6 +72,8 @@ subject to {
   	}
 
   	// Graph is disconected (1 <= # of groups <= n-1)
+	// Needed to discard the trivial solution where all is set to zero
+	// We can set g[0] = 1 to break symetry and get rid of the lower bound constraint
   	sum(i in B) g[i] >= 1;
   	sum(i in B) g[i] <= n - 1;
 
