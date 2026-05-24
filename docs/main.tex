@@ -50,13 +50,13 @@ The Martian Network Destruction problem can be stated as follows:\\
     \item The set $S = \{1, 2, \ldots, m\}$ of specialists. For each specialist $k \in S$, the available working hours $w_k$ and the cost per assignment $c_k$ are specified.
 \end{itemize}
 
-\textbf{\textit{Find:}}
+\textbf{\textit{Find:}} An assignment of specialists to pipes and a selection of pipes to destroy, \textbf{\textit{such that:}}
 \begin{itemize}
-    \item The destruction of pipes must create a disconnected network (Preventing fuel from transporting across all bases).
+    \item The destruction of the selected pipes creates a disconnected network (preventing fuel from being transported across all bases).
 
-    \item Each specialist can be assigned to at most one pipe.
+    \item Each specialist is assigned to at most one pipe.
 
-    \item Each pipe we want to destroy must receive enough specialist hours to reach its destruction requirement $t_{ij}$.
+    \item Each pipe selected for destruction receives enough specialist hours to meet its destruction requirement $t_{ij}$.
 \end{itemize}
 
 \textbf{\textit{Objective}}:
@@ -112,9 +112,11 @@ subject to:
     \item \textbf{Equation (2)} ensures that each specialist is assigned to at most one pipeline.
     \item \textbf{Equation (3)} guarantees that if a pipeline is selected to be destroyed ($d_e = 1$), the sum of working hours of the specialists assigned to it must meet or exceed the time required to destroy it ($t_{ij}$).
     \item \textbf{Equation (4)} ensures that a specialist can only be assigned to a pipeline if that pipeline is actually being destroyed.
-    \item \textbf{Equations (5) and (6)} if two connected bases $i$ and $j$ are assigned to different groups (i.e., $g_i \neq g_j$), then the pipeline connecting them must be destroyed ($d_e = 1$).
-    \item \textbf{Equation (7)} guarantees that the partition is valid by ensuring neither group is empty.
+    \item \textbf{Equations (5) and (6)} ensure that if two connected bases $i$ and $j$ are assigned to different groups (i.e., $g_i \neq g_j$), then the pipeline connecting them must be destroyed ($d_e = 1$).
+    \item \textbf{Equation (7)} guarantees that the partition is non-trivial by ensuring neither group is empty.
 \end{itemize}
+
+\noindent Together, constraints (5)--(7) guarantee that the set of destroyed pipes forms a valid cut, separating the network into at least two non-empty components.
 
 \section{Heuristics Method}
 
@@ -149,15 +151,12 @@ Our greedy approach operates in two sequential phases:
 
 \textbf{Phase 1: Minimum Cut Computation}
 \\[0.2cm]
-We found two greedy algorithms to find the minimum cut partition of the network:
+We considered two algorithms to find the minimum cut partition of the network:
 
 \begin{enumerate}
-    \item \textbf{Karger's Algorithm} (randomized): Repeatedly contracts random edges weighted by demand until two super-nodes remain. The original algorithm runs multiple iterations to increase the probability of finding the true minimum cut.
+    \item \textbf{Karger's Algorithm} (randomized): Repeatedly contracts random edges weighted by demand until two super-nodes remain. The standard algorithm requires $O(n^2 \log n)$ iterations to guarantee finding the true minimum cut with high probability.
 
-    \item \textbf{Stoer-Wagner Algorithm} (deterministic): Uses maximum adjacency ordering to systematically find the global minimum cut through a series of min-cut phases.
-    This algorithm is better for dense graphs.
-    \\[0.2cm]
-    The choice of the algorithm can be made in config.dat with minCut.
+    \item \textbf{Stoer-Wagner Algorithm} (deterministic): Uses maximum adjacency ordering to systematically find the global minimum cut through a series of min-cut phases. This algorithm is better suited for dense graphs.
 \end{enumerate}
 
 Both algorithms minimize the total demand in terms of hours crossing the partition:
@@ -169,7 +168,7 @@ Both algorithms minimize the total demand in terms of hours crossing the partiti
 The output is a binary partition that defines which pipes must be covered by specialists (the $CutPipes$).
 \\[0.5cm]
 
-We decided to select Karger's algorithm with \textbf{only one} iteration per Greedy exploration, so we obtain a randomized cut that introduces diversification, which is particularly valuable when the true minimum cut is infeasible.
+We selected Karger's algorithm with \textbf{only one} iteration per Greedy exploration. This yields a randomized cut that introduces diversification, which is particularly valuable when the true minimum cut leads to an infeasible resource allocation.
 \\[0.5cm]
 
 \textbf{Phase 2: Greedy Specialist Assignment}
@@ -246,8 +245,8 @@ The assignment continues until all pipes in $CutPipes$ are fully covered or the 
 \Return $Solution$
 \EndFunction
 \Statex
-\Function{ValidateAssignment}{$p$}
-\State $coveredCapacity \gets \sum_{s \text{ assigned to } p} Capacity_s$
+\Function{ValidateAssignment}{$Solution, p$}
+\State $coveredCapacity \gets \sum_{s \text{ assigned to } p \text{ in } Solution} Capacity_s$
 \If{$coveredCapacity \geq Demand_p$}
     \State \Return True
 \Else
@@ -287,7 +286,7 @@ The assignment continues until all pipes in $CutPipes$ are fully covered or the 
 \label{sec:localsearch}
 
 \subsubsection{Neighborhood Definition}
-We define two complementary neighborhood moves for the \textbf{Phase~2} resource-allocation sub-problem:
+We define two complementary neighborhood moves for the \textbf{Phase~2} resource-allocation subproblem:
 
 \begin{itemize}
     \item \textbf{Remove:} remove an assigned specialist $s$ from its assigned pipe $p$ when the remaining assigned specialists still provide capacity $\ge$ demand$_p$ (i.e., $p$ remains covered). This strictly reduces cost by $c_s$.
@@ -351,7 +350,7 @@ The search repeats until no improving neighbor is found or a stopping criterion 
             \EndIf
         \EndIf
         \Statex
-        \If{$neighbor.getFitness() > incumbentCost$} \textbf{break} \Comment{Local optimum reached}
+        \If{$incumbentCost$ unchanged this iteration} \textbf{break} \Comment{Local optimum reached}
         \EndIf
     \EndWhile
     \Statex
@@ -376,7 +375,7 @@ The search repeats until no improving neighbor is found or a stopping criterion 
 \subsubsection{High-level description}
 GRASP (Greedy Randomized Adaptive Search Procedure) performs repeated constructive phases followed by local search. Each constructive phase builds a feasible solution by iteratively assigning specialists to cut pipes using a restricted candidate list (RCL) controlled by parameter $\alpha \in [0,1]$: $\alpha = 0$ $\Rightarrow$ purely greedy, $\alpha = 1$ $\Rightarrow$ pure random (within admissible candidates).
 
-After construction, the candidate solution is improved using the Local Search ~\ref{sec:localsearch} described earlier. The best solution over all GRASP iterations is returned.
+After construction, the candidate solution is improved using the Local Search method (Section~\ref{sec:localsearch}). The best solution over all GRASP iterations is returned.
 
 \subsubsection{Construction phase}
 Per pipe (processed in order of decreasing remaining demand), we:
@@ -411,8 +410,8 @@ This adaptive RCL balances greediness and diversification.
             \State \Return \textsc{Infeasible}
         \EndIf
         \Statex
-        \State \textcolor{red}{$ce_{best} \gets \arg\min(\{CostEffectiveness_s \mid s \in Available\})$}
-        \State \textcolor{red}{$ce_{worst} \gets \arg\max(\{CostEffectiveness_s \mid s \in Available\})$}
+        \State \textcolor{red}{$ce_{best} \gets \min(\{CostEffectiveness_s \mid s \in Available\})$}
+        \State \textcolor{red}{$ce_{worst} \gets \max(\{CostEffectiveness_s \mid s \in Available\})$}
         \State \textcolor{red}{$threshold \gets ce_{best} + \alpha \cdot (ce_{worst} - ce_{best})$}
         \State \textcolor{red}{$RCL \gets \{s \in Available \mid CostEffectiveness_s \leq threshold\}$}
         \Statex
@@ -437,11 +436,11 @@ This adaptive RCL balances greediness and diversification.
 \begin{algorithmic}
 \Function{GRASP}{$maxIterations, \alpha, localSearchConfig$}
     \State $best \gets \text{infeasible-solution (cost } +\infty)$
+    \State $Partition \gets \text{ComputeMinCut}()$ \Comment{Computed once}
+    \State $CutPipes \gets \{p \in Pipes \mid Partition[base_i(p)] \neq Partition[base_j(p)]\}$
+    \Statex
     \For{$iter = 1$ \textbf{to} $maxIterations$}
-        \State $Partition \gets \text{ComputeMinCut}()$
-        \State $CutPipes \gets \{p \in Pipes \mid Partition[base_i(p)] \neq Partition[base_j(p)]\}$
-        \Statex
-        \State $solution \gets \text{ConstructSolution}(\alpha, CutPipes, Specialists)$
+        \State $solution \gets \text{GraspConstruction}(\alpha, CutPipes, Specialists)$
         \Statex
         \If{$solution.isFeasible()$ \textbf{and} $localSearchConfig.enabled$}
             \State $solution \gets \text{LocalSearch}(solution, localSearchConfig)$
@@ -467,13 +466,13 @@ This adaptive RCL balances greediness and diversification.
 
 \subsection{Experiment Dataset And Environment}
 
-We generated several datasets of different sizes. The datasets are prefixed by \texttt{sXXXX\_pXXXX}; e.g \texttt{s100\_p1000} means 100 specialists, 100 bases and 1000 pipes.
+We generated several datasets of different sizes. The datasets are prefixed by \texttt{sXXXX\_pXXXX}; e.g., \texttt{s100\_p1000} means 100 specialists, 100 bases, and 1000 pipes.
 These experiments were conducted on a MacBook Pro laptop with an Apple M4 chip and 32GB of memory. Solving times may vary slightly on other computers, particularly for the ILP model.
 
 
 \subsection{Parameter Tuning For GRASP}
 
-We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 100 specialist, 100 bases and 1000 pipes without conducting the local search procedure, and the maximum iterations for the constructive phase is set to 100.  For the results, we selected the best mean objective with the least standard deviation (risk-adjusted formula) over 100 runs per alpha value; this to penalize high variance, preferring consistent solutions.
+We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 100 specialists, 100 bases, and 1000 pipes without conducting the local search procedure, and the maximum number of iterations for the constructive phase was set to 100.  For the results, we selected the best mean objective with the least standard deviation (risk-adjusted formula) over 100 runs per alpha value, thereby penalizing high variance and preferring consistent solutions.
 
 \begin{figure}[H]
 \begin{tikzpicture}
@@ -586,12 +585,12 @@ To evaluate computational efficiency, the execution times of the proposed algori
 \\
 The empirical results show a large difference in computational complexity between the exact Integer Linear Programming (ILP) model and the heuristic approaches:
 \begin{itemize}
-    \item \textbf{ILP Baseline:} The ILP model exhibits the highest computational burden, consistently requiring 28 minutes to determine the global optimum for the last instances. However, the ILP model's efficiency is highly sensitive to problem scale; for smaller instances (e.g., fewer than 100 pipes), it can solve to optimality within a practical timeframe, even outperforming heuristic approaches.
+    \item \textbf{ILP Baseline:} The ILP model exhibits the highest computational burden, requiring up to 55 minutes to determine the global optimum for the largest instance. However, the ILP model's efficiency is highly sensitive to problem scale; for smaller instances (e.g., fewer than 100 pipes), it can solve to optimality within a practical timeframe, even faster than the heuristic approaches due to their fixed Python overhead.
     \item \textbf{Greedy and GRASP Heuristics:} In contrast, both the pure Greedy algorithm and the standalone GRASP execution operate below the 1 second threshold. This represents an acceleration factor of roughly three orders of magnitude ($\approx 1000\times$) relative to the ILP model for the highest instance.
     \item \textbf{Local Search (LS) Overhead:} Incorporating the Local Search procedure marginally increases execution times but yields distinct performance profiles for the hybrid variants:
     \begin{itemize}
         \item \textbf{Greedy + LS:} Consistently converges within a narrow band between $0.4$ and $1.0$ seconds in all instances.
-        \item \textbf{GRASP + LS:} Demands higher computational effort, fluctuating between 3 and 60 seconds per instance (noting that a time limit of 60 seconds was enforced per run). This increased overhead is attributable to the 100 constructive iterations of the GRASP metaheuristic combined with the local search applied at each iteration.
+        \item \textbf{GRASP + LS:} Demands higher computational effort, ranging between 4 and 70 seconds per instance (noting that a time limit of 60 seconds was enforced per run). This increased overhead is attributable to the 100 constructive iterations of the GRASP metaheuristic combined with the local search applied at each iteration.
     \end{itemize}
 \end{itemize}
 
@@ -906,12 +905,12 @@ The empirical results show a large difference in computational complexity betwee
 
 \nameref{fig:fig43} evaluates the solution quality by comparing the mean objective cost obtained by each algorithm across the instances. As this is a minimization problem, lower objective values represent superior performance.
 \\
-The results demonstrate a clear stratification in the quality of the solution among the tested approaches:
+The results demonstrate a clear stratification in solution quality among the tested approaches:
 \begin{itemize}
-    \item \textbf{Optimal Baseline:}  The exact ILP model establishes the true lower bound, consistently outperforming all heuristic methods with a mean of objective values of 1187.
-    \item \textbf{Heuristic Trajectory:} The pure Greedy approach yields the worst solution quality, generating the highest cost curve across the highest instances (peaking near 4816 in Instance s100p750).Standalone GRASP seems to be a little more effective in average.
-    \item \textbf{Impact of Local Search (LS):} Incorporating neighborhood search significantly reduces the optimality gap compared to pure heuristics. GRASP + LS achieves the best performance among heuristic methods, while Greedy + LS yields competitive results in most instances, although it occasionally produces worse solutions than pure Greedy, this behavior can be attributed to the local search converging to a poor local optimum from a suboptimal initial solution.
-    \item \textbf{Top Metaheuristic:} Ultimately, the GRASP + LS hybrid achieves the lowest average objective costs among all approximate methods (of 2016), proving to be the most effective heuristic configuration for minimizing total cost.
+    \item \textbf{Optimal Baseline:}  The exact ILP model establishes the true lower bound, consistently outperforming all heuristic methods with an average objective value of 1187 across all instances.
+    \item \textbf{Heuristic Trajectory:} The pure Greedy approach yields the worst solution quality, generating the highest cost curve across the largest instances (peaking near 4816 in instance s100p750). Standalone GRASP appears to be slightly more effective on average.
+    \item \textbf{Impact of Local Search (LS):} Incorporating neighborhood search significantly reduces the optimality gap compared to pure heuristics. GRASP + LS achieves the best performance among heuristic methods, while Greedy + LS yields competitive results in most instances. However, Greedy + LS occasionally produces worse solutions than pure Greedy; this occurs because the single random Karger cut may yield a poor partition, and the local search then converges to a suboptimal local optimum from that starting point.
+    \item \textbf{Top Metaheuristic:} The GRASP + LS hybrid achieves the lowest average objective cost of 2016 among all approximate methods, proving to be the most effective heuristic configuration for minimizing total cost.
 \end{itemize}
 
 
@@ -923,8 +922,8 @@ Among the heuristic strategies tested, the pure Greedy method is extremely fast 
 
 \section{Personal Reflections}
 
-Initially, we had limited knowledge of advanced graph theory and were unfamiliar with concepts like minimum cuts, graph partitions, and network connectivity algorithms. We approached the algorithmic design hesitantly at first, but after receiving guidance from our professors and exploring algorithms like Stoer-Wagner and Karger's in more depth, a new mathematical world opened up for us. We were amazed by the efficiency and power of specialized graph algorithms.\\
-Moreover, the optimization methods used in integer linear programming represent a significant shift in thinking. These declarative methods are incredibly elegant, and we inherently strive to pursue optimal solutions in theory. However, in practice, solving these large-scale combinatorial problems to optimality can be prohibitively costly. Consequently, we must employ heuristic and metaheuristic methods as a necessary tradeoff for scalability. It is essential to formulate, experiment, and iterate in order to discover practical solutions.\\
+Initially, we had limited knowledge of advanced graph theory and were unfamiliar with concepts like minimum cuts, graph partitions, and network connectivity algorithms. We approached the algorithmic design hesitantly at first, but after receiving guidance from our professors and exploring algorithms like Stoer-Wagner and Karger's in more depth, a new mathematical perspective opened up for us. We were impressed by the efficiency and power of specialized graph algorithms.\\
+Moreover, the optimization methods used in integer linear programming represent a significant shift in thinking. These declarative methods are incredibly elegant, and we naturally strive to pursue optimal solutions in theory. However, in practice, solving these large-scale combinatorial problems to optimality can be prohibitively costly. Consequently, we must employ heuristic and metaheuristic methods as a necessary tradeoff for scalability. It is essential to formulate, experiment, and iterate in order to discover practical solutions.\\
 We will continue to refine our algorithm engineering skills, as we now firmly believe that understanding the balance between exact mathematical models and fast approximations is key to solving real-world computer science problems.
 
 
