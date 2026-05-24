@@ -467,57 +467,6 @@ These experiments were conducted on a MacBook Pro laptop with an Apple M4 chip a
 
 We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 100 specialist, 100 bases and 1000 pipes without conducting the local search procedure, and the maximum iterations for the constructive phase is set to 100.  For the results, we selected the best mean objective with the least standard deviation (risk-adjusted formula) over 100 runs per alpha value; this to penalize high variance, preferring consistent solutions.
 
-% % Build coordinates from individual CSV files
-% \newcommand{\buildcoords}[2]{%
-%     \gdef#1{}%
-%     \pgfplotsforeachungrouped \i in {0,...,9} {%
-%         \pgfplotstableread[col sep=comma]{data/#2/s100_p1000_instance_\i.csv}\temptable
-%         \pgfplotstablegetelem{0}{mean_objective}\of\temptable
-%         \ifx#1\empty
-%             \xdef#1{(\i,\pgfplotsretval)}%
-%         \else
-%             \xdef#1{#1 (\i,\pgfplotsretval)}%
-%         \fi
-%     }%
-% }
-%
-% \buildcoords{\greedydata}{s100_p1000_greedy}
-% \buildcoords{\graspdata}{s100_p1000_grasp}
-% \buildcoords{\greedylsdata}{s100_p1000_greedy_ls}
-% \buildcoords{\grasplsdata}{s100_p1000_grasp_ls}
-% \buildcoords{\cplexdata}{s100_p1000_cplex}
-%
-% \begin{figure}[H]
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     title={\textbf{Quality of Solutions (10 instances of s100\_p1000)}},
-%     xlabel={\textbf{Instance}},
-%     ylabel={\textbf{Mean Objective (Cost)}},
-%     xmin=-0.5, xmax=9.5,
-%     xtick={0,1,2,3,4,5,6,7,8,9},
-%     ymajorgrids=true,
-%     grid style=dashed,
-%     width=0.9\textwidth,
-%     height=7cm,
-%     legend pos=outer north east,
-%     legend style={nodes={scale=0.8, transform shape}}
-% ]
-%
-% \edef\temp{\noexpand\addplot[green!70!black, thick, mark=triangle] coordinates {\greedydata};}\temp
-% \edef\temp{\noexpand\addplot[yellow!80!black, thick, mark=square] coordinates {\graspdata};}\temp
-% \edef\temp{\noexpand\addplot[blue, thick, mark=diamond] coordinates {\greedylsdata};}\temp
-% \edef\temp{\noexpand\addplot[red, thick, mark=o] coordinates {\grasplsdata};}\temp
-% \edef\temp{\noexpand\addplot[brown, thick, mark=star] coordinates {\cplexdata};}\temp
-%
-% \legend{Greedy, GRASP, Greedy + LS, GRASP + LS, ILP (Optimal)}
-% \end{axis}
-% \end{tikzpicture}
-% \captionsetup{labelformat=empty}
-% \caption{Figure 4.4: Solution Quality across 10 random instances of s100\_p1000}
-% \label{fig:fig44}
-% \end{figure}
-
 \begin{figure}[H]
 \begin{tikzpicture}
 \begin{axis}[
@@ -547,6 +496,57 @@ We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 10
 \addplot table[x=alpha, y expr=\thisrow{mean_objective} + \thisrow{std_objective}, col sep=comma] {data/s100_p1000_grasp_tuning/s100_p1000_instance_9.csv};
 
 \legend{instance\_0 ($\alpha=0.1$),instance\_1 ($\alpha=0.1$),instance\_2 ($\alpha=0.1$),instance\_3 ($\alpha=0.3$),instance\_4 ($\alpha=0.2$),instance\_5 ($\alpha=0.0$),instance\_6 ($\alpha=0.3$),instance\_7 ($\alpha=0.2$),instance\_8 ($\alpha=0.2$),instance\_9 ($\alpha=0.2$)}
+
+% % Build coordinates from individual CSV files
+% \newcommand{\buildcoords}[2]{%
+%     \gdef#1{}%
+%     \pgfplotsforeachungrouped \i in {0,...,9} {%
+%         \pgfplotstableread[col sep=comma]{data/#2/s100_p1000_instance_\i.csv}\temptable
+%         \pgfplotstablegetelem{0}{mean_objective}\of\temptable
+%         \ifx#1\empty
+%             \xdef#1{(\i,\pgfplotsretval)}%
+%         \else
+%             \xdef#1{#1 (\i,\pgfplotsretval)}%
+%         \fi
+%     }%
+% }
+
+% \buildcoords{\greedydata}{s100_p1000_greedy}
+% \buildcoords{\graspdata}{s100_p1000_grasp}
+% \buildcoords{\greedylsdata}{s100_p1000_greedy_ls}
+% \buildcoords{\grasplsdata}{s100_p1000_grasp_ls}
+% \buildcoords{\cplexdata}{s100_p1000_cplex}
+
+% \begin{figure}[H]
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     title={\textbf{Quality of Solutions (10 instances of s100\_p1000)}},
+%     xlabel={\textbf{Instance}},
+%     ylabel={\textbf{Mean Objective (Cost)}},
+%     xmin=-0.5, xmax=9.5,
+%     xtick={0,1,2,3,4,5,6,7,8,9},
+%     ymajorgrids=true,
+%     grid style=dashed,
+%     width=0.9\textwidth,
+%     height=7cm,
+%     legend pos=outer north east,
+%     legend style={nodes={scale=0.8, transform shape}}
+% ]
+
+% \edef\temp{\noexpand\addplot[green!70!black, thick, mark=triangle] coordinates {\greedydata};}\temp
+% \edef\temp{\noexpand\addplot[yellow!80!black, thick, mark=square] coordinates {\graspdata};}\temp
+% \edef\temp{\noexpand\addplot[blue, thick, mark=diamond] coordinates {\greedylsdata};}\temp
+% \edef\temp{\noexpand\addplot[red, thick, mark=o] coordinates {\grasplsdata};}\temp
+% \edef\temp{\noexpand\addplot[brown, thick, mark=star] coordinates {\cplexdata};}\temp
+
+% \legend{Greedy, GRASP, Greedy + LS, GRASP + LS, ILP (Optimal)}
+% \end{axis}
+% \end{tikzpicture}
+% \captionsetup{labelformat=empty}
+% \caption{Figure 4.4: Solution Quality across 10 random instances of s100\_p1000}
+% \label{fig:fig44}
+% \end{figure}
 
 \end{axis}
 \end{tikzpicture}
