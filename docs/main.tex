@@ -41,7 +41,7 @@
 
 \section{Martian Network Destruction Problem Statement}
 
-The Martian Network Destruction problem can be formally stated as follows:\\
+The Martian Network Destruction problem can be stated as follows:\\
 \\
 \textbf{\textit{Given}}:
 \begin{itemize}
@@ -52,7 +52,7 @@ The Martian Network Destruction problem can be formally stated as follows:\\
 
 \textbf{\textit{Find:}}
 \begin{itemize}
-    \item The destruction of pipes must create a disconnected network (the graph becomes non-connected, preventing fuel from transporting across all bases).
+    \item The destruction of pipes must create a disconnected network (Preventing fuel from transporting across all bases).
 
     \item Each specialist can be assigned to at most one pipe.
 
@@ -118,15 +118,15 @@ subject to:
 \begin{itemize}
     \item $Bases$: Set of bases in the network.
     \item $Pipes$: Set of all pipes connecting bases.
-    \item $Demand_p$: The demand (flow requirement) for pipe $p$.
+    \item $Demand_p$: The demand in terms of hours for pipe $p$.
     \item $Partition$: Binary assignment of bases to groups $\{0, 1\}$. Equal to 0 if base $i$ belongs to group 0, 1 otherwise.
-    \item $CutPipes$: Set of pipes crossing the partition, i.e., pipes $p = \langle i,j \rangle$ where $Partition[i] \neq Partition[j]$.
+    \item $CutPipes$: Set of pipes crossing the partition (pipes $p = \langle i,j \rangle$ where $Partition[i] \neq Partition[j]$).
 \end{itemize}
 
 \textbf{Phase 2: Specialist Assignment Variables}
 \begin{itemize}
     \item $Specialists$: Set of available specialists.
-    \item $Capacity_s$: The capacity (work units) that specialist $s$ can provide.
+    \item $Capacity_s$: The capacity (hours) that specialist $s$ can provide.
     \item $Cost_s$: The cost of hiring specialist $s$.
     \item $CostEffectiveness_s$: Ratio $Cost_s / Capacity_s$ for specialist $s$.
     \item $Solution$: Set of assignments $\langle s, p \rangle$. Each specialist can be assigned to at most one pipe.
@@ -702,7 +702,7 @@ We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 10
 
 \subsection{Experiments dataset for the performances}
 
-To assess the performance of the proposed heuristic approaches, a series of experiments were conducted across eight instances of increasing sizes. Each instance is characterized by fixed parameters $minHours = 100$, $maxHours = 500$, $minCapacity = 100$, $maxCapacity = 300$, $minFee = 200$, $maxFee = 300$, while the number of specialists, bases and pipes vary. The instances are ordered by increasing ILP solving time, which also reflects the overall problem difficulty.
+To assess the performance of the proposed heuristic approaches, a series of experiments were conducted across nine instances of increasing sizes. Each instance is characterized by fixed parameters $minHours = 100$, $maxHours = 500$, $minCapacity = 100$, $maxCapacity = 300$, $minFee = 200$, $maxFee = 300$, while the number of specialists, bases and pipes vary. The instances are ordered by increasing ILP solving time, which also reflects the overall problem difficulty.
 Each of the four heuristic configurations: Greedy, GRASP, Greedy + LS, and GRASP + LS, was run 10 times per instance, with a time limit of 60 seconds enforced per run. The results are compared with the optimal solution obtained by the ILP model solved with CPLEX.
 
 \subsubsection{Solving Time Performance}
@@ -740,7 +740,7 @@ The empirical results show a large difference in computational complexity betwee
     ybar,
     bar width=5pt,
     enlarge x limits=0.08,
-    xtick={0,1,2,3,4,5,6,7},
+    xtick={0,1,2,3,4,5,6,7, 8},
     xticklabels={
         \tiny s30p80,
         \tiny s45p150,
@@ -749,7 +749,8 @@ The empirical results show a large difference in computational complexity betwee
         \tiny s70p400,
         \tiny s80p500,
         \tiny s85p550,
-        \tiny s100p750
+        \tiny s100p750,
+        \tiny s100p1000
     },
     x tick label style={rotate=30, anchor=east},
     ymode=log,
@@ -768,6 +769,7 @@ The empirical results show a large difference in computational complexity betwee
     (5, 0.639)
     (6, 0.702)
     (7, 0.659)
+    (8, 0.856)
 };
 
 % GRASP (mean_time)
@@ -780,6 +782,7 @@ The empirical results show a large difference in computational complexity betwee
     (5, 0.715)
     (6, 0.710)
     (7, 1.090)
+    (8, 0.557)
 };
 
 % Greedy + LS (mean_time)
@@ -792,6 +795,7 @@ The empirical results show a large difference in computational complexity betwee
     (5, 0.914)
     (6, 1.351)
     (7, 1.948)
+    (8, 2.709)
 };
 
 % GRASP + LS (mean_time)
@@ -804,6 +808,7 @@ The empirical results show a large difference in computational complexity betwee
     (5, 70.183)
     (6, 60.897)
     (7, 47.683)
+    (8, 59.598)
 };
 
 % ILP / CPLEX (time in seconds)
@@ -816,6 +821,7 @@ The empirical results show a large difference in computational complexity betwee
     (5,  791.793)
     (6, 1022.430)
     (7, 1600.768)
+    (8, 3341.84)
 };
 
 \legend{Greedy, GRASP, Greedy + LS, GRASP + LS, ILP}
@@ -857,8 +863,8 @@ The empirical results show a large difference in computational complexity betwee
     title={\textbf{Quality of Solutions}},
     xlabel={\textbf{Instance}},
     ylabel={\textbf{Mean Objective (Cost)}},
-    xmin=-0.5, xmax=7.5,
-    xtick={0,1,2,3,4,5,6,7},
+    xmin=-0.5, xmax=8.5,
+    xtick={0,1,2,3,4,5,6,7, 8},
     xticklabels={
         \tiny s30p80,
         \tiny s45p150,
@@ -867,7 +873,8 @@ The empirical results show a large difference in computational complexity betwee
         \tiny s70p400,
         \tiny s80p500,
         \tiny s85p550,
-        \tiny s100p750
+        \tiny s100p750,
+        \tiny s100p1000
     },
     x tick label style={rotate=30, anchor=east},
     ymajorgrids=true,
@@ -888,6 +895,7 @@ The empirical results show a large difference in computational complexity betwee
     (5, 3009.20)
     (6, 3892.80)
     (7, 4816.20)
+    (8, 6506.20)
 };
 
 % GRASP
@@ -900,6 +908,7 @@ The empirical results show a large difference in computational complexity betwee
     (5, 3202.80)
     (6, 2995.70)
     (7, 3586.10)
+    (8, 5937.30)
 };
 
 % Greedy + LS
@@ -912,6 +921,7 @@ The empirical results show a large difference in computational complexity betwee
     (5, 2384.78)
     (6, 3360.90)
     (7, 3196.80)
+    (8, 6553.60)
 };
 
 % GRASP + LS
@@ -924,6 +934,7 @@ The empirical results show a large difference in computational complexity betwee
     (5, 2496.50)
     (6, 2949.40)
     (7, 3345.20)
+    (8, 4511.10)
 };
 
 % ILP (optimal)
@@ -936,6 +947,7 @@ The empirical results show a large difference in computational complexity betwee
     (5, 1856)
     (6, 1879)
     (7, 1686)
+    (8, 2858)
 };
 
 \legend{Greedy, GRASP, Greedy + LS, GRASP + LS, ILP (Optimal)}
@@ -1023,7 +1035,7 @@ The results demonstrate a clear stratification in the quality of the solution am
 \begin{itemize}
     \item \textbf{Optimal Baseline:}  The exact ILP model establishes the true lower bound, consistently outperforming all heuristic methods with a mean of objective values of 1187.
     \item \textbf{Heuristic Trajectory:} The pure Greedy approach yields the worst solution quality, generating the highest cost curve across the highest instances (peaking near 4816 in Instance s100p750).Standalone GRASP seems to be a little more effective in average.
-    \item \textbf{Impact of Local Search (LS):} Incorporating neighborhood search minimizes the optimality gap. GRASP + LS and the Greedy + LS variant exhibit highly competitive, intermediate performance.
+    \item \textbf{Impact of Local Search (LS):} Incorporating neighborhood search significantly reduces the optimality gap compared to pure heuristics. GRASP + LS achieves the best performance among heuristic methods, while Greedy + LS yields competitive results in most instances, although it occasionally produces worse solutions than pure Greedy, this behavior can be attributed to the local search converging to a poor local optimum from a suboptimal initial solution.
     \item \textbf{Top Metaheuristic:} Ultimately, the GRASP + LS hybrid achieves the lowest average objective costs among all approximate methods (of 2016), proving to be the most effective heuristic configuration for minimizing total cost.
 \end{itemize}
 
