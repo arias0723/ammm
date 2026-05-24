@@ -166,10 +166,10 @@ Both algorithms minimize the total demand in terms of hours crossing the partiti
 \end{equation}
 
 The output is a binary partition that defines which pipes must be covered by specialists (the $CutPipes$).
-\\[0.5cm]
+\\[0.2cm]
 
 We selected Karger's algorithm with \textbf{only one} iteration per Greedy exploration. This yields a randomized cut that introduces diversification, which is particularly valuable when the true minimum cut leads to an infeasible resource allocation.
-\\[0.5cm]
+\\[0.2cm]
 
 \textbf{Phase 2: Greedy Specialist Assignment}
 \\[0.2cm]
@@ -230,13 +230,13 @@ The assignment continues until all pipes in $CutPipes$ are fully covered or the 
         \If{$s = \text{NULL}$}
             \State \Return \textsc{Infeasible} \Comment{No specialists available}
         \EndIf
-        \State \Comment{Assign specialist s to pipe p}
-        \State $Solution \gets Solution \cup \{\langle s, p \rangle\}$
+        \Statex
+        \State $Solution \gets Solution \cup \{\langle s, p \rangle\}$ \Comment{Assign specialist s to pipe p}
         \State $AssignedSpecialists \gets AssignedSpecialists \cup \{s\}$
         \State $RemainingDemand_p \gets RemainingDemand_p - Capacity_s$
     \EndWhile
-    \State \Comment{Verify pipe p is covered}
-    \If{\textbf{not} \Call{ValidateAssignment}{$Solution, p$}}
+    \Statex
+    \If{\textbf{not} \Call{ValidateAssignment}{$Solution, p$}}  \Comment{Verify pipe p is covered}
         \State \Return \textsc{Infeasible}
     \EndIf
 \EndFor
