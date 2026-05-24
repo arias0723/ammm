@@ -352,24 +352,6 @@ The search repeats until no improving neighbor is found or a stopping criterion 
 \end{algorithmic}
 \end{algorithm}
 
-% \subsubsection{ExploreRemove}
-% - Iterate assigned specialists in descending cost order.
-% - For each specialist $s$: if \texttt{canRemoveSpecialist(s)} is true, create neighbor = clone, unassign $s$, evaluate; if cost decreases then accept per policy (First/Best).
-
-% \subsubsection{ExploreReplace}
-% - Let \texttt{assigned} be assigned specialists sorted by cost descending; \texttt{unassigned} be unassigned specialists sorted by cost ascending.
-% - For each $s_{old}$ in \texttt{assigned}:
-%   - Let $p \gets$ assigned pipe of $s_{old}$ and $excess \gets$ excess capacity at $p$.
-%   - For each $s_{new}$ in \texttt{unassigned} with $c_{s_{new}} < c_{s_{old}}$:
-%     - Compute $newExcess = excess - cap(s_{old}) + cap(s_{new})$.
-%     - If $newExcess \ge 0$ then neighbor = clone, unassign $s_{old}$, assign $s_{new}$ to $p$, evaluate; accept per policy if cost improves.
-
-% \subsubsection{Stopping Criteria}
-% The search stops when one of:
-% - Elapsed time $\ge$ configured time limit.
-% - Iterations $\ge$ configured iteration limit.
-% - No improving neighbor found.
-
 % \subsubsection{Complexity Analysis}
 
 % We rely on the following Solution API operations: \texttt{getAssignedSpecialists()}, \texttt{getUnassignedSpecialists()}
@@ -473,173 +455,6 @@ This adaptive RCL balances greediness and diversification.
 % Each GRASP iteration performs one constructive pass (roughly $O(p\cdot s + s\log s)$) and an optional local search whose cost depends on the configured neighborhood policy and limits. Overall runtime is linear in the number of iterations and dominated by Local Search when enabled.
 
 
-% \subsubsection{Pseudocode}
-
-% \begin{algorithm}[H]
-% \renewcommand{\thealgorithm}{}
-% \caption{Local Search Algorithm (Part 1: Auxiliary functions)}
-% \begin{algorithmic}
-
-% \Function{FlipPairWithImprovement}{$<i,j>$}
-%     \State $bidIncrease \gets Bids_{ij} - Bids_{ji}, $
-%     \State $potentialSolution \gets solution$
-%     \State $potentialSolution[potentialSolution.\textrm{INDEX}(<j,i>)] \gets <i,j>$
-%     \State $edges, indegree, outdegree \gets TrimGraph(potentialSolution)$
-%     \If{$edges = \phi$}
-%         \State \Return True, $bidIncrease, \phi$
-%     \EndIf
-%     \State $edges^{flip}, bidDecrease \gets GetKnockonFlippedPairs(bidIncrease, edges, indegree, outdegree)$
-%     \If{$bidDecrease = -1$}
-%         \State \Return False, 0, $\phi$
-%     \EndIf
-%     \If{$CanBeFlipped(<i,j>, edges^{flip}) = $True}
-%         \State \Return True, $bidIncrease - bidDecrease, edges^{flip}$
-%     \EndIf
-%     \State \Return False, 0, $\phi$
-% \EndFunction
-
-% \algstore{local_search}
-% \end{algorithmic}
-% \end{algorithm}
-% \newpage
-
-% \begin{algorithm}[]
-% %\renewcommand{\thealgorithm}{}
-% %\caption{Local Search Algorithm (Part 1: Auxiliary functions)}
-% \begin{algorithmic}
-% \algrestore{local_search}
-
-% \Function{CanBeFlipped}{$<i,j>, edges^{flip}$}
-%     \State $potentialSolution \gets currentSolution$
-%     \State $potentialSolution[potentialSolution.\textrm{INDEX}(<j,i>)] \gets <i,j>$
-%     \For{\textbf{each} $<i',j'> \in edges^{flip}$}
-%         \State $potentialSolution[potentialSolution.\textrm{INDEX}(<i',j'>)] \gets <j',i'>$
-%     \EndFor
-%     \State $edges \gets TrimGraph(potentailSolution)$
-%     \If{$edges \neq \phi$}
-%     \State \Return False
-%     \EndIf
-%     \State \Return True
-% \EndFunction
-
-% \Statex
-
-% \Function{GetKnockonFlippedPairs}{$bidIncrease$, $solution$, $indegree$, $outdegree$}
-% \State $totalBidDecrease, edges^{flip} \gets 0, \phi$
-% \While{$edges^{remain} \neq \phi$}
-% \State $edges^{candidate} \gets \{<i,j> \in edges^{remain} \mid Bids_{ij} - Bids_{ji} + totalBidDecrease < bidIncrease\}$
-% \If{$edges^{candidate} = \phi$}
-%     \State \Return $\phi, -1$
-% \EndIf
-% \State $vertices \gets GetVerticesFromEdges(edges)$
-% \State $edgeDegrees(<i',j'>) \gets \sum_{k' \in {i',j'}} indegree(k') + outdegree(k') \quad \forall <i',j'> \in edges^{remain}$
-% \State $sortedEdges^{candidate} \gets \textrm{SORT}$(
-% \State \qquad $edges^{candidate}, (vertexDegrees(<i',j'>), Bids_{j'i'} - Bids_{i'j'}), DESC)$
-% \State $foundCandidate \gets \textrm{FALSE}$
-% \For{\textbf{each} $<i',j'> \in edges^{candidate}$}
-% \State $edges^{remain'} \gets edges^{remain}$
-% \State $edges^{remain'}[edges^{remain'}.\textrm{INDEX}(<i',j'>)] \gets <j',i'>$
-% \State $edges^{remain'}, indegree, outdegree \gets TrimGraph(edges^{remain'})$
-% \If{$edges^{remain'} \subset edges^{remain}$}
-% \State $totalBidDecrease \gets totalBidDecrease + Bids_{i'j'} - Bids_{j'i'}$
-% \State $edges^{remain} \gets edges^{remain'}$
-% \State $edges^{flip} \gets edges^{flip} \cup \{{i',j'}\}$
-% \State $foundCandiate \gets$ True
-% \State \textbf{break}
-% \EndIf
-% \EndFor
-% \If{$foundCandidate = \textrm{FALSE}$}
-% \State \Return $\phi, -1$
-% \EndIf
-% \EndWhile
-% \State \Return $edges^{flip}, totalBidDecrease$
-% \EndFunction
-
-% \end{algorithmic}
-% \end{algorithm}
-
-% \begin{algorithm}[H]
-% \renewcommand{\thealgorithm}{}
-% \caption{Local Search Algorithm (Part 2: Main Algorithm)}
-% \begin{algorithmic}
-
-% \State $Solution \gets GreedyConstructionPhase()$
-% \State $improved \gets$ True
-% \While{$improved$}
-%     \State $improved \gets$ False
-%     \State $pairsWithHigherBids \gets \{<i,j> \mid <j,i> \in Solution \textrm{ and } Bids_{ij} > Bids_{ji}\}$
-%     \For{\textbf{each} $<i,j> \in pairsWithHigherBids$}
-%         \State $canBeFlipped, bidIncrease, edges^{flip} \gets FlipPairWithImprovement(<i,j>)$
-%         \If{$canBeFlipped = $ True}
-%             \State $improved \gets$ True
-%             \For{\textbf{each} $<i^{'}, j^{'}> \in edges^{flip} \cup \{ <j,i>\}$}
-%                 \State $Solution[Solution.\textrm{INDEX}(<i^{'}, j^{'}>)] \gets <j^{'}, i^{'}>$
-%                 \State $Priority(<i',j'>) \gets 0$
-%                 \State $Priority(<j',i'>) \gets 1$
-%             \EndFor
-%         \EndIf
-%     \EndFor
-% \EndWhile
-% \State \Return $Solution$
-
-% \end{algorithmic}
-% \end{algorithm}
-
-% %\newpage
-
-% \subsection{GRASP Method}
-% \subsubsection{Variable Declaration}
-% The same as \ref{ls_declaration}.
-
-% \subsubsection{Pseudocode}
-
-% \begin{algorithm}[H]
-% \renewcommand{\thealgorithm}{}
-% \caption{GRASP Construction Phase}
-% \begin{algorithmic}
-
-% \State $Solution \gets \phi$
-% \State $CoveredMembers \gets \phi$
-% \State $CandidatePairs \gets \{<i,j> \mid i,j \in Members \quad \textrm{and} \quad Bids_{ij} + Bids_{ji} \neq 0\}$
-% \State $Priority(i,j) \gets 0 \quad \forall <i,j> \in CandidatePairs$
-% \While{$CandidatePairs \neq \phi$}
-%     \State Evaluate $q(<i',j'>, Solution) \quad \forall <i',j'> \in CandidatePairs$
-%     \State $CandidatePairs \gets \{<i',j'> \in CandidatePairs \mid q(<i',j'>,S) > 0\}$
-%     \State \textcolor{red}{$q^{min} \gets \textrm{min}\{q(<i',j'>,Solution) \mid <i',j'> \in CandidatePairs\}$} \Comment{RCL Procedure}
-%     \State \textcolor{red}{$q^{max} \gets \textrm{max}\{q(<i',j'>,Solution) \mid <i',j'> \in CandidatePairs\}$}
-%     \State \textcolor{red}{$\textrm{RCL}_{max} \gets \{<i',j'> \in CandidatePairs \mid q(<i',j'>, Solution) \geq q^{max} - \alpha(q^{max} - q^{min}) \}$}
-%     \State \textcolor{red}{$<i,j> \gets \textrm{ select} <i',j'> \in \textrm{RCL}$ at random}
-%     \State $CandidatePairs \gets CandidatePairs \setminus \{<i,j>, <j,i>\}$
-%     \State $CoveredMembers \gets CoveredMembers \cup \{i,j\}$
-%     \State $Solution \gets Solution \cup \{<i,j>\}$
-%     \State $Priority(<i,j>) \gets 1$
-% \EndWhile
-% \State \Return $Solution$
-
-% \end{algorithmic}
-% \end{algorithm}
-
-
-% \begin{algorithm}[H]
-% \renewcommand{\thealgorithm}{}
-% \caption{GRASP Procedure}
-% \begin{algorithmic}
-
-% \State $Object^{best}, Solution^{best} \gets 0, \phi$
-% \For{$retry = \textrm{1 to MaxIterations}$}
-% \State $Obejctive, Solution \gets 0, \phi$
-% \State $Solution \gets doConstructionPhase()$
-% \State $Solution \gets doLocalSearchPhase(Solution)$
-% \If{$Obejctive > Objective^{best}$}
-% \State $Objective^{best} \gets Obejctive$
-% \State $Solution^{best} \gets Solution$
-% \EndIf
-% \EndFor
-% \State \Return $Solution^{best}$
-
-% \end{algorithmic}
-% \end{algorithm}
-
 \section{Experiment Result Analysis}
 
 \subsection{Experiment Dataset And Environment}
@@ -681,6 +496,57 @@ We tested \bm{$\alpha$} from 0 to 1 in increments of 0.1, using datasets with 10
 \addplot table[x=alpha, y expr=\thisrow{mean_objective} + \thisrow{std_objective}, col sep=comma] {data/s100_p1000_grasp_tuning/s100_p1000_instance_9.csv};
 
 \legend{instance\_0 ($\alpha=0.1$),instance\_1 ($\alpha=0.1$),instance\_2 ($\alpha=0.1$),instance\_3 ($\alpha=0.3$),instance\_4 ($\alpha=0.2$),instance\_5 ($\alpha=0.0$),instance\_6 ($\alpha=0.3$),instance\_7 ($\alpha=0.2$),instance\_8 ($\alpha=0.2$),instance\_9 ($\alpha=0.2$)}
+
+% Build coordinates from individual CSV files
+\newcommand{\buildcoords}[2]{%
+    \gdef#1{}%
+    \pgfplotsforeachungrouped \i in {0,...,9} {%
+        \pgfplotstableread[col sep=comma]{data/#2/s100_p1000_instance_\i.csv}\temptable
+        \pgfplotstablegetelem{0}{mean_objective}\of\temptable
+        \ifx#1\empty
+            \xdef#1{(\i,\pgfplotsretval)}%
+        \else
+            \xdef#1{#1 (\i,\pgfplotsretval)}%
+        \fi
+    }%
+}
+
+\buildcoords{\greedydata}{s100_p1000_greedy}
+\buildcoords{\graspdata}{s100_p1000_grasp}
+\buildcoords{\greedylsdata}{s100_p1000_greedy_ls}
+\buildcoords{\grasplsdata}{s100_p1000_grasp_ls}
+\buildcoords{\cplexdata}{s100_p1000_cplex}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    title={\textbf{Quality of Solutions (10 instances of s100\_p1000)}},
+    xlabel={\textbf{Instance}},
+    ylabel={\textbf{Mean Objective (Cost)}},
+    xmin=-0.5, xmax=9.5,
+    xtick={0,1,2,3,4,5,6,7,8,9},
+    ymajorgrids=true,
+    grid style=dashed,
+    width=0.9\textwidth,
+    height=7cm,
+    legend pos=outer north east,
+    legend style={nodes={scale=0.8, transform shape}}
+]
+
+\edef\temp{\noexpand\addplot[green!70!black, thick, mark=triangle] coordinates {\greedydata};}\temp
+\edef\temp{\noexpand\addplot[yellow!80!black, thick, mark=square] coordinates {\graspdata};}\temp
+\edef\temp{\noexpand\addplot[blue, thick, mark=diamond] coordinates {\greedylsdata};}\temp
+\edef\temp{\noexpand\addplot[red, thick, mark=o] coordinates {\grasplsdata};}\temp
+\edef\temp{\noexpand\addplot[brown, thick, mark=star] coordinates {\cplexdata};}\temp
+
+\legend{Greedy, GRASP, Greedy + LS, GRASP + LS, ILP (Optimal)}
+\end{axis}
+\end{tikzpicture}
+\captionsetup{labelformat=empty}
+\caption{Figure 4.4: Solution Quality across 10 random instances of s100\_p1000}
+\label{fig:fig44}
+\end{figure}
 
 \end{axis}
 \end{tikzpicture}
