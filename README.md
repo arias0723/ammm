@@ -6,19 +6,19 @@ sets and assign specialists to destroy the pipes (edges) connecting these sets a
 ## Instructions
 
 #### CPLEX
-- Import the project in CPLEX: File -> Import existing OPL projects -> Select root directory.
-- Select the directory named Cplex from the main folder.
-- For executing the instances change the **n** in the file name of the data variable in the 7th line of the `main.mod` file.
+- Import the project into CPLEX: `File -> Import existing OPL projects -> Select root directory`.
+- Select the directory named `ilp_model` from the main folder.
+- To execute different instances, update the data file reference in the `main.mod` file. For example, change line 7 to point to your desired file (e.g., `"project.n.dat"`).
 
 #### HEURISTICS AND INSTANCE GENERATOR
-- Open the cloned folder on a Python IDE, preferably **PyCharm**
-- Create the run configurations for the Main.py of the Heuristics folder and for the Main.py of the InstanceGenerator folder.
-- The instances are generated modifying the config file in the config folder of the InstanceGenerator folder and executing the run configuration assigned to the InstanceGenerator.
-- These new instances will be generated in the folder "output" with fileNamePrefix set in config.dat.
-- To execute an instance, change the configuration on the config file in the config folder of the Heuristics folder and then run the run configuration of the main in heuristics, the instances to execute must be in the data folder:
-   -> The file name of the instance is at "inputDataFile" and has the same structure as the CPLEX instances.
-   -> The algorithm type and its parameters are in the same config file, in "solver", and can be tuned as desired.
-   -> The solution of the heuristic algorithm is set by "solutionFile" in config file.
+- Open the cloned repository in a Python IDE (e.g., **PyCharm**).
+- Create run configurations for `Main.py` in the `Heuristics` folder and for `MainGen.py` in the `InstanceGenerator` folder.
+- To generate new instances, modify the `config.dat` setup in the `InstanceGenerator/config` folder, then run `InstanceGenerator/MainGen.py`.
+- Generated instances will be saved in the `InstanceGenerator/output` folder using the `fileNamePrefix` specified in `config.dat`.
+- To execute an instance using heuristics, modify `config.dat` within the `Heuristics/config` folder, then run `Heuristics/Main.py`. Note that instances to be executed must be placed in the `Heuristics/data` folder:
+  - The instance filename is specified by the `inputDataFile` property and maintains the same structure as the CPLEX instances.
+  - The algorithm type and its parameters are specified under the `solver` property within the same config file, and can be tuned as desired.
+  - The expected output solution path is determined by the `solutionFile` property in the config file.
 
 
 ## DSA
