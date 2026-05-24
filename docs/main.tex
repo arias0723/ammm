@@ -105,8 +105,16 @@ subject to:
 \begin{equation}
     1 \leq \sum_{i \in B} g_i \leq n-1
 \end{equation}
-\\
 
+\noindent \textbf{Explanation of the equations:}
+\begin{itemize}
+    \item \textbf{Equation (1)} minimizes the total cost of all specialists assigned to destroy the pipelines.
+    \item \textbf{Equation (2)} ensures that each specialist is assigned to at most one pipeline.
+    \item \textbf{Equation (3)} guarantees that if a pipeline is selected to be destroyed ($d_e = 1$), the sum of working hours of the specialists assigned to it must meet or exceed the time required to destroy it ($t_{ij}$).
+    \item \textbf{Equation (4)} ensures that a specialist can only be assigned to a pipeline if that pipeline is actually being destroyed.
+    \item \textbf{Equations (5) and (6)} if two connected bases $i$ and $j$ are assigned to different groups (i.e., $g_i \neq g_j$), then the pipeline connecting them must be destroyed ($d_e = 1$).
+    \item \textbf{Equation (7)} guarantees that the partition is valid by ensuring neither group is empty.
+\end{itemize}
 
 \section{Heuristics Method}
 
